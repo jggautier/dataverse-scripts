@@ -4,9 +4,7 @@
 # Restricted files: If the dataset has any restricted files, files will be created but they will be empty.
 # Software dependencies: You'll need to download jq (https://stedolan.github.io/jq) and wget (https://www.gnu.org/software/wget).
 
-# User enters her Dataverse account API token.
-token="API_TOKEN"
-
+token="API_TOKEN" # User enters her Dataverse account API token.
 output="OUTPUT_FOLDER_NAME" # Creates a folder in your terminal's active directory and enter name of folder, e.g. dataverse_files
 server="SURVER_URL" # Enter name of server url, which is home page URL of the Dataverse installation, e.g. https://dataverse.harvard.edu
 datasetPID="DATASET_PID" # Enter dataset persistent identifier, e.g. doi:10.12345/AA1/123456
