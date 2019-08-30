@@ -3,7 +3,7 @@
 # Software dependencies: You'll need to download jq (https://stedolan.github.io/jq) and wget (https://www.gnu.org/software/wget).
 # File hierarchy: This does not reconstruct any folder hierarchy that the files may be in. The files are listed as flat. Retaining file hierarchy should be possible with additional API calls...
 # Restricted files: If the dataset has any restricted files, files will be created but they will be empty.
-# Original file formats: Original file formats of any ingested tabular files are downloaded, but given name and file extension of archived (.tab) file.
+# Original file formats: Original file formats of any ingested tabular files are downloaded, but given file name and file extension of archived (.tab) file.
 
 token="API_TOKEN" # User enters her Dataverse account API token.
 output="OUTPUT_FOLDER_NAME" # Creates a folder in your terminal's active directory and enter name of folder, e.g. dataverse_files
