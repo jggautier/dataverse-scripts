@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # File hierarchy: This does not reconstruct any folder hierarchy that the files may be in. The files are listed as flat. Retaining file hierarchy should be possible with additional API calls...
-# Restricted files: If API token belongs to Dataverse account that has no permissions to download restricted files in the dataset, files will be created, but they will be empty.
+# Restricted files: If the dataset has any restricted files, files will be created but they will be empty.
 # Software dependencies: You'll need to download jq (https://stedolan.github.io/jq) and wget (https://www.gnu.org/software/wget).
 
 # User enters her Dataverse account API token.
