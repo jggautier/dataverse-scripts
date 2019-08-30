@@ -6,7 +6,7 @@
 
 token="API_TOKEN" # User enters her Dataverse account API token.
 output="OUTPUT_FOLDER_NAME" # Creates a folder in your terminal's active directory and enter name of folder, e.g. dataverse_files
-server="SURVER_URL" # Enter name of server url, which is home page URL of the Dataverse installation, e.g. https://dataverse.harvard.edu
+server="SERVER_URL" # Enter name of server url, which is home page URL of the Dataverse installation, e.g. https://dataverse.harvard.edu
 datasetPID="DATASET_PID" # Enter dataset persistent identifier, e.g. doi:10.12345/AA1/123456
 
 # This uses jq to get the dataset's file database IDs and names from the dataset metadata. 
