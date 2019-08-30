@@ -21,5 +21,5 @@ paste fileid filenames > arg
 # This uses those arguments to construct wget commands to download the dataset's files. Remove the parameter "format=original" to instead download the archive versions of any ingested tabular files.
 cat arg | xargs -L1 bash -c ' wget -O '$output'$1 -P '$output' SERVER_URL/api/access/datafile/$0?format=original'
 
-# Not yet sure what this line does...
+# This removes the files that the script created in the terminal's active directory
 rm filenames fileid arg
