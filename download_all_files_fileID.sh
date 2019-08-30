@@ -5,8 +5,8 @@
 # Restricted files: If the dataset has any restricted files, files will be created but they will be empty.
 # Original file formats: Original file formats of any ingested tabular files are downloaded, but given file name and file extension of archived (.tab) file.
 
-token="API_TOKEN" # User enters her Dataverse account API token.
-output="OUTPUT_FOLDER_NAME" # Creates a folder in your terminal's active directory and enter name of folder, e.g. dataverse_files
+token="API_TOKEN" # Enter downloader's Dataverse account API token.
+output="OUTPUT_FOLDER_NAME" # Create a folder in your terminal's active directory and enter name of that folder, e.g. dataverse_files
 server="SERVER_URL" # Enter name of server url, which is home page URL of the Dataverse installation, e.g. https://dataverse.harvard.edu
 datasetPID="DATASET_PID" # Enter dataset persistent identifier, e.g. doi:10.12345/AA1/123456
 
