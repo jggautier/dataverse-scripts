@@ -10,7 +10,6 @@ server="SERVER_URL" # Enter name of server url, which is home page URL of the Da
 datasetPID="DATASET_PID" # Enter dataset persistent identifier, e.g. doi:10.12345/AA1/123456
 
 # This uses jq to get the dataset's file database IDs and names from the dataset metadata. 
-# SURVER_URL must be changed to the home page URL of the Dataverse installation, e.g. https://dataverse.harvard.edu
 curl -H "X-Dataverse-key: $token" $server/api/datasets/:persistentId/versions/1/files?persistentId=$datasetPID | tee >(jq '.data[].dataFile.id' >fileid) >(jq '.data[].dataFile.filename' >filenames) 
 
 # This turns those file IDs and names into arguments.
