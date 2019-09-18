@@ -14,7 +14,7 @@ cd "`dirname "$0"`"
 # Change the per_page parameter to retrieve more persistent IDs.
 curl "$server/api/search?q=*&subtree=$alias&per_page=50&type=dataset" | jq -r '.data.items[].global_id' > deleted_datasetPIDs_in_$alias.txt
 
-# This destroys datasets in the dataverse
+# This loops through the stored persistent IDs and destroys those datasets
 for global_id in $(cat deleted_datasetPIDs_in_$alias.txt);
 do
 	curl -H "X-Dataverse-key:$token" -X DELETE $server/api/datasets/:persistentId/destroy/?persistentId=$global_id
