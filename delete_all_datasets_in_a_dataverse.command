@@ -2,6 +2,7 @@
 
 # Script for destroying datasets in a dataverse.
 # Software dependencies: You'll need to download jq (https://stedolan.github.io/jq).
+# Limitations: Unpublished datasets and datasets whose only version is deaccessioned won't be deleted since the Search API retrieves PIDs of the only most recently published dataset versions.
 
 token="ENTER_API_TOKEN" # Enter super-user's Dataverse account API token.
 server="ENTER_SERVER_URL" # Enter name of server url, which is home page URL of the Dataverse installation, e.g. https://demo.dataverse.org
