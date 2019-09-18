@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Script for downloading all files in dataset using wget. Original script by Paul Cherian (https://www.linkedin.com/in/paulcherian).
+
 # Software dependencies: You'll need to download jq (https://stedolan.github.io/jq) and wget (https://www.gnu.org/software/wget).
 # File hierarchy: This does not reconstruct any folder hierarchy that the files may be in. The files are listed as flat. Retaining file hierarchy should be possible with additional API calls...
 # Restricted files: If the dataset has any restricted files, files will be created but they will be empty.
