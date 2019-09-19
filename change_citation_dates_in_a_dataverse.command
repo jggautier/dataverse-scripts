@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script for changing citation dates of datasets in a dataverse.
+# Script for changing citation dates of datasets in a dataverse or for reverting those changes.
 # Software dependencies: You'll need to download jq (https://stedolan.github.io/jq).
 # Limitations: The citation dates of unpublished datasets and datasets whose only version is deaccessioned won't be changed since the Search API retrieves PIDs of the only most recently published dataset versions. You may need to give yourself execute privileges to run execute this file. In your terminal, run chmod u+x delete_all_datasets_in_a_dataverse.command
 
@@ -18,7 +18,10 @@ curl "$server/api/search?q=*&subtree=$alias&per_page=50&type=dataset" | jq -r '.
 # This loops through the stored persistent IDs and changes the citation dates for those datasets
 for global_id in $(cat citation_dates_changed_in_$alias.txt);
 do
+	# "distributionDate" can be changed to any of Dataverse's date metadata fields
 	curl -d "distributionDate" --header "X-Dataverse-key: $token" -X PUT $server/api/datasets/:persistentId/citationdate?persistentId=$global_id
 
+	# Uncomment line below (remove hashtag) to change citation dates back to original citation date (date dataset was first published in the Dataverse repository)
+	# curl -X DELETE -H "X-Dataverse-key: $token" $server/api/datasets/:persistentId/citationdate?persistentId=$global_id
 done
 exit
