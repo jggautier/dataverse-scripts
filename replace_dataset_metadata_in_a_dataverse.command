@@ -5,9 +5,9 @@
 # Limitations: 
 	# Unpublished datasets: The metadata of unpublished datasets and datasets whose only version is deaccessioned won't be changed since the Search API retrieves PIDs of the only most recently published dataset versions. 
 	# Linked datasets: If the API Token belongs to an account that has edit access to any datasets that are linked in the given dataverse, the metadata of those datasets will also be changed.
-	# Getting this .command file to work: You may need to give yourself execute privileges to run execute this file. In your terminal, run chmod u+x delete_all_datasets_in_a_dataverse.command
+	# Getting this .command file to work: You may need to give yourself execute privileges to run execute this file. In your terminal, run chmod u+x replace_dataset_metadata_in_a_dataverse.command
 
-token="ENTER_API_TOKEN" # Enter super-user's Dataverse account API token.
+token="ENTER_API_TOKEN" # Enter API token of Dataverse account that has edit and publish privileges on the datasets.
 server="ENTER_SERVER" # Enter name of server url, which is home page URL of the Dataverse installation, e.g. https://demo.dataverse.org
 alias="ENTER_DATAVERSE_ALIAS" # Enter alias of dataverse. E.g. sonias-dataverse.
 
@@ -15,10 +15,10 @@ alias="ENTER_DATAVERSE_ALIAS" # Enter alias of dataverse. E.g. sonias-dataverse.
 # Include the .json extension here, e.g. replacementmetadata.json
 metadatafile="ENTER_FILE_NAME.json"
 
-# This changes the directory to whatever directory this .command file is in, so that dataset_metadata_replaced_in_$alias.txt is saved in that directory.
+# This changes the directory to whatever directory this .command file is in, so that dataset_metadata_replaced_in_$alias.txt is saved in that directory and the script knows where to find the metadata JSON file.
 cd "`dirname "$0"`"
 
-# This uses the Search API and jq to retrieve the persistent IDs (global_id) of datasets in the dataverse (and any dataverses nested within it). Then it stores the persistent IDs in a text file on the user's computer.
+# This uses Dataverse's Search API and jq to retrieve the persistent IDs (global_id) of datasets in the dataverse (and any dataverses nested within it). Then it stores the persistent IDs in a text file on the user's computer.
 # Change the per_page parameter (i.e. per_page=50) to retrieve more persistent IDs.
 curl "$server/api/search?q=*&subtree=$alias&per_page=50&type=dataset" | jq -r '.data.items[].global_id' > dataset_metadata_replaced_in_$alias.txt
 
