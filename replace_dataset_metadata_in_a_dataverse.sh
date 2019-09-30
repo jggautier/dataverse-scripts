@@ -22,7 +22,7 @@ curl "$server/api/search?q=*&subtree=$alias&per_page=50&type=dataset" | jq -r '.
 # This loops through the stored persistent IDs, replaces the metadata of those datasets with the metadata in your metadata file, and creates and publishes a new version for each dataset.
 for global_id in $(cat dataset_metadata_replaced_in_$alias.txt);
 do
-	curl -H "X-Dataverse-key: $token" -X PUT $server/api/datasets/:persistentId/editMetadata?persistentId=$global_id&replace=true --upload-file dataset-update-metadata.json
+	curl -H "X-Dataverse-key: $token" -X PUT $server/api/datasets/:persistentId/editMetadata?persistentId=$global_id&replace=true --upload-file $metadatafile.json
 
 	# This publishes the draft version as a minor version. Change type=minor to type=major to publish a major version instead.
 	curl -H X-Dataverse-key:$token -X POST "$server/api/datasets/:persistentId/actions/:publish?persistentId=$global_id&type=minor"
