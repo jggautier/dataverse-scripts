@@ -2,10 +2,11 @@
 
 # Script for replacing the metadata of datasets in a given dataverse and any datasets nested within that dataverse. This script creates and publishes a new dataset version for each dataset. 
 # Software dependencies: You'll need to download jq (https://stedolan.github.io/jq).
-# Limitations: 
+# Limitations:
+	# Mac OS bias: The script has been tested only on Mac OS and instructions may not be helpful for use in other operating systems.
 	# Unpublished datasets: The metadata of unpublished datasets and datasets whose only version is deaccessioned won't be changed since the Search API retrieves PIDs of the only most recently published dataset versions. 
 	# Linked datasets: If the API Token belongs to an account that has edit access to any datasets that are linked in the given dataverse, the metadata of those datasets will also be changed.
-	# Getting this .command file to work: You may need to give yourself execute privileges to run execute this file. In your terminal, run chmod u+x replace_dataset_metadata_in_a_dataverse.command
+	# Getting this .command file to work: You may need to give yourself execute privileges to execute this file. In your terminal, run chmod u+x replace_dataset_metadata_in_a_dataverse.command
 
 token="ENTER_API_TOKEN" # Enter API token of Dataverse account that has edit and publish privileges on the datasets.
 server="ENTER_SERVER" # Enter name of server url, which is home page URL of the Dataverse installation, e.g. https://demo.dataverse.org
