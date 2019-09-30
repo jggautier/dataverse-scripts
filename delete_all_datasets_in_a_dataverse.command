@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script for destroying datasets in a dataverse.
+# Script for destroying datasets in a dataverse and in any of the dataverses nested in that dataverse.
 # Software dependencies: You'll need to download jq (https://stedolan.github.io/jq).
 # Limitations:
 	# Mac OS bias: The script has been tested only on Mac OS and instructions may not be helpful for use in other operating systems.
