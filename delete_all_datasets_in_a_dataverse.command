@@ -2,8 +2,11 @@
 
 # Script for destroying datasets in a dataverse.
 # Software dependencies: You'll need to download jq (https://stedolan.github.io/jq).
-# Limitations: Unpublished datasets and datasets whose only version is deaccessioned won't be deleted since the Search API retrieves PIDs of the only most recently published dataset versions.
-# You may need to give yourself execute privileges to execute this file. In your terminal, navigate to the directory that this file is in and run chmod u+x delete_all_datasets_in_a_dataverse.command
+# Limitations:
+	# Mac OS bias: The script has been tested only on Mac OS and instructions may not be helpful for use in other operating systems.
+	# Unpublished datasets: Unpublished datasets and datasets whose only version is deaccessioned won't be destroyed since the Search API retrieves PIDs of the only most recently published dataset versions. 
+	# Linked datasets: If the API Token belongs to an account that has edit access to any datasets that are linked in the given dataverse, those datasets will also be destroyed.
+	# Getting this .command file to work: You may need to give yourself execute privileges to execute this file. In your terminal, run chmod u+x replace_dataset_metadata_in_a_dataverse.commandcommand
 
 token="ENTER_API_TOKEN" # Enter super-user's Dataverse account API token.
 server="ENTER_SERVER_URL" # Enter name of server url, which is home page URL of the Dataverse installation, e.g. https://demo.dataverse.org
