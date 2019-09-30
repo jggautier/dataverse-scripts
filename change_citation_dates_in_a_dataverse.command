@@ -2,7 +2,11 @@
 
 # Script for changing citation dates of datasets in a dataverse or for reverting those changes.
 # Software dependencies: You'll need to download jq (https://stedolan.github.io/jq).
-# Limitations: The citation dates of unpublished datasets and datasets whose only version is deaccessioned won't be changed since the Search API retrieves PIDs of the only most recently published dataset versions. You may need to give yourself execute privileges to run execute this file. In your terminal, run chmod u+x delete_all_datasets_in_a_dataverse.command
+# Limitations:
+	# Mac OS bias: The script has been tested only on Mac OS and instructions may not be helpful for use in other operating systems.
+	# Unpublished datasets: The metadata of unpublished datasets and datasets whose only version is deaccessioned won't be changed since the Search API retrieves PIDs of the only most recently published dataset versions. 
+	# Linked datasets: If the API Token belongs to an account that has edit access to any datasets that are linked in the given dataverse, the citation dates of those datasets will also be changed.
+	# Getting this .command file to work: You may need to give yourself execute privileges to execute this file. In your terminal, run chmod u+x replace_dataset_metadata_in_a_dataverse.command
 
 token="ENTER_API_TOKEN" # Enter super-user's Dataverse account API token.
 server="ENTER_SERVER" # Enter name of server url, which is home page URL of the Dataverse installation, e.g. https://demo.dataverse.org
