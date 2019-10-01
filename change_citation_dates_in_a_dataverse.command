@@ -16,7 +16,7 @@ cd "`dirname "$0"`"
 
 # This uses the Search API and jq to retrieve the persistent IDs (global_id) of datasets in the dataverse. Then it stores the persistent IDs in a text file on the user's computer.
 # Change the per_page parameter to retrieve more persistent IDs.
-curl "$server/api/search?q=*&subtree=$alias&per_page=50&type=dataset" | jq -r '.data.items | map(select(.identifier_of_dataverse=="$alias"))[].global_id' > citation_dates_changed_in_$alias.txt
+curl "$server/api/search?q=*&subtree=$alias&per_page=50&type=dataset" | jq -r --arg alias "$alias" '.data.items | map(select(.identifier_of_dataverse==$alias))[].global_id' > citation_dates_changed_in_$alias.txt
 
 # This loops through the stored persistent IDs and changes the citation dates for those datasets.
 for global_id in $(cat citation_dates_changed_in_$alias.txt);
