@@ -18,7 +18,7 @@ metadatafile="ENTER_FILE_NAME.json"
 # This changes the directory to whatever directory this .command file is in, so that dataset_metadata_replaced_in_$alias.txt is saved in that directory and the script knows where to find the metadata JSON file.
 cd "`dirname "$0"`"
 
-# This uses Dataverse's Search API and jq to retrieve the persistent IDs (global_id) of datasets in the dataverse (and any dataverses nested within it). Then it stores the persistent IDs in a text file on the user's computer.
+# This uses Dataverse's Search API and jq to retrieve the persistent IDs (global_id) of datasets in the dataverse. Then it stores the persistent IDs in a text file on the user's computer.
 # Change the per_page parameter (i.e. per_page=50) to retrieve more persistent IDs.
 curl "$server/api/search?q=*&subtree=$alias&per_page=50&type=dataset" | jq -r '.data.items | map(select(.identifier_of_dataverse=="$alias"))[].global_id' > dataset_metadata_replaced_in_$alias.txt
 
