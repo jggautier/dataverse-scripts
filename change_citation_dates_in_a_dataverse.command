@@ -1,11 +1,10 @@
 #!/bin/bash
 
-# Script for changing citation dates of datasets in a dataverse and in any dataverses nested in that dataverse.
+# Script for changing citation dates of datasets in a dataverse.
 # Software dependencies: You'll need to download jq (https://stedolan.github.io/jq).
 # Limitations:
 	# Mac OS bias: The script has been tested only on Mac OS and instructions may not be helpful for use in other operating systems.
 	# Unpublished datasets: The metadata of unpublished datasets and datasets whose only version is deaccessioned won't be changed since the Search API retrieves PIDs of the only most recently published dataset versions. 
-	# Linked datasets: If the API Token belongs to an account that has edit access to any datasets that are linked in the given dataverse, the citation dates of those datasets will also be changed.
 	# Getting this .command file to work: You may need to give yourself execute privileges to execute this file. In your terminal, run chmod u+x replace_dataset_metadata_in_a_dataverse.command
 
 token="ENTER_API_TOKEN" # Enter super-user's Dataverse account API token.
@@ -17,15 +16,15 @@ cd "`dirname "$0"`"
 
 # This uses the Search API and jq to retrieve the persistent IDs (global_id) of datasets in the dataverse. Then it stores the persistent IDs in a text file on the user's computer.
 # Change the per_page parameter to retrieve more persistent IDs.
-curl "$server/api/search?q=*&subtree=$alias&per_page=50&type=dataset" | jq -r '.data.items[].global_id' > citation_dates_changed_in_$alias.txt
+curl "$server/api/search?q=*&subtree=$alias&per_page=50&type=dataset" | jq -r '.data.items | map(select(.identifier_of_dataverse=="$alias"))[].global_id' > citation_dates_changed_in_$alias.txt
 
-# This loops through the stored persistent IDs and changes the citation dates for those datasets
+# This loops through the stored persistent IDs and changes the citation dates for those datasets.
 for global_id in $(cat citation_dates_changed_in_$alias.txt);
 do
-	# "distributionDate" can be changed to any of Dataverse's date metadata fields
+	# "distributionDate" can be changed to any of Dataverse's date metadata fields.
 	curl -d "distributionDate" --header "X-Dataverse-key: $token" -X PUT $server/api/datasets/:persistentId/citationdate?persistentId=$global_id
 
-	# Uncomment line below (remove hashtag) to change citation dates back to original citation date (date dataset was first published in the Dataverse repository)
+	# Uncomment line below (remove hashtag) to change citation dates back to original citation date (date dataset was first published in the Dataverse repository).
 	# curl -X DELETE -H "X-Dataverse-key: $token" $server/api/datasets/:persistentId/citationdate?persistentId=$global_id
 done
 exit
