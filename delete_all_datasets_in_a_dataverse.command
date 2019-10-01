@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script for destroying datasets in a dataverse and in any of the dataverses nested in that dataverse.
+# Script for destroying datasets in a given dataverse.
 # Software dependencies: You'll need to download jq (https://stedolan.github.io/jq).
 # Getting this .command file to work: You may need to give yourself execute privileges to execute this file. In your terminal, run chmod u+x delete_all_datasets_in_a_dataverse.command
 # Limitations:
