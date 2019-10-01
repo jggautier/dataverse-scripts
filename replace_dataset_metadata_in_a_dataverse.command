@@ -1,11 +1,10 @@
 #!/bin/bash
 
-# Script for replacing the metadata of datasets in a given dataverse and any datasets nested within that dataverse. This script creates and publishes a new dataset version for each dataset. 
+# Script for replacing the metadata of datasets in a given dataverse. This script creates and publishes a new dataset version for each dataset. 
 # Software dependencies: You'll need to download jq (https://stedolan.github.io/jq).
 # Limitations:
 	# Mac OS bias: The script has been tested only on Mac OS and instructions may not be helpful for use in other operating systems.
 	# Unpublished datasets: The metadata of unpublished datasets and datasets whose only version is deaccessioned won't be changed since the Search API retrieves PIDs of the only most recently published dataset versions. 
-	# Linked datasets: If the API Token belongs to an account that has edit access to any datasets that are linked in the given dataverse, the metadata of those datasets will also be changed.
 	# Getting this .command file to work: You may need to give yourself execute privileges to execute this file. In your terminal, run chmod u+x replace_dataset_metadata_in_a_dataverse.command
 
 token="ENTER_API_TOKEN" # Enter API token of Dataverse account that has edit and publish privileges on the datasets.
@@ -21,7 +20,7 @@ cd "`dirname "$0"`"
 
 # This uses Dataverse's Search API and jq to retrieve the persistent IDs (global_id) of datasets in the dataverse (and any dataverses nested within it). Then it stores the persistent IDs in a text file on the user's computer.
 # Change the per_page parameter (i.e. per_page=50) to retrieve more persistent IDs.
-curl "$server/api/search?q=*&subtree=$alias&per_page=50&type=dataset" | jq -r '.data.items[].global_id' > dataset_metadata_replaced_in_$alias.txt
+curl "$server/api/search?q=*&subtree=$alias&per_page=50&type=dataset" | jq -r '.data.items | map(select(.identifier_of_dataverse=="$alias"))[].global_id' > dataset_metadata_replaced_in_$alias.txt
 
 # This loops through the stored persistent IDs and replaces the metadata of those datasets with the metadata in your metadata file.
 for global_id in $(cat dataset_metadata_replaced_in_$alias.txt);
