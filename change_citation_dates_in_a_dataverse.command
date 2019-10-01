@@ -7,7 +7,7 @@
 	# Mac OS bias: The script has been tested only on Mac OS and instructions may not be helpful for use in other operating systems.
 	# Unpublished datasets: The metadata of unpublished datasets and datasets whose only version is deaccessioned won't be changed since the Search API retrieves PIDs of the only most recently published dataset versions. 
 
-token="ENTER_API_TOKEN" # Enter super-user's Dataverse account API token.
+token="ENTER_API_TOKEN" # Enter API token of a Dataverse account that has edit access to the datasets.
 server="ENTER_SERVER" # Enter name of server url, which is home page URL of the Dataverse installation, e.g. https://demo.dataverse.org
 alias="ENTER_DATAVERSE_ALIAS" # Enter alias of dataverse. E.g. sonias-dataverse.
 
