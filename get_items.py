@@ -2,12 +2,12 @@
 
 import urllib2
 import json
-server = 'https://dataverse.harvard.edu' # Base URL of Dataverse installation
+server = '' # Base URL of Dataverse installation, e.g. https://demo.dataverse.org
 rows = 10
 start = 0
 page = 1
 condition = True
-text_file = open("items.txt", "w")
+text_file = open("items.txt", "w") # File with list of items is saved as items.txt
 query = '' # query string for search API, e.g. '*&type=dataverse'
 while (condition):
     url = server + '/api/search?q=' + query + "&start=" + str(start)
