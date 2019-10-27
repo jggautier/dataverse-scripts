@@ -13,7 +13,7 @@ while (condition):
     url = server + '/api/search?q=' + query + "&start=" + str(start)
     data = json.load(urllib2.urlopen(url))
     total = data['data']['total_count']
-    print "start:", start, " total:", total
+    print "items:", start, " total:", total
     for i in data['data']['items']: # path to object in the Search APIs json
         text_file.write(i['identifier'] + "\n") # name of object to collect
     start = start + rows
