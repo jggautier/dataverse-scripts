@@ -2,7 +2,7 @@
 
 # Script for replacing specific metadata of datasets in a given dataverse. This script creates and publishes a new dataset version for each dataset. After making edits to this .command file, double click it to run it.
 # Software dependencies: You'll need to download jq (https://stedolan.github.io/jq).
-# Metadata json file: This script uses an API that looks for metadata in a JSON file. For guidance on how to format the json file, see http://guides.dataverse.org/en/4.16/api/native-api.html#edit-dataset-metadata
+# Metadata json file: This script uses an API that looks for metadata in a JSON file. For guidance on how to format the json file, see http://guides.dataverse.org/en/latest/api/native-api.html#edit-dataset-metadata
 # Getting this .command file to work: You may need to give yourself execute privileges to execute this file. In your terminal, run chmod u+x replace_dataset_metadata_in_a_dataverse.command
 # Limitations:
 	# Mac OS bias: The script has been tested only on Mac OS and instructions may not be helpful for use in other operating systems.
