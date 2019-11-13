@@ -23,15 +23,17 @@ cd "`dirname "$0"`"
 # Change the per_page parameter (i.e. per_page=50) to retrieve more persistent IDs, up to 1000 PIDs.
 curl "$server/api/search?q=*&subtree=$alias&per_page=50&type=dataset" | jq -r --arg alias "$alias" '.data.items | map(select(.identifier_of_dataverse==$alias))[].global_id' > dataset_metadata_replaced_in_$alias.txt
 
-# This loops through the stored persistent IDs and replaces the metadata of those datasets with the metadata in your metadata file.
+# This loops through the stored persistent IDs, removes any carriage return characters at the ends of those IDs, and replaces the metadata of those datasets with the metadata in your metadata file.
 for global_id in $(cat dataset_metadata_replaced_in_$alias.txt);
 do
+	global_id=${global_id%$'\r'} # If any lines in the text file contains carriage returns, this removes those carriage returns.
 	curl -H "X-Dataverse-key: $token" -X PUT "$server/api/datasets/:persistentId/editMetadata?persistentId=$global_id&replace=true" --upload-file $metadatafile
 done
 
 # This publishes the draft dataset versions as minor versions. Change type=minor to type=major to publish major versions instead.
 for global_id in $(cat dataset_metadata_replaced_in_$alias.txt);
 do
+	global_id=${global_id%$'\r'} # If any lines in the text file contains carriage returns, this removes those carriage returns.
 	curl -H X-Dataverse-key:$token -X POST "$server/api/datasets/:persistentId/actions/:publish?persistentId=$global_id&type=minor"
 done
 
