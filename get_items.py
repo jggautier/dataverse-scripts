@@ -1,4 +1,5 @@
 # Python script for getting list of items from a Dataverse installation, using Search API and iterating through pages of results
+# Then the items, e.g. dataset PIDs, can be fed into other scripts that use Dataverse APIs to do things to dataverses/datasets/datafiles.
 
 import urllib2
 import json
