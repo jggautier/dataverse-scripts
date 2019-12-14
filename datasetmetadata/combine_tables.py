@@ -7,7 +7,7 @@ from tkinter import filedialog
 from tkinter import *
 from functools import reduce
 
-# Ask user to choose folder that contains JSON metadata files
+# Ask user to choose folder that contains csv files
 root = Tk()
 root.withdraw()
 # root.update()
@@ -24,7 +24,7 @@ all_tables = glob.glob(os.path.join(tables_directory,'*.csv'))
 # Create a dataframe of each csv file in the 'all-tables' list
 dataframes = [pd.read_csv(table, sep = ',') for table in all_tables]
 
-# For each dataframe, set the indexes (or the common columns across the dataframes)
+# For each dataframe, set the indexes (or the common columns across the dataframes to join on)
 for dataframe in dataframes:
 	dataframe.set_index(['dataset_id', 'persistentUrl'], inplace = True)
 
