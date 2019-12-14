@@ -10,7 +10,7 @@ from functools import reduce
 # Ask user to choose folder that contains JSON metadata files
 root = Tk()
 root.withdraw()
-root.update()
+# root.update()
 tables_directory = filedialog.askdirectory()
 directory_name = tables_directory.split('/')[-1]
 
