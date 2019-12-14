@@ -17,8 +17,8 @@ folder_with_json_files = filedialog.askdirectory()
 current_directory = os.path.dirname(os.path.realpath(__file__))
 filename = os.path.join(current_directory,'descriptions.csv')
 
-with open(filename, mode='w') as metadatafile:
-	metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+with open(filename, mode = 'w') as metadatafile:
+	metadatafile = csv.writer(metadatafile, delimiter = ',', quotechar = '"', quoting = csv.QUOTE_MINIMAL)
 	metadatafile.writerow(['dataset_id', 'persistentUrl', 'dsDescriptionValue', 'dsDescriptionDate']) # Create header row
 
 for file in glob.glob(os.path.join(folder_with_json_files, '*.json')): # For each file in a folder of json files
@@ -58,8 +58,8 @@ for file in glob.glob(os.path.join(folder_with_json_files, '*.json')): # For eac
 					condition = index < total
 
 					# Append fields to the csv file
-					with open(filename, mode='a') as metadatafile:
+					with open(filename, mode = 'a') as metadatafile:
 						def to_utf8(lst):
 							return [unicode(elem).encode('utf-8') for elem in lst] # Convert all characters to utf-8
-						metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+						metadatafile = csv.writer(metadatafile, delimiter = ',', quotechar = '"', quoting = csv.QUOTE_MINIMAL)
 						metadatafile.writerow([id, persistentUrl, dsDescriptionValue, dsDescriptionDate])

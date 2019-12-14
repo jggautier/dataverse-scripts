@@ -28,7 +28,7 @@ for fieldname in primativefields_nomultiples:
 
 	filename = os.path.join(parent_directory_path,'%s.csv' %(fieldname))
 
-	with open(filename, mode='w') as metadatafile:
+	with open(filename, mode = 'w') as metadatafile:
 		metadatafile = csv.writer(metadatafile, delimiter = ',', quotechar = '"', quoting = csv.QUOTE_MINIMAL)
 		metadatafile.writerow(['dataset_id', 'persistentUrl', fieldname]) # Create header row
 	
@@ -73,7 +73,7 @@ for fieldname in primativefields_multiples:
 
 	filename = os.path.join(parent_directory_path,'%s.csv' %(fieldname))
 
-	with open(filename, mode='w') as metadatafile:
+	with open(filename, mode = 'w') as metadatafile:
 		metadatafile = csv.writer(metadatafile, delimiter = ',', quotechar = '"', quoting = csv.QUOTE_MINIMAL)
 		metadatafile.writerow(['dataset_id', 'persistentUrl', fieldname]) # Create header row
 
