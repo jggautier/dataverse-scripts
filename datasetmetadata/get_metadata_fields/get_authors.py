@@ -10,7 +10,6 @@ from tkinter import *
 # Ask user to choose folder that contains JSON metadata files
 root = Tk()
 root.withdraw()
-# root.update()
 folder_with_json_files = filedialog.askdirectory()
 
 # Create table in directory where script lives
