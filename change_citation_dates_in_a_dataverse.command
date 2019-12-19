@@ -11,10 +11,13 @@ token="ENTER_API_TOKEN" # Enter API token of a Dataverse account that has edit a
 server="ENTER_SERVER" # Enter name of server url, which is home page URL of the Dataverse installation, e.g. https://demo.dataverse.org
 alias="ENTER_DATAVERSE_ALIAS" # Enter alias of dataverse. E.g. sonias-dataverse.
 
-# This changes the directory to whatever directory this .command file is in, so that deleted_datasetPIDs_in_$alias.txt is saved in that directory.
+# This changes the directory to whatever directory this .command file is in, so that citation_dates_changed_in_$alias.txt is saved in that directory.
+# E.g., if this file is on your desktop, the text file will also be created on your desktop.
 cd "`dirname "$0"`"
 
-# This uses the Search API and jq to retrieve the persistent IDs (global_id) of datasets in the dataverse. Then it stores the persistent IDs in a text file on the user's computer.
+# This uses the Search API and jq to retrieve the persistent IDs (global_id) of datasets in the dataverse. 
+# It ignores linked datasets by looking only for datasets whose dataverse owner is the given dataverse
+# Then it stores the persistent IDs in a text file on the user's computer.
 # Change the per_page parameter to retrieve more persistent IDs.
 curl "$server/api/search?q=*&subtree=$alias&per_page=50&type=dataset" | jq -r --arg alias "$alias" '.data.items | map(select(.identifier_of_dataverse==$alias))[].global_id' > citation_dates_changed_in_$alias.txt
 
