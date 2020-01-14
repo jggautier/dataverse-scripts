@@ -15,7 +15,7 @@ alias="ENTER_DATAVERSE_ALIAS" # Enter alias of dataverse. E.g. sonias-dataverse.
 cd "`dirname "$0"`"
 
 # This uses the Search API and jq to retrieve the persistent IDs (global_id) of datasets in the dataverse. Then it stores the persistent IDs in a text file on the user's computer.
-# Change the per_page parameter to retrieve more persistent IDs.
+# Change the per_page parameter, set at 50 below, to retrieve more persistent IDs. The max is 1000.
 curl "$server/api/search?q=*&subtree=$alias&per_page=50&type=dataset" | jq -r --arg alias "$alias" '.data.items | map(select(.identifier_of_dataverse==$alias))[].global_id' > deleted_datasetPIDs_in_$alias.txt
 
 # This loops through the stored persistent IDs and destroys those datasets
