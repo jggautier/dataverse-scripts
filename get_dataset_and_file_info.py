@@ -1,5 +1,5 @@
 # For non-harvested datasets created within a range of time, get dataset and file info. Useful for spotting problem datasets (e.g. dataset with no data)
-# This script first uses the Search API for find PIDs of datasets.
+# This script first uses the Search API to find PIDs of datasets.
 # For each dataset found, the script uses the "get versions" API endpoint to get dataset and file metadata.
 # The script formats and writes that metadata to a CSV file on the users computer
 
@@ -71,15 +71,17 @@ filename='datasetinfo_%s-%s.csv' %(startdate.replace('-', '.'), enddate.replace(
 csvfile=os.path.join(directory, filename)
 
 # Create CSV file
-with open(csvfile, mode='w') as opencsvfile:
-	opencsvfile=csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+with open(csvfile, mode='w') as writecsvfile:
+	writecsvfile=csv.writer(writecsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 	
 	# Create header row
-	opencsvfile.writerow(['datasetURL (publication state)', 'ds_title', 'fileinfo'])
+	writecsvfile.writerow(['datasetURL (publication state)', 'ds_title', 'fileinfo'])
 
 # For each data file in each dataset, add to the CSV file the dataset's URL and publication state, dataset title, data file name and data file contentType
 
 print('\nWriting dataset and file info to %s:' %(csvfile))
+
+count=0
 
 for pid in dataset_pids:
 	# Construct "Get Versions" API url
@@ -104,16 +106,16 @@ for pid in dataset_pids:
 			fileinfo='%s (%s bytes; %s)' %(filename, filesize, contentType)
 
 			# Append fields to the csv file
-			with open(csvfile, mode='a') as opencsvfile:
+			with open(csvfile, mode='a') as writecsvfile:
 		
 				# Convert all characters to utf-8
 				def to_utf8(lst):
 					return [unicode(elem).encode('utf-8') for elem in lst]
 
-				opencsvfile=csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+				writecsvfile=csv.writer(writecsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 				
 				# Create new row with dataset and file info
-				opencsvfile.writerow([datasetURL_pubstate, ds_title, fileinfo])
+				writecsvfile.writerow([datasetURL_pubstate, ds_title, fileinfo])
 
 				# As a progress indicator, print a dot each time a row is written
 				sys.stdout.write('.')
@@ -121,16 +123,16 @@ for pid in dataset_pids:
 
 	# Otherwise print that the dataset has no files
 	else:
-		with open(csvfile, mode='a') as opencsvfile:
+		with open(csvfile, mode='a') as writecsvfile:
 		
 			# Convert all characters to utf-8
 			def to_utf8(lst):
 				return [unicode(elem).encode('utf-8') for elem in lst]
 
-			opencsvfile=csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+			writecsvfile=csv.writer(writecsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 			
 			# Create new row with dataset and file info
-			opencsvfile.writerow([datasetURL_pubstate, ds_title, '(no files found)'])
+			writecsvfile.writerow([datasetURL_pubstate, ds_title, '(no files found)'])
 
 			# As a progress indicator, print a dot each time a row is written
 			sys.stdout.write('.')
