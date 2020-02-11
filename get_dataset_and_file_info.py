@@ -21,7 +21,6 @@ directory='' # directory for the CSV file containing the dataset and file info, 
 rows=10
 start=0
 page = 1
-count=0
 condition=True
 
 # List for storing dataset PIDs
@@ -47,7 +46,6 @@ while (condition):
 		# Update variables to paginate through the search results
 		start=start + rows
 		page+=1
-		count+=10
 
 		# Stop paginating when there are no more results
 		condition=start < total
@@ -80,8 +78,6 @@ with open(csvfile, mode='w') as writecsvfile:
 # For each data file in each dataset, add to the CSV file the dataset's URL and publication state, dataset title, data file name and data file contentType
 
 print('\nWriting dataset and file info to %s:' %(csvfile))
-
-count=0
 
 for pid in dataset_pids:
 	# Construct "Get Versions" API url
