@@ -1,5 +1,5 @@
 # For non-harvested datasets created within a range of time, get dataset and file info. Useful for spotting problem datasets (e.g. dataset with no data)
-# This script first uses the Search API for find PIDs of datasets
+# This script first uses the Search API for find PIDs of datasets.
 # For each dataset found, the script uses the "get versions" API endpoint to get dataset and file metadata.
 # The script formats and writes that metadata to a CSV file on the users computer
 
@@ -11,7 +11,7 @@ import urllib.request
 from urllib.request import urlopen
 
 # Get required info from user
-server='https://dataverse.harvard.edu'
+server='https://dataverse.harvard.edu' # Dataverse repository must have Search API and "get version" endpoints unblocked
 startdate='' # yyyy-mm-dd
 enddate='' # yyyy-mm-dd
 apikey='' # for getting unpublished datasets accessible to Dataverse account
