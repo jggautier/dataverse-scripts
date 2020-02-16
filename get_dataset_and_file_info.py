@@ -11,10 +11,10 @@ import urllib.request
 from urllib.request import urlopen
 
 # Get required info from user
-server='https://dataverse.harvard.edu'
-startdate='2020-02-13' # yyyy-mm-dd
-enddate='2020-02-14' # yyyy-mm-dd
-apikey='f6fb376a-6244-4b0d-b271-6963c563d02c' # for getting unpublished datasets accessible to Dataverse account
+server=''
+startdate='' # yyyy-mm-dd
+enddate='' # yyyy-mm-dd
+apikey='' # for getting unpublished datasets accessible to Dataverse account
 directory='' # directory for the CSV file containing the dataset and file info, e.g. '/Users/username/Desktop/'
 
 # Initialization for paginating through Search API results
