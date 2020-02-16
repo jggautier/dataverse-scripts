@@ -77,7 +77,7 @@ print('Datasets misindexed: %s' %(misindexed_datasets_count))
 # Deduplicate PIDs in dataset_pids list. (For published datasets with a draft version, the Search API lists the PID twice, once for published and draft versions.)
 unique_dataset_pids=set(dataset_pids)
 
-# Count dupublicate dataset PIDs
+# Count duplicate dataset PIDs
 duplicate_dataset_pids_count=(len(dataset_pids)-len(unique_dataset_pids))//2
 
 # If there are duplicate dataset PIDs, print the number of unique and duplicate PIDs
