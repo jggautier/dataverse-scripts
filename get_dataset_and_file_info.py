@@ -24,6 +24,7 @@ condition=True
 
 # List for storing indexed dataset PIDs and counting misindexed datasets
 dataset_pids=[]
+misindexed_datasets_count=0
 
 print('Searching for dataset PIDs:')
 while (condition):
@@ -42,42 +43,46 @@ while (condition):
 			global_id=i['global_id']
 			dataset_pids.append(global_id)
 
-		print('Datasets found: %s of %s (10 at a time)' %(len(dataset_pids), total))
+		print('Dataset PIDs found: %s of %s' %(len(dataset_pids), total), end='\r', flush=True)
 
 		# Update variables to paginate through the search results
 		start=start+per_page
 
-		# Stop paginating when there are no more results
-		condition=start<total
-
 	# Print error message if misindexed datasets break the Search API call, and try the next page. (See https://github.com/IQSS/dataverse/issues/4225)
 	except urllib.error.URLError:
-		misindexed_datasets_count=0
 		try:
 			per_page=1
 			url='%s/api/search?q=*&fq=metadataSource:"Harvard+Dataverse"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' %(server, per_page, start, startdate, enddate, apikey)
 			data=json.load(urlopen(url))
 
-			# Get total number of results
-			total=data['data']['total_count']
-			
 			# Get dataset PID and save to dataset_pids list
 			global_id=data['data']['items'][0]['global_id']
 			dataset_pids.append(global_id)
 
-			print('Datasets found: %s of %s (1 at a time)' %(len(dataset_pids), total))
+			print('Dataset PIDs found: %s of %s' %(len(dataset_pids), total), end='\r', flush=True)
 
 			# Update variables to paginate through the search results
 			start=start+per_page
-
-			# Stop paginating when there are no more results
-			condition=start<total
 
 		except urllib.error.URLError:
 			misindexed_datasets_count+=1			
 			start=start+per_page
 
+	# Stop paginating when there are no more results
+	condition=start<total
+
+print('Dataset PIDs found: %s of %s' %(len(dataset_pids), total))
 print('Datasets misindexed: %s' %(misindexed_datasets_count))
+
+# Deduplicate PIDs in dataset_pids list. (For published datasets with a draft version, the Search API lists the PID twice, once for published and draft versions.)
+unique_dataset_pids=set(dataset_pids)
+
+# Count dupublicate dataset PIDs
+duplicate_dataset_pids_count=(len(dataset_pids)-len(unique_dataset_pids))//2
+
+# If there are duplicate dataset PIDs, print the number of unique and duplicate PIDs
+if len(unique_dataset_pids) != len(dataset_pids):
+	print('Unique dataset PIDs found: %s (Search API listed both the draft and most recently published versions of %s dataset(s))' %(len(unique_dataset_pids), duplicate_dataset_pids_count))
 
 # Store name of csv file, which includes the dataset start and end date range, to the 'filename' variable
 filename='datasetinfo_%s-%s.csv' %(startdate.replace('-', '.'), enddate.replace('-', '.'))
@@ -94,9 +99,9 @@ with open(csvfile, mode='w') as opencsvfile:
 
 # For each data file in each dataset, add to the CSV file the dataset's URL and publication state, dataset title, data file name and data file contentType
 
-print('\nWriting dataset and file info to %s:' %(csvfile))
+print('\nWriting info of unique datasets and their files to %s:' %(csvfile))
 
-for pid in dataset_pids:
+for pid in unique_dataset_pids:
 	# Construct "Get Versions" API url
 	url='https://dataverse.harvard.edu/api/datasets/:persistentId/versions/?persistentId=%s&key=%s' %(pid, apikey)
 	
@@ -151,3 +156,4 @@ for pid in dataset_pids:
 			sys.stdout.write('.')
 			sys.stdout.flush()
 print('\n')
+print('Finished writing info of %s dataset(s) and their file(s) to %s' %(len(unique_dataset_pids), csvfile))
