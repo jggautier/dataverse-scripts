@@ -1,7 +1,10 @@
-# For non-harvested datasets created within a range of time, get dataset and file info. Useful for spotting problem datasets (e.g. dataset with no data)
-# This script first uses the Search API for find PIDs of datasets
-# For each dataset found, the script uses the "get versions" API endpoint to get dataset and file metadata.
-# The script formats and writes that metadata to a CSV file on the users computer
+'''
+Provide a date range and optional API key and this script will get info for datasets and files created within that date range.
+Useful when curating deposited data, especially spotting problem datasets (e.g. dataset with no data).
+This script first uses the Search API to find PIDs of datasets.
+For each dataset found, the script uses the "Get Versions" API endpoint to get dataset and file metadata of the latest version of each dataset,
+and formats and writes that metadata to a CSV file on the users computer.
+'''
 
 import csv
 import json
@@ -19,10 +22,9 @@ directory='' # directory for the CSV file containing the dataset and file info, 
 
 # Initialization for paginating through Search API results
 start=0
-count=0
 condition=True
 
-# List for storing indexed dataset PIDs and counting misindexed datasets
+# List for storing indexed dataset PIDs and variable for counting misindexed datasets
 dataset_pids=[]
 misindexed_datasets_count=0
 
@@ -72,26 +74,26 @@ while (condition):
 	condition=start<total
 
 print('Dataset PIDs found: %s of %s' %(len(dataset_pids), total))
-print('Datasets misindexed: %s' %(misindexed_datasets_count))
 
-# Deduplicate PIDs in dataset_pids list. (For published datasets with a draft version, the Search API lists the PID twice, once for published and draft versions.)
-unique_dataset_pids=set(dataset_pids)
+if misindexed_datasets_count:
+	print('Datasets misindexed: %s' %(misindexed_datasets_count))
 
-# Count duplicate dataset PIDs
-duplicate_dataset_pids_count=(len(dataset_pids)-len(unique_dataset_pids))//2
-
-# If there are duplicate dataset PIDs, print the number of unique and duplicate PIDs
-if len(unique_dataset_pids) != len(dataset_pids):
-	print('Unique dataset PIDs found: %s (Search API listed both the draft and most recently published versions of %s dataset(s))' %(len(unique_dataset_pids), duplicate_dataset_pids_count))
+# If api key is used, deduplicate PIDs in dataset_pids list. (For published datasets with a draft version, the Search API lists the PID twice, once for published and draft versions.)
+if apikey:
+	unique_dataset_pids=set(dataset_pids)
+	print('Unique datasets: %s (The Search API lists both the draft and most recently published versions of datasets)' %(len(unique_dataset_pids)))
+# Other, copy dataset_pids to unique_dataset_pids variable
+else:
+	unique_dataset_pids = dataset_pids
 
 # Store name of csv file, which includes the dataset start and end date range, to the 'filename' variable
 filename='datasetinfo_%s-%s.csv' %(startdate.replace('-', '.'), enddate.replace('-', '.'))
 
 # Create variable for directory path and file name
-csvfile=os.path.join(directory, filename)
+csvfilepath=os.path.join(directory, filename)
 
 # Create CSV file
-with open(csvfile, mode='w') as opencsvfile:
+with open(csvfilepath, mode='w') as opencsvfile:
 	opencsvfile=csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 	
 	# Create header row
@@ -99,12 +101,14 @@ with open(csvfile, mode='w') as opencsvfile:
 
 # For each data file in each dataset, add to the CSV file the dataset's URL and publication state, dataset title, data file name and data file contentType
 
-print('\nWriting info of unique datasets and their files to %s:' %(csvfile))
+print('\nWriting dataset and file info to %s:' %(csvfilepath))
 
 for pid in unique_dataset_pids:
 	# Construct "Get Versions" API url
-	url='https://dataverse.harvard.edu/api/datasets/:persistentId/versions/?persistentId=%s&key=%s' %(pid, apikey)
-	
+	if apikey:
+		url='https://dataverse.harvard.edu/api/datasets/:persistentId/versions/?persistentId=%s&key=%s' %(pid, apikey)
+	else:
+		url='https://dataverse.harvard.edu/api/datasets/:persistentId/versions/?persistentId=%s' %(pid)
 	# Store dataset and file info from API call to "data" variable
 	data=json.load(urlopen(url))
 
@@ -117,14 +121,14 @@ for pid in unique_dataset_pids:
 
 	# If the dataset contains files, write dataset and file info (file name, size and contenttype) to the CSV
 	if data['data'][0]['files']:
-		for file in data['data'][0]['files']:
-			filename=file['label']
-			filesize=file['dataFile']['filesize']
-			contentType=file['dataFile']['contentType']
-			fileinfo='%s (%s bytes; %s)' %(filename, filesize, contentType)
+		for datafile in data['data'][0]['files']:
+			datafilename=datafile['label']
+			filesize=datafile['dataFile']['filesize']
+			contentType=datafile['dataFile']['contentType']
+			fileinfo='%s (%s bytes; %s)' %(datafilename, filesize, contentType)
 
 			# Append fields to the csv file
-			with open(csvfile, mode='a') as opencsvfile:
+			with open(csvfilepath, mode='a') as opencsvfile:
 		
 				# Convert all characters to utf-8
 				def to_utf8(lst):
@@ -141,11 +145,11 @@ for pid in unique_dataset_pids:
 
 	# Otherwise print that the dataset has no files
 	else:
-		with open(csvfile, mode='a') as opencsvfile:
+		with open(csvfilepath, mode='a') as opencsvfile:
 		
-			# Convert all characters to utf-8
-			def to_utf8(lst):
-				return [unicode(elem).encode('utf-8') for elem in lst]
+			# # Convert all characters to utf-8
+			# def to_utf8(lst):
+			# 	return [unicode(elem).encode('utf-8') for elem in lst]
 
 			opencsvfile=csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 			
@@ -156,4 +160,4 @@ for pid in unique_dataset_pids:
 			sys.stdout.write('.')
 			sys.stdout.flush()
 print('\n')
-print('Finished writing info of %s dataset(s) and their file(s) to %s' %(len(unique_dataset_pids), csvfile))
+print('Finished writing info of %s dataset(s) and their file(s) to %s' %(len(unique_dataset_pids), csvfilepath))
