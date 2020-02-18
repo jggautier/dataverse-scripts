@@ -2,17 +2,21 @@
 
 '''
 To-do
-	- Replace pyDataverse with urllib
-		- In the get_dataset_pids.py, I'm replacing the Search API with the Native API's "get contents" endpoint, 
-		which can include datasets that have been deaccessioned. I think pyDataverse needs to change how it retrieves metadata of
-		datasets whose version have all been deaccessioned.
-			- When using pyDataverse to retrieve the metadata of datasets whose versions have all been deaccessioned,
-			pyDataverse returns a limited amount of metadata instead of returning an error, which is that Dataverse does.
-			(See the results for this deaccessioend dataset: 
-			https://dataverse.harvard.edu/api/datasets/export?exporter=dataverse_json&persistentId=doi:10.7910/DVN/B74GN1
-			I think it should return all metadata, since Dataverse tells users that metadata is always available, 
-			but that needs to be fixed in the Dataverse app.)
-	- Report issue with pyDataverse
+	- When getting dataset metadata with pyDataverse, use try/except where the exception is that the json has no "latestVersion" section.
+	When the exception is met, print in the terminal or print to a text file a list of given PIDs whose dataverse-json can't be retrieved.
+		Code:
+			api=Api(server)
+			resp=api.get_dataset(doi:10.70122/FK2/FZIM6W)
+
+			# If there's an error (probably because all versions of the dataset are deaccessioned), continue to next dataset
+			if resp['data']['latestVersion']['versionState']:
+				# continue with get metadata script
+			else:
+				print('Dataset with Persistent ID %s not found or deaccessioned.' %(pid))
+	- Add to GUI field for user to choose a text file containing the list of dataset PIDs 
+	- Open issue about how Dataverse should export metadata of deaccesioned datasets. See what this returns:
+	https://dataverse.harvard.edu/api/datasets/export?exporter=dataverse_json&persistentId=doi:10.7910/DVN/B74GN1.
+	Add that pyDataverse, when passed the DOI of a dataset whose versions are all deaccessioned, returns a little metadata:
 		- Example code to include, maybe in a jupyter notebook:
 			import json
 			from pyDataverse.api import Api
@@ -26,22 +30,6 @@ To-do
 			resp=api.get_dataset(pid_all_versions_deaccessioned)
 			# resp=api.get_dataset(pid_not_all_versions_deaccessioned)
 			print((json.dumps(resp.json(), indent=4)))
-
-	- With urllib, use try/except where the exception is a 403 error (probably because the PID doesn't exist or all versions are deaccessioned).
-	When the exception is met, print in the terminal or print to a text file a list of given PIDs whose dataverse-json can't be retrieved.
-		Code:
-			try:
-				response=urllib.request.urlopen('%s/api/datasets/export?exporter=json_exportformat&persistentId=%s' %(server, pid))
-				source=response.read()
-				data=json.loads(source)
-				data=json.dumps(data, indent=4)
-				print(data)
-
-			# If there's an error (probably because all versions of the dataset are deaccessioned), continue to next dataset
-			except urllib.error.URLError:
-				print('Dataset with Persistent ID %s not found or deaccessioned.' %(pid))
-	- Add to GUI field for user to choose a text file containing the list of dataset PIDs 
-	- Open issue about how Dataverse should export metadata of deaccesioned datasets
 
 '''
 
