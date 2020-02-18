@@ -1,4 +1,4 @@
-# For a given dataverse, get its sub-dataverses or datasets. Includes deaccessioned datasets. Excludes harvested and linked datasets.
+# For a given dataverse, get its subdataverses or datasets. Includes deaccessioned datasets. Excludes harvested and linked datasets.
 
 import csv
 import glob
@@ -136,9 +136,9 @@ parent_dataverse_id=data['data']['id']
 dataverse_ids=[parent_dataverse_id]
 
 
-# If user wants datasets in subdataverses, search for and include IDs of subdataverses (exludes linked dataverses)
+# If user wants datasets in subdataverses, search for and include IDs of subdataverses (excludes linked dataverses)
 
-# Get each sub-dataverse in the given dataverse
+# Get each subdataverse in the given dataverse
 if get_subdataverses==1:
 	print('Getting dataverse IDs in %s:' %(alias))
 
@@ -185,7 +185,7 @@ with open(txtfilepath, mode='w') as opentxtfile:
 				
 				count+=1
 
-				# Create new row with dataset and file info
+				# Create new line with dataset and file info
 				opentxtfile.write('%s\n' %(dataset_pid))
 
 				# As a progress indicator, print a dot each time a row is written
