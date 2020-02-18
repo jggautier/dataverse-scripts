@@ -185,7 +185,7 @@ with open(txtfilepath, mode='w') as opentxtfile:
 				
 				count+=1
 
-				# Create new line with dataset and file info
+				# Create new line with dataset PID
 				opentxtfile.write('%s\n' %(dataset_pid))
 
 				# As a progress indicator, print a dot each time a row is written
