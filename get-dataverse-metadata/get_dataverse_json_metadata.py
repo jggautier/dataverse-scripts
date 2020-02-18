@@ -15,7 +15,8 @@ To-do
 				print('Dataset with Persistent ID %s not found or deaccessioned.' %(pid))
 	- Add to GUI field for user to choose a text file containing the list of dataset PIDs 
 	- Open issue about how Dataverse should export metadata of deaccesioned datasets. See what this returns:
-	https://dataverse.harvard.edu/api/datasets/export?exporter=dataverse_json&persistentId=doi:10.7910/DVN/B74GN1.
+	https://dataverse.harvard.edu/api/datasets/export?exporter=dataverse_json&persistentId=doi:10.7910/DVN/B74GN1. (Also does not work when given an API key
+	of an account with permissions on the dataset, like a superuser account.)
 	Add that pyDataverse, when passed the DOI of a dataset whose versions are all deaccessioned, returns a little metadata:
 		- Example code to include, maybe in a jupyter notebook:
 			import json
