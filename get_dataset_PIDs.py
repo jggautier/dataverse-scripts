@@ -122,12 +122,6 @@ alias=parsed.path.split('/')[2]
 current_time=time.strftime('%Y.%m.%d_%H.%M.%S')
 
 ####################################################################################
-# Get IDs of dataverses within the given dataverse and save as a list with parent dataverse - excludes linked dataverses
-
-# To get unpublished dataverses and datasets, user needs to provide api key of an authoritized Dataverse account
-# apikey=''
-
-# get_subdataverses=1
 
 # Get ID of given dataverse alias
 if apikey:
@@ -142,10 +136,10 @@ parent_dataverse_id=data['data']['id']
 dataverse_ids=[parent_dataverse_id]
 
 
-# If user wants datasets in subdataverses, search for and include IDs of subdataverses
+# If user wants datasets in subdataverses, search for and include IDs of subdataverses (exludes linked dataverses)
 
 # Get each sub-dataverse in the given dataverse
-if get_subdataverses==1: # If user indicates that she wants subdataverses...
+if get_subdataverses==1:
 	print('Getting dataverse IDs in %s:' %(alias))
 
 	for dataverse_id in dataverse_ids:
@@ -199,4 +193,4 @@ with open(txtfilepath, mode='w') as opentxtfile:
 				sys.stdout.flush()
 
 
-print('\nDatasets saved: %s' %(count))
+print('\nDatasets written to .txt file: %s' %(count))
