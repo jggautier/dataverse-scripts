@@ -7,8 +7,11 @@ To-do
 		which can include datasets that have been deaccessioned. I think pyDataverse needs to change how it retrieves metadata of
 		datasets whose version have all been deaccessioned.
 			- When using pyDataverse to retrieve the metadata of datasets whose versions have all been deaccessioned,
-			pyDataverse returns a limited amount of metadata instead of returning an error. (I think it should return all metadata,
-			since Dataverse tells users that metadata is always available, but that needs to be fixed in the Dataverse app.)
+			pyDataverse returns a limited amount of metadata instead of returning an error, which is that Dataverse does.
+			(See the results for this deaccessioend dataset: 
+			https://dataverse.harvard.edu/api/datasets/export?exporter=dataverse_json&persistentId=doi:10.7910/DVN/B74GN1
+			I think it should return all metadata, since Dataverse tells users that metadata is always available, 
+			but that needs to be fixed in the Dataverse app.)
 	- Report issue with pyDataverse
 		- Example code to include, maybe in a jupyter notebook:
 			import json
@@ -37,6 +40,8 @@ To-do
 			# If there's an error (probably because all versions of the dataset are deaccessioned), continue to next dataset
 			except urllib.error.URLError:
 				print('Dataset with Persistent ID %s not found or deaccessioned.' %(pid))
+	- Add to GUI field for user to choose a text file containing the list of dataset PIDs 
+	- Open issue about how Dataverse should export metadata of deaccesioned datasets
 
 '''
 
