@@ -178,6 +178,9 @@ dataset_pids=open(dataset_pids)
 # For each dataset persistent identifier in the txt file, download the dataset's Dataverse JSON file into the metadata folder
 for identifier in dataset_pids:
 
+	# Remove any trailing spaces from identifier
+	identifier=identifier.rstrip()
+	
 	# Use the PID as the file name, replacing the colon and slashes with underscores
 	filename='%s.json' %(identifier.replace(':', '_').replace('/', '_'))
 
