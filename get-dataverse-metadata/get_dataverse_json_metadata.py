@@ -162,39 +162,39 @@ metadataFileDirectoryPath=os.path.join(metadataFileDirectory, 'dataset_metadata_
 os.mkdir(metadataFileDirectoryPath)
 
 # Download JSON metadata from APIs
-print('Downloading JSON metadata in dataset_metadata folder...')
+print('Downloading JSON metadata to dataset_metadata folder:')
 
 # Initiate count for terminal progress indicator
-start=1
+count=0
 
 # Save number of items in the dataset_pids txt file in "total" variable
 total=len(open(dataset_pids).readlines())
 
+dataset_pids=open(dataset_pids)
+
 # Use pyDataverse to establish connection with server
 api=Api(repositoryURL)
 
-dataset_pids=open(dataset_pids)
-
 # For each dataset persistent identifier in the txt file, download the dataset's Dataverse JSON file into the metadata folder
-for identifier in dataset_pids:
+for pid in dataset_pids:
 
-	# Remove any trailing spaces from identifier
-	identifier=identifier.rstrip()
-	
-	# Use the PID as the file name, replacing the colon and slashes with underscores
-	filename='%s.json' %(identifier.replace(':', '_').replace('/', '_'))
+	# Remove any trailing spaces from pid
+	pid=pid.rstrip()
+
+	# Use the pid as the file name, replacing the colon and slashes with underscores
+	filename='%s.json' %(pid.replace(':', '_').replace('/', '_'))
 
 	# Use pyDataverse to get the metadata of the dataset
-	resp=api.get_dataset(identifier)
+	resp=api.get_dataset(pid)
 
 	# Write the JSON to the new file
 	with open(os.path.join(metadataFileDirectoryPath, filename), mode='w') as f:
 		f.write(json.dumps(resp.json(), indent=4))
 
+	# Increase count variable to track progress
+	count += 1
+
 	# Print progress
-	print('Downloaded %s of %s JSON files' %(start, total), end='\r', flush=True)
+	print('Downloaded %s of %s JSON files' %(count, total), end='\r', flush=True)
 
-	# Increase start variable to get next identifier
-	start += 1
-
-print('Downloaded %s of %s JSON files' %(total, total))
+print('Downloaded %s of %s JSON files' %(count, total))
