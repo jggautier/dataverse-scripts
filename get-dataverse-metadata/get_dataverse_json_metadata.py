@@ -17,10 +17,6 @@ To-do
 			else:
 				print('Dataset with Persistent ID %s not found or deaccessioned.' %(pid))
 
-	- Add to GUI field for user to choose a text file containing the list of dataset PIDs
-
-	- Make code read each line from the text file of dataset PIDs
-
 	- Open issue about how Dataverse should export metadata of deaccesioned datasets. See what this returns:
 	https://dataverse.harvard.edu/api/datasets/export?exporter=dataverse_json&persistentId=doi:10.7910/DVN/B74GN1. (Also does not work when given an API key
 	of an account with permissions on the dataset, like a superuser account.)
@@ -39,6 +35,9 @@ To-do
 			# resp=api.get_dataset(pid_not_all_versions_deaccessioned)
 			print((json.dumps(resp.json(), indent=4)))
 
+	- When user hasn't chosen a text file and directory for the metadata files, pressing Start button 
+	should tell user that she needs to choose a file and directory.
+
 '''
 
 import csv
@@ -47,141 +46,152 @@ import os
 import pandas as pd
 from pyDataverse.api import Api
 import time
+from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
-from tkinter import *
 from urllib.request import urlopen
 from urllib.parse import urlparse
 
 # Create GUI for getting user input
 window=Tk()
 window.title('Get dataset metadata')
-window.geometry('475x275') # width x height
+window.geometry('650x400') # width x height
 
-# Function called when Browse button is pressed
-def retrieve_directory():
-	global mainDirectory
+# Create label for Dataverse repository URL
+label_repositoryURL=Label(window, text='Enter Dataverse repository URL:', anchor='w')
+label_repositoryURL.grid(sticky='w', column=0, row=0)
 
-	# Call the OS's file directory window and store selected object path as a global variable
-	mainDirectory=filedialog.askdirectory()
+# Create Dataverse repository URL text box
+repositoryURL=str()
+entry_repositoryURL=Entry(window, width=50, textvariable=repositoryURL)
+entry_repositoryURL.grid(sticky='w', column=0, row=1, pady=2)
 
-	# Show user which directory she chose
-	label_showChosenDirectory=Label(window, text='You chose: ' + mainDirectory, anchor='w', foreground='green')
-	label_showChosenDirectory.grid(sticky='w', column=0, row=7)
-
-# Function called when Start button is pressed
-def retrieve_input():
-	global dataverseUrl
-
-	# Store what's entered in dataverseUrl text box as a global variable
-	dataverseUrl=entry_dataverseUrl.get()
-
-	# If user enters text in dataverseUrl text box, strip any white characters
-	if dataverseUrl:
-		dataverseUrl=str(dataverseUrl)
-		dataverseUrl=dataverseUrl.strip()
-
-		# If user also selected a directory, close the window
-		if mainDirectory:
-			window.destroy()
-
-	# If no dataverseUrl is entered, display message that one is required
-	else:
-		print('A dataverse URL is required')
-		label_dataverseUrlReqiured=Label(window, text='A dataverse URL is required.', foreground='red', anchor='w')
-		label_dataverseUrlReqiured.grid(sticky='w', column=0, row=3)
-
-# Create label for Dataverse URL field
-label_dataverseUrl=Label(window, text='Dataverse URL:', anchor='w')
-label_dataverseUrl.grid(sticky='w', column=0, row=0)
-
-# Create Dataverse URL field
-dataverseUrl=str()
-entry_dataverseUrl=Entry(window, width=50, textvariable=dataverseUrl)
-entry_dataverseUrl.grid(sticky='w', column=0, row=1, pady=2)
-
-# Create help text before URL field
-label_dataverseUrlHelpText=Label(window, text='Example: https://demo.dataverse.org/dataverse/dataversealias', foreground='grey', anchor='w')
+# Create help text for server name field
+label_dataverseUrlHelpText=Label(window, text='Example: https://demo.dataverse.org/', foreground='grey', anchor='w')
 label_dataverseUrlHelpText.grid(sticky='w', column=0, row=2)
 
 # Create empty row in grid to improve spacing between the two fields
-window.grid_rowconfigure(4, minsize=25)
+window.grid_rowconfigure(3, minsize=25)
 
 # Create label for Browse directory button
-label_browseDirectory=Label(window, text='Choose folder to store metadata files:', anchor='w')
-label_browseDirectory.grid(sticky='w', column=0, row=5, pady=2)
+label_browseForFile=Label(window, text='Choose txt file contain list of dataset PIDs:', anchor='w')
+label_browseForFile.grid(sticky='w', column=0, row=4, pady=2)
+
+# Create Browse directory button
+button_browseForFile=ttk.Button(window, text='Browse', command=lambda: retrieve_file())
+button_browseForFile.grid(sticky='w', column=0, row=5)
+
+# Create empty row in grid to improve spacing between the two fields
+window.grid_rowconfigure(7, minsize=25)
+
+# Create label for Browse directory button
+label_browseDirectory=Label(window, text='Choose folder to put the metadata files folder into:', anchor='w')
+label_browseDirectory.grid(sticky='w', column=0, row=8, pady=2)
 
 # Create Browse directory button
 button_browseDirectory=ttk.Button(window, text='Browse', command=lambda: retrieve_directory())
-button_browseDirectory.grid(sticky='w', column=0, row=6)
+button_browseDirectory.grid(sticky='w', column=0, row=9)
 
 # Create start button
 button_Submit=ttk.Button(window, text='Start', command=lambda: retrieve_input())
-button_Submit.grid(sticky='w', column=0, row=8, pady=40)
+button_Submit.grid(sticky='w', column=0, row=11, pady=40)
+
+# Function called when Browse button is pressed for choosing text file with dataset PIDs
+def retrieve_file():
+	global dataset_pids
+
+	# Call the OS's file directory window and store selected object path as a global variable
+	dataset_pids=filedialog.askopenfilename(filetypes=[('Text files', '*.txt')])
+
+	# Show user which file she chose
+	label_showChosenFile=Label(window, text='You chose: ' + dataset_pids, anchor='w', foreground='green')
+	label_showChosenFile.grid(sticky='w', column=0, row=6)
+
+# Function called when Browse button is pressed
+def retrieve_directory():
+	global metadataFileDirectory
+
+	# Call the OS's file directory window and store selected object path as a global variable
+	metadataFileDirectory=filedialog.askdirectory()
+
+	# Show user which directory she chose
+	label_showChosenDirectory=Label(window, text='You chose: ' + metadataFileDirectory, anchor='w', foreground='green')
+	label_showChosenDirectory.grid(sticky='w', column=0, row=10)
+
+# Function called when Start button is pressed
+def retrieve_input():
+	# global dataset_pids
+	# global metadataFileDirectory
+
+	global repositoryURL
+
+	# Store what's entered in dataverseUrl text box as a global variable
+	repositoryURL=entry_repositoryURL.get()
+
+	# # Store the file path of the text file chosen
+	# # dataset_pids=button_browseForFile.get()
+
+	# # Store the directory path chosen to store the metadata file directory
+	# # metadataFileDirectory=button_browseForFile.get()
+
+	# if not dataset_pids:
+	# 	print('You must choose a text file containing a list of PIDs')
+	# 	label_dataverseUrlReqiured=Label(window, text='You must choose a text file containing a list of PIDs.', foreground='red', anchor='w')
+	# 	label_dataverseUrlReqiured.grid(sticky='w', column=0, row=3)
+
+	# if not metadataFileDirectory:
+	# 	print('You must choose a folder to put the metadata files folder into')
+	# 	label_dataverseUrlReqiured=Label(window, text='You must choose a folder to put the metadata files folder into.', foreground='red', anchor='w')
+	# 	label_dataverseUrlReqiured.grid(sticky='w', column=0, row=8)
+
+	# If user chose text file and chose directory for storing metadata directory, close window and continue script
+	# if dataset_pids and metadataFileDirectory:
+	# 	window.destroy()
+	window.destroy()
 
 # Keep window open until it's closed
 mainloop()
 
-# Parse dataverseUrl to get server name and alias
-parsed=urlparse(dataverseUrl)
-server=parsed.scheme + '://' + parsed.netloc
-alias=parsed.path.split('/')[2]
-
-# Create directories
-
-# Create main directory
-
 # Save current time to append it to main folder name
 current_time=time.strftime('%Y.%m.%d_%H.%M.%S')
 
-# Save main directory with dataverse alias and current time
-main_directory_path=os.path.join(mainDirectory, '%s_dataset_metadata_%s' %(alias, current_time))
+# Save directory with dataverse alias and current time
+metadataFileDirectoryPath=os.path.join(metadataFileDirectory, 'dataset_metadata_%s' %(current_time))
 
 # Create main directory
-os.mkdir(main_directory_path)
-
-# Create directory within main directory for the JSON metadata files
-metadata_directory_path=os.path.join(main_directory_path, 'dataset_metadata')
-os.mkdir(metadata_directory_path)
-json_directory_path=os.path.join(main_directory_path, 'dataset_metadata/json')
-os.mkdir(json_directory_path)
-
+os.mkdir(metadataFileDirectoryPath)
 
 # Download JSON metadata from APIs
 print('Downloading JSON metadata in dataset_metadata folder...')
 
-# Save CSV file as a pandas dataframe
-file=pd.read_csv(filename)
-
-# Convert global_id column into a list
-dataset_pids=file['global_id'].tolist()
-
 # Initiate count for terminal progress indicator
 start=1
 
-# Save number of items in the dataset_pids list in "total" variable
-total=len(dataset_pids)
+# Save number of items in the dataset_pids txt file in "total" variable
+total=len(open(dataset_pids).readlines())
 
 # Use pyDataverse to establish connection with server
-api = Api(server)
+api=Api(repositoryURL)
 
-# For each dataset persistent identifier in the list, download the dataset's Dataverse JSON file into the metadata folder
-for pid in dataset_pids:
+dataset_pids=open(dataset_pids)
 
-	# Use pyDataverse to get the metadata of the dataset
-	resp=api.get_dataset(pid)
+# For each dataset persistent identifier in the txt file, download the dataset's Dataverse JSON file into the metadata folder
+for identifier in dataset_pids:
 
 	# Use the PID as the file name, replacing the colon and slashes with underscores
-	filename='%s.json' %(pid.replace(':', '_').replace('/', '_'))
+	filename='%s.json' %(identifier.replace(':', '_').replace('/', '_'))
+
+	# Use pyDataverse to get the metadata of the dataset
+	resp=api.get_dataset(identifier)
 
 	# Write the JSON to the new file
-	with open(os.path.join(json_directory_path, filename), mode='w') as f:
+	with open(os.path.join(metadataFileDirectoryPath, filename), mode='w') as f:
 		f.write(json.dumps(resp.json(), indent=4))
 
 	# Print progress
 	print('Downloaded %s of %s JSON files' %(start, total), end='\r', flush=True)
 
-	# Increase start variable to get next pid
+	# Increase start variable to get next identifier
 	start += 1
 
 print('Downloaded %s of %s JSON files' %(total, total))

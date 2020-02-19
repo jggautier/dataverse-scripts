@@ -14,9 +14,9 @@ import urllib.request
 from urllib.request import urlopen
 
 # Get required info from user
-server=''
-startdate='' # yyyy-mm-dd
-enddate='' # yyyy-mm-dd
+server='https://dataverse.harvard.edu/'
+startdate='2020-02-' # yyyy-mm-dd
+enddate='2020-02-' # yyyy-mm-dd
 apikey='' # for getting unpublished datasets accessible to Dataverse account
 directory='' # directory for the CSV file containing the dataset and file info, e.g. '/Users/username/Desktop/'
 
@@ -128,11 +128,11 @@ for pid in unique_dataset_pids:
 			fileinfo='%s (%s bytes; %s)' %(datafilename, filesize, contentType)
 
 			# Append fields to the csv file
-			with open(csvfilepath, mode='a') as opencsvfile:
+			with open(csvfilepath, mode='a', encoding='utf-8') as opencsvfile:
 		
 				# Convert all characters to utf-8
-				def to_utf8(lst):
-					return [unicode(elem).encode('utf-8') for elem in lst]
+				# def to_utf8(lst):
+				# 	return [unicode(elem).encode('utf-8') for elem in lst]
 
 				opencsvfile=csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 				
@@ -146,10 +146,6 @@ for pid in unique_dataset_pids:
 	# Otherwise print that the dataset has no files
 	else:
 		with open(csvfilepath, mode='a') as opencsvfile:
-		
-			# # Convert all characters to utf-8
-			# def to_utf8(lst):
-			# 	return [unicode(elem).encode('utf-8') for elem in lst]
 
 			opencsvfile=csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 			
