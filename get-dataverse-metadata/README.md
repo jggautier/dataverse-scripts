@@ -1,11 +1,11 @@
 # Get and convert metadata of datasets
-This is a collection of Python 3 scripts for getting the metadata of datasets in a [Dataverse](https://dataverse.org/)-based repository, in the Dataverse JSON format, and writing the metadata to CSV files for analysis, reporting, and metadata development.
+This is a collection of Python 3 scripts for getting the metadata of datasets in a [Dataverse](https://dataverse.org/)-based repository, in the Dataverse JSON format, and writing the metadata to CSV files for analysis, reporting, and metadata improvement.
 
 The metadata of datasets published in the [Harvard Dataverse repository](https://dataverse.harvard.edu) are published in Harvard Dataverse, https://doi.org/10.7910/DVN/DCDKZQ. The metadata is current as of December 12, 2019. Consider downloading the JSON metadata from there instead of using the scripts to re-download the JSON files from Harvard Dataverse.
 
 ## General
 The scripts can be grouped into three types of scripts:
- * One script, get_dataset_pids_and_json_metadata.py, gets the PIDs of published datasets (including linked and harvested datasets) in a given dataverse and any of its subdataverses and downloads the metadata of the latest published versions of those datasets (in the Dataverse JSON standard)
+ * One script, get_dataset_json_metadata.py, takes a list of dataset PIDs and downloads the metadata of the latest versions of those datasets (in the Dataverse JSON standard)
  * Several scripts, such as get_basic_metadata.py, get_authors.py and get_relatedpublications.py, parse the JSON files to extract metadata fields in Dataverse's Citation metadata block and write them into CSV files
  * One script, combine_tables.py, joins a given collection of CSV files into one CSV file
 
@@ -24,27 +24,26 @@ pip3 install pandas pyDataverse
 ```
 
 ## Using the scripts
-Imagine you want to get and analyze the metadata of datasets in a Dataverse-based repositor, such as [demo.dataverse.org](https://demo.dataverse.org/), or in a dataverse in that repository, for any number of reasons, including:
+Imagine you want to get and analyze the metadata of datasets in a Dataverse-based repository, such as [demo.dataverse.org](https://demo.dataverse.org/), or in a dataverse in that repository, for any number of reasons, including:
  * Improving the metadata of datasets in your dataverse
  * Reporting to research funders the quality of metadata in your dataverse
  * Studying and reporting how certain types of data are described to recommend better ways of describing data
 
+### Getting dataset PIDs
+To get a text file with a list of persistent identifiers of datasets in a dataverse, run [get_dataset_pids.py](https://github.com/jggautier/dataverse-scripts/blob/master/get_dataset_PIDs.py) in your terminal.
+
 ### Getting dataset metadata
-Run get_dataset_pids_and_json_metadata.py in your terminal.
+Run get_dataset_json_metadata.py, which asks for the list of dataset PIDs.
 
 ```
-python3 get_dataset_pids_and_json_metadata.py
+python3 get_dataset_json_metadata.py
 ```
 
 If you're using Mac OS, you may see a message in your terminal that starts with "Class FIFinderSyncExtensionHost", which can be ignored. ([See the FAQ](https://github.com/jggautier/get-dataverse-metadata/tree/tkinter-gui#faq) for more info.)
 
-In the window that pops up, enter the URL of the dataverse whose datasets you're interested in, browse to the folder you want to store the JSON files in, and click Start.
+In the window that pops up, enter the URL of the Dataverse-based repository whose datasets you're interested in, browse to the folder you want to store the JSON files in, and click Start.
 
-Within the folder that you specified, the script will create additional folders and files:
- * A folder named "{dvalias}_dataset_metadata__{timestamp}" (e.g. demo_dataset_metadata__2019.12.13_12.00.00)
-    * A file named "dataset_pids.csv" that contains the persistent identifiers, persistentUrls and dataverse names of each dataset
-    * A folder named "dataset_metadata"
-      * A folder named "json" that contains the json files
+Within the directory that you specified, the script will create a folder to store the downloaded JSON metadata files.
 
 For each published dataset in the specified dataverse, the script will save a JSON file containing the metadata of the latest published dataset version.
 
@@ -79,5 +78,5 @@ For more information about Dataverse's metadata model, see the [Appendix of Data
  * The scripts that create the CSV files look for fields in Dataverse's standard Citation metadata block. They can be adjusted, particularly the get_primitive_fields.py script, to get metadata in other metadata blocks.
  * More scripts can be added to get the values of additional compound metadata fields.
  * Python 2 is not supported primarily because I couldn't get Python 2's version of the CSV module to encode the JSON values as utf-8 before writing metadata values to CSV files. So I switched to Python 3 (and never looked back).
- * The "get_dataset_pids_and_json_metadata.py" script won't work if the Dataverse repository requires an API key in order to use the Search API to get dataset PIDs or the Native API to download dataset metadata.
+ * The "get_dataset_json_metadata.py" script won't work if the Dataverse repository requires an API key in order to use a Native API endpoint to download dataset metadata.
  * For Mac OS users, some scripts return a message that starts with "objc[1775]: Class FIFinderSyncExtensionHost". It's related to the use of a module called tkinter, which creates a UI to accept user input. The message should not stop the scripts from working. More information about a similar message is at https://stackoverflow.com/questions/46999695/class-fifindersyncextensionhost-is-implemented-in-both-warning-in-xcode-si, in which some people agree that it's a MacOS problem that can be ignored.
