@@ -39,6 +39,8 @@ To-do
 			# resp=api.get_dataset(pid_not_all_versions_deaccessioned)
 			print((json.dumps(resp.json(), indent=4)))
 
+	- Let user enter API key to retreive the metadata of any unpublished datasets accessible by the Dataverse account.
+
 	- When user hasn't chosen a text file and directory for the metadata files, pressing Start button 
 	should tell user that she needs to choose a file and directory.
 
