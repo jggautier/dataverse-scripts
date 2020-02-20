@@ -1,51 +1,5 @@
 # Python script for downloading the Dataverse JSON metadata files of given list of datasets PIDs
 
-'''
-To-do
-
-	- When getting dataset metadata with pyDataverse, use try/except where the exception is that the json metadata can't be retrived,
-	because it's not a valid DOI or is an unpublished dataset, or it has no "latestVersion" section, usually because all of the dataset's 
-	versions are deaccessioned.
-
-	When the exception is met, print in the terminal or print to a text file a list of given PIDs whose dataverse-json files can't be retrieved.
-		Code:
-			api=Api(server)
-			pid=''
-			resp=api.get_dataset(pid)
-
-			# If there's an error, continue to next dataset
-			elif resp['data']['latestVersion']['versionState']:
-				print('Dataset with Persistent ID %s not found, is unpublished or is deaccessioned.' %(pid))
-			elif ... page can't be reached or status is "ERROR"
-				print('Dataset with Persistent ID %s not found, is unpublished or is deaccessioned.' %(pid))
-			else:
-				print('Dataset with Persistent ID %s not found, is unpublished or is deaccessioned.' %(pid))
-
-	- Open issue about how Dataverse should export metadata of deaccesioned datasets. See what this returns:
-	https://dataverse.harvard.edu/api/datasets/export?exporter=dataverse_json&persistentId=doi:10.7910/DVN/B74GN1. (Also does not work when given an API key
-	of an account with permissions on the dataset, like a superuser account.)
-	Add that pyDataverse, when passed the DOI of a dataset whose versions are all deaccessioned, returns a little metadata:
-		- Example code to include, maybe in a jupyter notebook:
-			import json
-			from pyDataverse.api import Api
-
-			published_pid='doi:10.70122/FK2/EJEZTC'
-			pid_not_exists='doi:10.7910/DVN/11111'
-			pid_not_all_versions_deaccessioned='doi:10.70122/FK2/SIMAOW'
-			pid_all_versions_deaccessioned='doi:10.70122/FK2/FZIM6W'
-
-			api=Api(server)
-			resp=api.get_dataset(pid_all_versions_deaccessioned)
-			# resp=api.get_dataset(pid_not_all_versions_deaccessioned)
-			print((json.dumps(resp.json(), indent=4)))
-
-	- Let user enter API key to retreive the metadata of any unpublished datasets accessible by the Dataverse account.
-
-	- When user hasn't chosen a text file and directory for the metadata files, pressing Start button 
-	should tell user that she needs to choose a file and directory.
-
-'''
-
 import csv
 import json
 import os
@@ -126,33 +80,11 @@ def retrieve_directory():
 
 # Function called when Start button is pressed
 def retrieve_input():
-	# global dataset_pids
-	# global metadataFileDirectory
-
 	global repositoryURL
 
 	# Store what's entered in dataverseUrl text box as a global variable
 	repositoryURL=entry_repositoryURL.get()
 
-	# # Store the file path of the text file chosen
-	# # dataset_pids=button_browseForFile.get()
-
-	# # Store the directory path chosen to store the metadata file directory
-	# # metadataFileDirectory=button_browseForFile.get()
-
-	# if not dataset_pids:
-	# 	print('You must choose a text file containing a list of PIDs')
-	# 	label_dataverseUrlReqiured=Label(window, text='You must choose a text file containing a list of PIDs.', foreground='red', anchor='w')
-	# 	label_dataverseUrlReqiured.grid(sticky='w', column=0, row=3)
-
-	# if not metadataFileDirectory:
-	# 	print('You must choose a folder to put the metadata files folder into')
-	# 	label_dataverseUrlReqiured=Label(window, text='You must choose a folder to put the metadata files folder into.', foreground='red', anchor='w')
-	# 	label_dataverseUrlReqiured.grid(sticky='w', column=0, row=8)
-
-	# If user chose text file and chose directory for storing metadata directory, close window and continue script
-	# if dataset_pids and metadataFileDirectory:
-	# 	window.destroy()
 	window.destroy()
 
 # Keep window open until it's closed
