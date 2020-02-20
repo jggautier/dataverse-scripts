@@ -1,11 +1,11 @@
 # Get and convert metadata of datasets
-This is a collection of Python 3 scripts for getting the metadata of datasets in a [Dataverse](https://dataverse.org/)-based repository, in the Dataverse JSON format, and writing the metadata to CSV files for analysis, reporting, and metadata improvement.
+This is a collection of Python 3 scripts for getting the metadata of published datasets in a [Dataverse](https://dataverse.org/)-based repository, in the Dataverse JSON format, and writing the metadata to CSV files for analysis, reporting, and metadata improvement.
 
-The metadata of datasets published in the [Harvard Dataverse repository](https://dataverse.harvard.edu) are published in Harvard Dataverse, https://doi.org/10.7910/DVN/DCDKZQ. The metadata is current as of December 12, 2019. Consider downloading the JSON metadata from there instead of using the scripts to re-download the JSON files from Harvard Dataverse.
+The metadata of datasets published in the [Harvard Dataverse repository](https://dataverse.harvard.edu) are published in Harvard Dataverse: https://doi.org/10.7910/DVN/DCDKZQ. The metadata is current as of December 12, 2019. Consider downloading the JSON metadata from there instead of using the scripts to re-download the JSON files from Harvard Dataverse.
 
 ## General
 The scripts can be grouped into three types of scripts:
- * One script, get_dataset_json_metadata.py, takes a list of dataset PIDs and downloads the metadata of the latest versions of those datasets (in the Dataverse JSON standard)
+ * One script, get_dataset_json_metadata.py, takes a list of dataset PIDs and downloads the metadata of the latest published versions of those datasets (in the Dataverse JSON standard)
  * Several scripts, such as get_basic_metadata.py, get_authors.py and get_relatedpublications.py, parse the JSON files to extract metadata fields in Dataverse's Citation metadata block and write them into CSV files
  * One script, combine_tables.py, joins a given collection of CSV files into one CSV file
 
@@ -38,6 +38,8 @@ Run get_dataset_json_metadata.py, which asks for the list of dataset PIDs.
 ```
 python3 get_dataset_json_metadata.py
 ```
+
+The script will retrieve metadata of only dataset PIDs that have been published in the given Dataverse-based repository. It will ignore PIDs of unpublished datasets and datasets that have been deaccessioned.
 
 If you're using Mac OS, you may see a message in your terminal that starts with "Class FIFinderSyncExtensionHost", which can be ignored. ([See the FAQ](https://github.com/jggautier/get-dataverse-metadata/tree/tkinter-gui#faq) for more info.)
 
