@@ -2,8 +2,10 @@
 
 '''
 To-do
-	- When getting dataset metadata with pyDataverse, use try/except where the exception is that the json has no "latestVersion" section, 
-	usually because all of the dataset's versions are deaccessioned.
+
+	- When getting dataset metadata with pyDataverse, use try/except where the exception is that the json metadata can't be retrived,
+	because it's not a valid DOI or is an unpublished dataset, or it has no "latestVersion" section, usually because all of the dataset's 
+	versions are deaccessioned.
 
 	When the exception is met, print in the terminal or print to a text file a list of given PIDs whose dataverse-json files can't be retrieved.
 		Code:
@@ -11,11 +13,13 @@ To-do
 			pid=''
 			resp=api.get_dataset(pid)
 
-			# If there's an error (probably because all versions of the dataset are deaccessioned), continue to next dataset
-			if resp['data']['latestVersion']['versionState']:
-				# continue with get metadata script
+			# If there's an error, continue to next dataset
+			elif resp['data']['latestVersion']['versionState']:
+				print('Dataset with Persistent ID %s not found, is unpublished or is deaccessioned.' %(pid))
+			elif ... page can't be reached or status is "ERROR"
+				print('Dataset with Persistent ID %s not found, is unpublished or is deaccessioned.' %(pid))
 			else:
-				print('Dataset with Persistent ID %s not found or deaccessioned.' %(pid))
+				print('Dataset with Persistent ID %s not found, is unpublished or is deaccessioned.' %(pid))
 
 	- Open issue about how Dataverse should export metadata of deaccesioned datasets. See what this returns:
 	https://dataverse.harvard.edu/api/datasets/export?exporter=dataverse_json&persistentId=doi:10.7910/DVN/B74GN1. (Also does not work when given an API key
