@@ -1,4 +1,4 @@
-# Get and convert metadata of datasets in a given dataverse
+# Get and convert metadata of datasets
 This is a collection of Python 3 scripts for getting the metadata of datasets in a [Dataverse](https://dataverse.org/)-based repository, in the Dataverse JSON format, and writing the metadata to CSV files for analysis, reporting, and metadata development.
 
 The metadata of datasets published in the [Harvard Dataverse repository](https://dataverse.harvard.edu) are published in Harvard Dataverse, https://doi.org/10.7910/DVN/DCDKZQ. The metadata is current as of December 12, 2019. Consider downloading the JSON metadata from there instead of using the scripts to re-download the JSON files from Harvard Dataverse.
