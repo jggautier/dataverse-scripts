@@ -3,7 +3,6 @@
 import csv
 import json
 import os
-import pandas as pd
 from pyDataverse.api import Api
 import time
 from tkinter import *
