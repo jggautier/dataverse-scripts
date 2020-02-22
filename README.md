@@ -5,7 +5,7 @@ Scripts for automating things in a Dataverse repository, plus some other scripts
 Gets the persistent identifiers of any datasets in a given dataverse (and optionally any of the given dataverse's subdataverses)
 
 ### These scripts do things with a given list of dataset PIDs:
-#### get-dataverse-metadata:
+#### [get-dataverse-metadata](https://github.com/jggautier/dataverse-scripts/tree/master/get-dataverse-metadata):
 A collection of scripts for getting JSON metadata of given datasets and parsing metadata into csv files for metadata analysis, reporting and improving.
 #### link_datasets.py
 #### unlock_datasets.py
