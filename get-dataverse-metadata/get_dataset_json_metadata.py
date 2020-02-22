@@ -122,12 +122,33 @@ for pid in dataset_pids:
 	# Use the pid as the file name, replacing the colon and slashes with underscores
 	filename='%s.json' %(pid.replace(':', '_').replace('/', '_'))
 
+	# Use Native API endpoint for getting JSON metadata of draft datasets if api key is provided
+	# if apikey:
+		# url='%s/api/datasets/:persistentId?persistentId=%s&key=%s' %(server, pid, api)
+
+		# response=urllib.request.urlopen(url)
+		# source=response.read()
+		# data=json.loads(source)
+
+		# Write the JSON to the new file
+		# with open(os.path.join(metadataFileDirectoryPath, filename), mode='w') as f:
+		# 	json.dump(data, f, indent=4, sort_keys=True)
+
+		# count += 1
+
+		# Print progress
+		# print('Downloaded %s of %s JSON files' %(count, total), end='\r', flush=True)
+
+	# else:
+
 	# Use pyDataverse to get the metadata of the dataset
 	resp=api.get_dataset(pid)
 
 	# Write the JSON to the new file
 	with open(os.path.join(metadataFileDirectoryPath, filename), mode='w') as f:
 		f.write(json.dumps(resp.json(), indent=4))
+
+
 
 	# Increase count variable to track progress
 	count += 1
