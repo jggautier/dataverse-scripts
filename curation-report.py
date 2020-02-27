@@ -15,8 +15,8 @@ from urllib.request import urlopen
 
 # Get required info from user
 server='https://dataverse.harvard.edu/'
-startdate='2020-02-' # yyyy-mm-dd
-enddate='2020-02-' # yyyy-mm-dd
+startdate='' # yyyy-mm-dd
+enddate='' # yyyy-mm-dd
 apikey='' # for getting unpublished datasets accessible to Dataverse account
 directory='' # directory for the CSV file containing the dataset and file info, e.g. '/Users/username/Desktop/'
 
@@ -119,25 +119,21 @@ for pid in unique_dataset_pids:
 	versionState=data['data'][0]['versionState']
 	datasetURL_pubstate='%s (%s)' %(datasetURL, versionState)
 
-	# If the dataset contains files, write dataset and file info (file name, size and contenttype) to the CSV
+	# If the dataset contains files, write dataset and file info (file name, contenttype, and size) to the CSV
 	if data['data'][0]['files']:
 		for datafile in data['data'][0]['files']:
 			datafilename=datafile['label']
-			filesize=datafile['dataFile']['filesize']
+			datafilesize=datafile['dataFile']['filesize']
 			contentType=datafile['dataFile']['contentType']
-			fileinfo='%s (%s bytes; %s)' %(datafilename, filesize, contentType)
+			datafileinfo='%s (%s; %s bytes)' %(datafilename, contentType, datafilesize)
 
 			# Append fields to the csv file
 			with open(csvfilepath, mode='a', encoding='utf-8') as opencsvfile:
-		
-				# Convert all characters to utf-8
-				# def to_utf8(lst):
-				# 	return [unicode(elem).encode('utf-8') for elem in lst]
 
 				opencsvfile=csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 				
 				# Create new row with dataset and file info
-				opencsvfile.writerow([datasetURL_pubstate, ds_title, fileinfo])
+				opencsvfile.writerow([datasetURL_pubstate, ds_title, datafileinfo])
 
 				# As a progress indicator, print a dot each time a row is written
 				sys.stdout.write('.')
