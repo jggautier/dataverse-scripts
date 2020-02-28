@@ -103,14 +103,20 @@ with open(csvfilepath, mode='w') as opencsvfile:
 
 print('\nWriting dataset and file info to %s:' %(csvfilepath))
 
+# Create list to store any PIDs whose info can't be retrieved with "Get Versions" endpoint
+piderrors=[]
+
 for pid in unique_dataset_pids:
-	# Construct "Get Versions" API url
-	if apikey:
-		url='https://dataverse.harvard.edu/api/datasets/:persistentId/versions/?persistentId=%s&key=%s' %(pid, apikey)
-	else:
-		url='https://dataverse.harvard.edu/api/datasets/:persistentId/versions/?persistentId=%s' %(pid)
-	# Store dataset and file info from API call to "data" variable
-	data=json.load(urlopen(url))
+	# Construct "Get Versions" API endpoint url
+	try:
+		if apikey:
+			url='https://dataverse.harvard.edu/api/datasets/:persistentId/versions/?persistentId=%s&key=%s' %(pid, apikey)
+		else:
+			url='https://dataverse.harvard.edu/api/datasets/:persistentId/versions/?persistentId=%s' %(pid)
+		# Store dataset and file info from API call to "data" variable
+		data=json.load(urlopen(url))
+	except urllib.error.URLError:
+		piderrors.append(pid)
 
 	# Save dataset title, URL and publication state
 	ds_title=data['data'][0]['metadataBlocks']['citation']['fields'][0]['value']
@@ -153,3 +159,7 @@ for pid in unique_dataset_pids:
 			sys.stdout.flush()
 print('\n')
 print('Finished writing info of %s dataset(s) and their file(s) to %s' %(len(unique_dataset_pids), csvfilepath))
+
+# If info of any PIDs could not be retrieved, print list of those PIDs
+if piderrors:
+	print('Info about these PIDs could not be retrieved. (To investigate, try running "Get Versions" endpoint: %s' %(piderrors))
