@@ -81,6 +81,8 @@ for fieldname in primativefields_nomultiples:
 	
 	print('\nGetting %s metadata' %(fieldname))
 
+	parseerrordatasets=[]
+
 	# For each file in a folder of json files
 	for file in glob.glob(os.path.join(jsonDirectory, '*.json')): 	
 
@@ -93,27 +95,32 @@ for fieldname in primativefields_nomultiples:
 			# Overwrite variable with content as a json object
 			dataset_metadata=json.loads(dataset_metadata)
 
-	    # Couple each field value with the dataset_id and write as a row to subjects.csv
-		for fields in dataset_metadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
-			if fields['typeName']==fieldname:
-				value=fields['value']
-				persistentUrl=dataset_metadata['data']['persistentUrl']
-				dataset_id=str(dataset_metadata['data']['id'])
+		if dataset_metadata['status']=='OK':
 
-				with open(filename, mode='a') as metadatafile:
+		    # Couple each field value with the dataset_id and write as a row to subjects.csv
+			for fields in dataset_metadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
+				if fields['typeName']==fieldname:
+					value=fields['value']
+					persistentUrl=dataset_metadata['data']['persistentUrl']
+					dataset_id=str(dataset_metadata['data']['id'])
 
-					# Convert all characters to utf-8 to avoid encoding errors when writing to the csv file
-					def to_utf8(lst):
-						return [unicode(elem).encode('utf-8') for elem in lst]
+					with open(filename, mode='a') as metadatafile:
 
-					metadatafile=csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-					
-					# Write new row
-					metadatafile.writerow([dataset_id, persistentUrl, value])
+						# Convert all characters to utf-8 to avoid encoding errors when writing to the csv file
+						def to_utf8(lst):
+							return [unicode(elem).encode('utf-8') for elem in lst]
 
-					# As a progress indicator, print a dot each time a row is written
-					sys.stdout.write('.')
-					sys.stdout.flush()
+						metadatafile=csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+						
+						# Write new row
+						metadatafile.writerow([dataset_id, persistentUrl, value])
+
+						# As a progress indicator, print a dot each time a row is written
+						sys.stdout.write('.')
+						sys.stdout.flush()
+
+		else:
+			parseerrordatasets.append(file)
 
 # Fields that allow multiple values
 primativefields_multiples=['subject', 'language', 'kindOfData', 'relatedMaterial', 'relatedDatasets', 'otherReferences', 'dataSources', ]
@@ -143,26 +150,35 @@ for fieldname in primativefields_multiples:
 			# Overwrite variable with content as a json object
 			dataset_metadata=json.loads(dataset_metadata)
 
-		# Save the dataset id of each dataset 
-		dataset_id=str(dataset_metadata['data']['id'])
+		if dataset_metadata['status']=='OK':
 
-	    # Couple each field value with the dataset_id and write as a row to subjects.csv
-		for fields in dataset_metadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
-			if fields['typeName']==fieldname:
-				for value in fields['value']:
-					persistentUrl=dataset_metadata['data']['persistentUrl']
-					with open(filename, mode='a') as metadatafile:
+			# Save the dataset id of each dataset 
+			dataset_id=str(dataset_metadata['data']['id'])
 
-						# Convert all characters to utf-8 to avoid encoding errors when writing to the csv file
-						def to_utf8(lst):
-							return [unicode(elem).encode('utf-8') for elem in lst]
+		    # Couple each field value with the dataset_id and write as a row to subjects.csv
+			for fields in dataset_metadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
+				if fields['typeName']==fieldname:
+					for value in fields['value']:
+						persistentUrl=dataset_metadata['data']['persistentUrl']
+						with open(filename, mode='a') as metadatafile:
 
-						metadatafile=csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-						
-						# Write new row
-						metadatafile.writerow([dataset_id, persistentUrl, value])
+							# Convert all characters to utf-8 to avoid encoding errors when writing to the csv file
+							def to_utf8(lst):
+								return [unicode(elem).encode('utf-8') for elem in lst]
 
-						# As a progress indicator, print a dot each time a row is written
-						sys.stdout.write('.')
-						sys.stdout.flush()
+							metadatafile=csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+							
+							# Write new row
+							metadatafile.writerow([dataset_id, persistentUrl, value])
+
+							# As a progress indicator, print a dot each time a row is written
+							sys.stdout.write('.')
+							sys.stdout.flush()
+		else:
+			parseerrordatasets.append(file)
+
 print('\n')
+
+if parseerrordatasets:
+	parseerrordatasets=set(parseerrordatasets)
+	print('The following %s JSON files could not be parsed. They may be draft datasets.\n%s' %(len(parseerrordatasets), parseerrordatasets))
