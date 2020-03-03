@@ -106,6 +106,18 @@ print('\nWriting dataset and file info to %s:' %(csvfilepath))
 # Create list to store any PIDs whose info can't be retrieved with "Get Versions" endpoint
 piderrors=[]
 
+# Function for converting bytes to more human-readable KB, MB, etc
+def format_bytes(size):
+    # 2**10 = 1024
+    power = 2**10
+    n = 0
+    power_labels = {0 : 'bytes', 1: 'KB', 2: 'MB', 3: 'GB', 4: 'TB'}
+    while size > power:
+        size /= power
+        n += 1
+    # return size, power_labels[n]#+'bytes'
+    return '%s %s' %(round(size, 2), power_labels[n])
+
 for pid in unique_dataset_pids:
 	# Construct "Get Versions" API endpoint url
 	try:
@@ -143,8 +155,9 @@ for pid in unique_dataset_pids:
 		for datafile in data_getVersions['data'][0]['files']:
 			datafilename=datafile['label']
 			datafilesize=datafile['dataFile']['filesize']
+			short_datafilesize=format_bytes(datafilesize)
 			contentType=datafile['dataFile']['contentType']
-			datafileinfo='%s (%s; %s bytes)' %(datafilename, contentType, datafilesize)
+			datafileinfo='%s (%s; %s)' %(datafilename, contentType, short_datafilesize)
 
 			# Append fields to the csv file
 			with open(csvfilepath, mode='a', encoding='utf-8') as opencsvfile:
