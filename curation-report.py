@@ -97,7 +97,7 @@ with open(csvfilepath, mode='w') as opencsvfile:
 	opencsvfile=csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 	
 	# Create header row
-	opencsvfile.writerow(['datasetURL (publication state)', 'ds_title', 'fileinfo'])
+	opencsvfile.writerow(['datasetURL (publicationState)', 'datasetTitle (dataverseName)', 'fileName (fileType, fileSize)'])
 
 # For each data file in each dataset, add to the CSV file the dataset's URL and publication state, dataset title, data file name and data file contentType
 
@@ -114,20 +114,33 @@ for pid in unique_dataset_pids:
 		else:
 			url='https://dataverse.harvard.edu/api/datasets/:persistentId/versions/?persistentId=%s' %(pid)
 		# Store dataset and file info from API call to "data" variable
-		data=json.load(urlopen(url))
+		data_getVersions=json.load(urlopen(url))
+	except urllib.error.URLError:
+		piderrors.append(pid)
+
+	# Construct "Search API" url to get name of each dataset's dataverse
+	try:
+		if apikey:
+			url='%s/api/search?q="%s"&type=dataset&key=%s' %(server, pid, apikey)
+		else:
+			url='%s/api/search?q="%s"&type=dataset' %(server, pid)
+		# Store dataset and file info from API call to "data" variable
+		data_dvName=json.load(urlopen(url))
 	except urllib.error.URLError:
 		piderrors.append(pid)
 
 	# Save dataset title, URL and publication state
-	ds_title=data['data'][0]['metadataBlocks']['citation']['fields'][0]['value']
-	datasetPersistentId=data['data'][0]['datasetPersistentId']
+	ds_title=data_getVersions['data'][0]['metadataBlocks']['citation']['fields'][0]['value']
+	dataverse_name=data_dvName['data']['items'][0]['name_of_dataverse']
+	ds_title_dvName='%s (%s)' %(ds_title, dataverse_name)
+	datasetPersistentId=data_getVersions['data'][0]['datasetPersistentId']
 	datasetURL='https://dataverse.harvard.edu/dataset.xhtml?persistentId=%s' %(datasetPersistentId)
-	versionState=data['data'][0]['versionState']
+	versionState=data_getVersions['data'][0]['versionState']
 	datasetURL_pubstate='%s (%s)' %(datasetURL, versionState)
 
 	# If the dataset contains files, write dataset and file info (file name, contenttype, and size) to the CSV
-	if data['data'][0]['files']:
-		for datafile in data['data'][0]['files']:
+	if data_getVersions['data'][0]['files']:
+		for datafile in data_getVersions['data'][0]['files']:
 			datafilename=datafile['label']
 			datafilesize=datafile['dataFile']['filesize']
 			contentType=datafile['dataFile']['contentType']
@@ -139,7 +152,7 @@ for pid in unique_dataset_pids:
 				opencsvfile=csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 				
 				# Create new row with dataset and file info
-				opencsvfile.writerow([datasetURL_pubstate, ds_title, datafileinfo])
+				opencsvfile.writerow([datasetURL_pubstate, ds_title_dvName, datafileinfo])
 
 				# As a progress indicator, print a dot each time a row is written
 				sys.stdout.write('.')
@@ -152,7 +165,7 @@ for pid in unique_dataset_pids:
 			opencsvfile=csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 			
 			# Create new row with dataset and file info
-			opencsvfile.writerow([datasetURL_pubstate, ds_title, '(no files found)'])
+			opencsvfile.writerow([datasetURL_pubstate, ds_title_dvName, '(no files found)'])
 
 			# As a progress indicator, print a dot each time a row is written
 			sys.stdout.write('.')
