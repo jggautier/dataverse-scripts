@@ -96,7 +96,7 @@ with open(filename, mode='w') as opencsvfile:
 	opencsvfile=csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 	
 	# Create header row
-	opencsvfile.writerow(['datasetUrl', 'dataset_id', 'dataverseName'])
+	opencsvfile.writerow(['dataset_id', 'datasetUrl', 'dataverseName'])
 
 dataset_pids=open(dataset_pids)
 
@@ -106,16 +106,16 @@ for pid in dataset_pids:
 	# Construct "Get Versions" API endpoint url
 	try:
 		if apikey:
-			url='%s/api/search?q="%s"&type=dataset&key=%s' %(server, pid, apikey)
+			url='%s/api/search?q="%s"&type=dataset&show_entity_ids=true&key=%s' %(server, pid, apikey)
 		else:
-			url='%s/api/search?q="%s"&type=dataset' %(server, pid)
+			url='%s/api/search?q="%s"&type=dataset&show_entity_ids=true' %(server, pid)
 		# Store dataset and file info from API call to "data" variable
 		data=json.load(urlopen(url))
 	except urllib.error.URLError:
 		piderrors.append(pid)
 
 	# Save dataset PID and dataverse name
-	dataset_id= # Dataset_id isn't in Search API :( Need another endpoint to get dataset_id
+	dataset_id=data['data']['items'][0]['entity_id']
 	persistentUrl=data['data']['items'][0]['url']
 	dataverseName=data['data']['items'][0]['name_of_dataverse']
 	
