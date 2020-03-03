@@ -108,18 +108,16 @@ piderrors=[]
 
 # Function for converting bytes to more human-readable KB, MB, etc
 def format_bytes(size):
-    # 2**10 = 1024
     power = 2**10
     n = 0
     power_labels = {0 : 'bytes', 1: 'KB', 2: 'MB', 3: 'GB', 4: 'TB'}
     while size > power:
         size /= power
         n += 1
-    # return size, power_labels[n]#+'bytes'
     return '%s %s' %(round(size, 2), power_labels[n])
 
 for pid in unique_dataset_pids:
-	# Construct "Get Versions" API endpoint url
+	# Construct "Get Versions" API endpoint url and get data about dataset
 	try:
 		if apikey:
 			url='https://dataverse.harvard.edu/api/datasets/:persistentId/versions/?persistentId=%s&key=%s' %(pid, apikey)
@@ -136,15 +134,17 @@ for pid in unique_dataset_pids:
 			url='%s/api/search?q="%s"&type=dataset&key=%s' %(server, pid, apikey)
 		else:
 			url='%s/api/search?q="%s"&type=dataset' %(server, pid)
-		# Store dataset and file info from API call to "data" variable
+		# Store Search API result to "data_dvName" variable
 		data_dvName=json.load(urlopen(url))
 	except urllib.error.URLError:
 		piderrors.append(pid)
 
-	# Save dataset title, URL and publication state
+	# Save dataset title and dataverse name
 	ds_title=data_getVersions['data'][0]['metadataBlocks']['citation']['fields'][0]['value']
 	dataverse_name=data_dvName['data']['items'][0]['name_of_dataverse']
 	ds_title_dvName='%s (%s)' %(ds_title, dataverse_name)
+
+	# Save dataset URL and publication state
 	datasetPersistentId=data_getVersions['data'][0]['datasetPersistentId']
 	datasetURL='https://dataverse.harvard.edu/dataset.xhtml?persistentId=%s' %(datasetPersistentId)
 	versionState=data_getVersions['data'][0]['versionState']
@@ -154,10 +154,9 @@ for pid in unique_dataset_pids:
 	if data_getVersions['data'][0]['files']:
 		for datafile in data_getVersions['data'][0]['files']:
 			datafilename=datafile['label']
-			datafilesize=datafile['dataFile']['filesize']
-			short_datafilesize=format_bytes(datafilesize)
+			datafilesize=format_bytes(datafile['dataFile']['filesize'])
 			contentType=datafile['dataFile']['contentType']
-			datafileinfo='%s (%s; %s)' %(datafilename, contentType, short_datafilesize)
+			datafileinfo='%s (%s; %s)' %(datafilename, contentType, datafilesize)
 
 			# Append fields to the csv file
 			with open(csvfilepath, mode='a', encoding='utf-8') as opencsvfile:
@@ -188,4 +187,5 @@ print('Finished writing info of %s dataset(s) and their file(s) to %s' %(len(uni
 
 # If info of any PIDs could not be retrieved, print list of those PIDs
 if piderrors:
-	print('Info about these PIDs could not be retrieved. (To investigate, try running "Get Versions" endpoint: %s' %(piderrors))
+	piderrors=set(piderrors)
+	print('Info about these PIDs could not be retrieved. To investigate, try running "Get Versions" endpoint or Search API on these datasets: %s' %(piderrors))
