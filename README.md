@@ -6,15 +6,15 @@ Gets the persistent identifiers of any datasets in a given dataverse (and option
 
 ### These scripts do things with a given list of dataset PIDs:
 
-#### change_citation_dates.py
-#### destroy-datasets.py
-#### destroy_all_datasets_in_a_dataverse.command
-#### [get-dataverse-metadata](https://github.com/jggautier/dataverse-scripts/tree/master/get-dataverse-metadata):
-A collection of scripts for getting JSON metadata of given datasets and parsing metadata into csv files for metadata analysis, reporting and improving.
-#### link_datasets.py
-#### publish_multiple_datasets.command
-#### replace_dataset_metadata_in_a_dataverse.command
-#### unlock_datasets.py
+- #### change_citation_dates.py
+- #### destroy-datasets.py
+- #### destroy_all_datasets_in_a_dataverse.command
+- #### [get-dataverse-metadata](https://github.com/jggautier/dataverse-scripts/tree/master/get-dataverse-metadata):
+  A collection of scripts for getting JSON metadata of given datasets and parsing metadata into csv files for metadata analysis, reporting and improving.
+- #### link_datasets.py
+- #### publish_multiple_datasets.command
+- #### replace_dataset_metadata_in_a_dataverse.command
+- #### unlock_datasets.py
 
 ### curation-report.py
 This script creates an overview of datasets created in a Dataverse-based repository in a given time frame, which can be useful for regular repository curation.
