@@ -23,6 +23,6 @@ This script creates an overview of datasets created in a Dataverse-based reposit
 This broken script used to download all files in given dataset. 
 
 ### Misc
-#### split_table.py
-This script splits a given csv file into many csv files based on the unique values in a given column. It's like the opposite of a JOIN.
-#### combine_tables.py
+- #### split_table.py
+  This script splits a given csv file into many csv files based on the unique values in a given column. It's like the opposite of a JOIN.
+- #### combine_tables.py
