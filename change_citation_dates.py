@@ -1,4 +1,4 @@
-# For a given list of datasets, changes the date used the in the dataset citation from the default 
+# For a given list of datasets, changes the date used in the dataset citation from the default 
 # (date when datasets were first published in the Dataverse repository) to the date in another date 
 # metadata field, e.g. distributionDate
 
@@ -6,7 +6,7 @@ import urllib.request
 
 server=''
 apikey=''
-DATA=b'distributionDate'
+data=b'distributionDate'
 pids=[]
 count=0
 
@@ -20,7 +20,7 @@ for pid in pids:
 
 	req=urllib.request.Request(
 		url=url,
-		data=DATA,
+		data=data,
 		headers=headers,
 		method='PUT'
 		)
