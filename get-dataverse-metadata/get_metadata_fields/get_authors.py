@@ -78,6 +78,8 @@ with open(filename, mode='w') as metadatafile:
 
 print('Getting metadata:')
 
+bad_metadata_files=[]
+
 # For each file in a folder of json files
 for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 	
@@ -90,84 +92,91 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 		# Overwrite variable with content as a json object
 		dataset_metadata=json.loads(dataset_metadata)
 
-    # Count number of author compound fields
-	for fields in dataset_metadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
-		if fields['typeName']=='author': # Find compound name
-			total=len(fields['value'])
+	if dataset_metadata['status']=='OK':
 
-			# If there are author compound fields
-			if total:
-				index=0
-				condition=True
+	    # Count number of author compound fields
+		for fields in dataset_metadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
+			if fields['typeName']=='author': # Find compound name
+				total=len(fields['value'])
 
-				while (condition):
+				# If there are author compound fields
+				if total:
+					index=0
+					condition=True
 
-					# Save the dataset id of each dataset 
-					dataset_id=str(dataset_metadata['data']['id'])
+					while (condition):
 
-					# Save the identifier of each dataset
-					persistentUrl=dataset_metadata['data']['persistentUrl']
+						# Save the dataset id of each dataset 
+						dataset_id=str(dataset_metadata['data']['id'])
 
-					# Get authorName if there is one, or set authorName to blank
-					try:
-						for fields in dataset_metadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
-							if fields['typeName']=='author':  # Find compound name
-								authorName=fields['value'][index]['authorName']['value'] # Find value in subfield
-					except KeyError:
-						authorName=''
+						# Save the identifier of each dataset
+						persistentUrl=dataset_metadata['data']['persistentUrl']
 
-					# Get authorAffiliation if there is one, or set authorAffiliation to blank
-					try:
-						for fields in dataset_metadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
-							
-							# Find compound name
-							if fields['typeName']=='author':
+						# Get authorName if there is one, or set authorName to blank
+						try:
+							for fields in dataset_metadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
+								if fields['typeName']=='author':  # Find compound name
+									authorName=fields['value'][index]['authorName']['value'] # Find value in subfield
+						except KeyError:
+							authorName=''
+
+						# Get authorAffiliation if there is one, or set authorAffiliation to blank
+						try:
+							for fields in dataset_metadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
 								
-								# Find value in subfield
-								authorAffiliation=fields['value'][index]['authorAffiliation']['value']
-					except KeyError:
-						authorAffiliation=''
+								# Find compound name
+								if fields['typeName']=='author':
+									
+									# Find value in subfield
+									authorAffiliation=fields['value'][index]['authorAffiliation']['value']
+						except KeyError:
+							authorAffiliation=''
 
-					# Get authorIdentifierScheme if there is one, or set authorIdentifierScheme to blank
-					try:
-						for fields in dataset_metadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
-							
-							# Find compound name
-							if fields['typeName']=='author':
+						# Get authorIdentifierScheme if there is one, or set authorIdentifierScheme to blank
+						try:
+							for fields in dataset_metadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
 								
- 								# Find value in subfield
-								authorIdentifierScheme=fields['value'][index]['authorIdentifierScheme']['value']
-					except KeyError:
-						authorIdentifierScheme=''
+								# Find compound name
+								if fields['typeName']=='author':
+									
+	 								# Find value in subfield
+									authorIdentifierScheme=fields['value'][index]['authorIdentifierScheme']['value']
+						except KeyError:
+							authorIdentifierScheme=''
 
-					# Get authorIdentifier if there is one, or set authorIdentifier to blank
-					try:
-						for fields in dataset_metadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
-							
-							# Find compound name
-							if fields['typeName']=='author':
+						# Get authorIdentifier if there is one, or set authorIdentifier to blank
+						try:
+							for fields in dataset_metadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
 								
- 								# Find value in subfield
-								authorIdentifier=fields['value'][index]['authorIdentifier']['value']
-					except KeyError:
-						authorIdentifier=''
+								# Find compound name
+								if fields['typeName']=='author':
+									
+	 								# Find value in subfield
+									authorIdentifier=fields['value'][index]['authorIdentifier']['value']
+						except KeyError:
+							authorIdentifier=''
 
-					index += 1
-					condition=index < total
+						index += 1
+						condition=index < total
 
-					# Append fields to the csv file
-					with open(filename, mode='a') as metadatafile:
+						# Append fields to the csv file
+						with open(filename, mode='a') as metadatafile:
 
-						# Convert all characters to utf-8
-						def to_utf8(lst):
-							return [unicode(elem).encode('utf-8') for elem in lst]
+							# Convert all characters to utf-8
+							def to_utf8(lst):
+								return [unicode(elem).encode('utf-8') for elem in lst]
 
-						metadatafile=csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-						
-						# Write new row
-						metadatafile.writerow([dataset_id, persistentUrl, authorName, authorAffiliation, authorIdentifierScheme, authorIdentifier])
+							metadatafile=csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+							
+							# Write new row
+							metadatafile.writerow([dataset_id, persistentUrl, authorName, authorAffiliation, authorIdentifierScheme, authorIdentifier])
 
-						# As a progress indicator, print a dot each time a row is written
-						sys.stdout.write('.')
-						sys.stdout.flush()
+							# As a progress indicator, print a dot each time a row is written
+							sys.stdout.write('.')
+							sys.stdout.flush()
+	else:
+		bad_metadata_files.append(file)
 print('\n')
+if bad_metadata_files:
+	print('%s file(s) contain(s) no metadata:\n' %(len(bad_metadata_files)))
+	print(*bad_metadata_files, sep='\n')
