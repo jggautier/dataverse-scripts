@@ -67,7 +67,7 @@ button_Start.grid(sticky='w', column=0, row=7, pady=40)
 # Keep window open until it's closed
 mainloop()
 
-# Create table in directory where script lives
+# Create table in directory user chose
 filename=os.path.join(csvDirectory,'authors.csv')
 
 print('Creating CSV file')
