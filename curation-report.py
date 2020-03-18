@@ -191,5 +191,5 @@ if piderrors:
 	# Deduplicate list in piderrors
 	piderrors=set(piderrors)
 
-	print('Info about these PIDs could not be retrieved. To investigate, try running "Get Versions" endpoint or Search API on these datasets:\n'
+	print('Info about these PIDs could not be retrieved. To investigate, try running "Get Versions" endpoint or Search API on these datasets:\n')
 	print(*piderrors, sep='\n')
