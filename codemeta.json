@@ -2,7 +2,7 @@
   "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
   "@type": "SoftwareSourceCode",
   "name" :  "Dataverse scripts",
-  "description" :  "This is a collection of Python 3 scripts for getting the metadata of datasets in a Dataverse-based repository, in the Dataverse JSON format, and writing the metadata to CSV files for analysis, reporting, and metadata development.",
+  "description" :  "This is a collection of Python 3 scripts for extracting the metadata of datasets, files and dataverses in a Dataverse-based data repository, useful for analysis, reporting, and metadata development.",
   "license" :  "https://creativecommons.org/publicdomain/zero/1.0",
   "softwareVersion" : "2.1",
   "operatingSystem"  : ["OSX", "Windows 10"],
