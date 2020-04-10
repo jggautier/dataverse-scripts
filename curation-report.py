@@ -14,7 +14,7 @@ import urllib.request
 from urllib.request import urlopen
 
 # Get required info from user
-server='https://dataverse.harvard.edu/'
+server=''
 startdate='' # yyyy-mm-dd
 enddate='' # yyyy-mm-dd
 apikey='' # for getting unpublished datasets accessible to Dataverse account
@@ -67,21 +67,20 @@ while (condition):
 			start=start+per_page
 
 		except urllib.error.URLError:
-			misindexed_datasets_count+=1			
+			misindexed_datasets_count+=1
+			misindexed_datasets_urls.append(url)
 			start=start+per_page
 
 	# Stop paginating when there are no more results
 	condition=start<total
 
-print('Dataset PIDs found: %s of %s' %(len(dataset_pids), total))
-
 if misindexed_datasets_count:
-	print('Datasets misindexed: %s' %(misindexed_datasets_count))
+	print('Datasets misindexed: %s\n' %(misindexed_datasets_count))
 
 # If api key is used, deduplicate PIDs in dataset_pids list. (For published datasets with a draft version, the Search API lists the PID twice, once for published and draft versions.)
 if apikey:
 	unique_dataset_pids=set(dataset_pids)
-	print('Unique datasets: %s (The Search API lists both the draft and most recently published versions of datasets)' %(len(unique_dataset_pids)))
+	print('\nUnique datasets: %s (The Search API lists both the draft and most recently published versions of datasets)' %(len(unique_dataset_pids)))
 # Other, copy dataset_pids to unique_dataset_pids variable
 else:
 	unique_dataset_pids = dataset_pids
