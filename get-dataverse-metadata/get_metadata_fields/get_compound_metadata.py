@@ -8,17 +8,17 @@ from tkinter import filedialog
 from tkinter import ttk
 from tkinter import *
 
-# parentfield='author'
-# subfields=['authorName', 'authorAffiliation', 'authorIdentifierScheme', 'authorIdentifier']
+# Enter database name of the compound field
+compound_field=''
 
-parentfield='datasetContact'
-subfields=['datasetContactName', 'datasetContactAffiliation', 'datasetContactEmail']
+#Enter database names of the compound field's subfields
+subfields=['']
 
 # Create GUI for getting user input
 
 # Create, title and size the window
 window=Tk()
-window.title('Get %s metadata' %(parentfield))
+window.title('Get %s metadata' %(compound_field))
 window.geometry('550x250') # width x height
 
 # Function called when Browse button is pressed
@@ -73,17 +73,17 @@ button_Start.grid(sticky='w', column=0, row=7, pady=40)
 # Keep window open until it's closed
 mainloop()
 
-def getsubfields(parentfield, subfield):
+def getsubfields(compound_field, subfield):
 	try:
 		for fields in dataset_metadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
-			if fields['typeName']==parentfield:  # Find compound name
+			if fields['typeName']==compound_field:  # Find compound name
 				subfield=fields['value'][index][subfield]['value'] # Find value in subfield
 	except KeyError:
 		subfield=''
 	return subfield
 
 # Create table in directory user chose
-filename='%ss.csv' %(parentfield)
+filename='%ss.csv' %(compound_field)
 filepath=os.path.join(csvDirectory,filename)
 
 print('Creating CSV file')
@@ -116,7 +116,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 
 	    # Count number of the given compound fields
 		for fields in dataset_metadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
-			if fields['typeName']==parentfield: # Find compound name
+			if fields['typeName']==compound_field: # Find compound name
 				total=len(fields['value'])
 
 				# If there are compound fields
@@ -134,7 +134,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 
 						# Save subfield values to variables
 						for subfield in subfields:
-							globals()[subfield]=getsubfields(parentfield, subfield)
+							globals()[subfield]=getsubfields(compound_field, subfield)
 
 						# Append fields to the csv file
 						with open(filepath, mode='a') as metadatafile:
