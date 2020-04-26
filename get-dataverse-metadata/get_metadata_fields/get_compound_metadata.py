@@ -21,7 +21,7 @@ window=Tk()
 window.title('Get %s metadata' %(compound_field))
 window.geometry('550x250') # width x height
 
-# Function called when Browse button is pressed
+# Function called when Browse button is pressed to get folder of JSON files
 def retrieve_jsondirectory():
 	global jsonDirectory
 
@@ -32,7 +32,7 @@ def retrieve_jsondirectory():
 	label_showChosenDirectory=Label(window, text='You chose: ' + jsonDirectory, anchor='w', foreground='green')
 	label_showChosenDirectory.grid(sticky='w', column=0, row=2)
 
-# Function called when Browse button is pressed
+# Function called when Browse button is pressed to get CSV file
 def retrieve_csvdirectory():
 	global csvDirectory
 
@@ -43,7 +43,7 @@ def retrieve_csvdirectory():
 	label_showChosenDirectory=Label(window, text='You chose: ' + csvDirectory, anchor='w', foreground='green')
 	label_showChosenDirectory.grid(sticky='w', column=0, row=6)
 
-# Function called when Browse button is pressed
+# Function called when Start button is pressed
 def start():
 	window.destroy()
 
