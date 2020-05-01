@@ -2,8 +2,9 @@
 Provide a date range and optional API key and this script will get info for datasets and files created within that date range.
 Useful when curating deposited data, especially spotting problem datasets (e.g. dataset with no data).
 This script first uses the Search API to find PIDs of datasets.
-For each dataset found, the script uses the "Get Versions" API endpoint to get dataset and file metadata of the latest version of each dataset,
-and formats and writes that metadata to a CSV file on the users computer.
+For each dataset found, the script uses the "Get JSON" API endpoint to get dataset and file metadata of the latest version of each dataset,
+and formats and writes that metadata to a CSV file on the users computer. Users can then analyze the CSV file (e.g. grouping, sorting, pivot tables)
+for a quick view of what's been published within that date rage, what does and doesn't have files, and more.
 '''
 
 import csv
@@ -116,14 +117,14 @@ def format_bytes(size):
     return '%s %s' %(round(size, 2), power_labels[n])
 
 for pid in unique_dataset_pids:
-	# Construct "Get Versions" API endpoint url and get data about dataset
+	# Construct "Get JSON" API endpoint url and get data about each dataset's latest version
 	try:
 		if apikey:
-			url='https://dataverse.harvard.edu/api/datasets/:persistentId/versions/?persistentId=%s&key=%s' %(pid, apikey)
+			url='https://dataverse.harvard.edu/api/datasets/:persistentId/?persistentId=%s&key=%s' %(pid, apikey)
 		else:
-			url='https://dataverse.harvard.edu/api/datasets/:persistentId/versions/?persistentId=%s' %(pid)
+			url='https://dataverse.harvard.edu/api/datasets/:persistentId/?persistentId=%s' %(pid)
 		# Store dataset and file info from API call to "data" variable
-		data_getVersions=json.load(urlopen(url))
+		data_getLatestVersion=json.load(urlopen(url))
 	except urllib.error.URLError:
 		piderrors.append(pid)
 
@@ -139,19 +140,19 @@ for pid in unique_dataset_pids:
 		piderrors.append(pid)
 
 	# Save dataset title and dataverse name
-	ds_title=data_getVersions['data'][0]['metadataBlocks']['citation']['fields'][0]['value']
+	ds_title=data_getLatestVersion['data']['latestVersion']['metadataBlocks']['citation']['fields'][0]['value']
 	dataverse_name=data_dvName['data']['items'][0]['name_of_dataverse']
 	ds_title_dvName='%s (%s)' %(ds_title, dataverse_name)
 
 	# Save dataset URL and publication state
-	datasetPersistentId=data_getVersions['data'][0]['datasetPersistentId']
+	datasetPersistentId=data_getLatestVersion['data']['latestVersion']['datasetPersistentId']
 	datasetURL='https://dataverse.harvard.edu/dataset.xhtml?persistentId=%s' %(datasetPersistentId)
-	versionState=data_getVersions['data'][0]['versionState']
+	versionState=data_getLatestVersion['data']['latestVersion']['versionState']
 	datasetURL_pubstate='%s (%s)' %(datasetURL, versionState)
 
-	# If the dataset contains files, write dataset and file info (file name, contenttype, and size) to the CSV
-	if data_getVersions['data'][0]['files']:
-		for datafile in data_getVersions['data'][0]['files']:
+	# If the dataset's latest version contains files, write dataset and file info (file name, contenttype, and size) to the CSV
+	if data_getLatestVersion['data']['latestVersion']['files']:
+		for datafile in data_getLatestVersion['data']['latestVersion']['files']:
 			datafilename=datafile['label']
 			datafilesize=format_bytes(datafile['dataFile']['filesize'])
 			contentType=datafile['dataFile']['contentType']
