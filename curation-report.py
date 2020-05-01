@@ -82,11 +82,11 @@ if misindexed_datasets_count:
 if apikey:
 	unique_dataset_pids=set(dataset_pids)
 	print('\nUnique datasets: %s (The Search API lists both the draft and most recently published versions of datasets)' %(len(unique_dataset_pids)))
-# Other, copy dataset_pids to unique_dataset_pids variable
+# Otherwise, copy dataset_pids to unique_dataset_pids variable
 else:
 	unique_dataset_pids = dataset_pids
 
-# Store name of csv file, which includes the dataset start and end date range, to the 'filename' variable
+# Store name of CSV file, which includes the dataset start and end date range, to the 'filename' variable
 filename='datasetinfo_%s-%s.csv' %(startdate.replace('-', '.'), enddate.replace('-', '.'))
 
 # Create variable for directory path and file name
@@ -103,17 +103,17 @@ with open(csvfilepath, mode='w') as opencsvfile:
 
 print('\nWriting dataset and file info to %s:' %(csvfilepath))
 
-# Create list to store any PIDs whose info can't be retrieved with "Get Versions" endpoint
+# Create list to store any PIDs whose info can't be retrieved with "Get JSON" or Search API endpoints
 piderrors=[]
 
 # Function for converting bytes to more human-readable KB, MB, etc
 def format_bytes(size):
-    power = 2**10
-    n = 0
-    power_labels = {0 : 'bytes', 1: 'KB', 2: 'MB', 3: 'GB', 4: 'TB'}
-    while size > power:
-        size /= power
-        n += 1
+    power=2**10
+    n=0
+    power_labels={0 : 'bytes', 1: 'KB', 2: 'MB', 3: 'GB', 4: 'TB'}
+    while size>power:
+        size/=power
+        n+=1
     return '%s %s' %(round(size, 2), power_labels[n])
 
 for pid in unique_dataset_pids:
@@ -158,7 +158,7 @@ for pid in unique_dataset_pids:
 			contentType=datafile['dataFile']['contentType']
 			datafileinfo='%s (%s; %s)' %(datafilename, contentType, datafilesize)
 
-			# Append fields to the csv file
+			# Add fields to a new for in the CSV file
 			with open(csvfilepath, mode='a', encoding='utf-8') as opencsvfile:
 
 				opencsvfile=csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -188,8 +188,8 @@ print('Finished writing info of %s dataset(s) and their file(s) to %s' %(len(uni
 # If info of any PIDs could not be retrieved, print list of those PIDs
 if piderrors:
 
-	# Deduplicate list in piderrors
+	# Deduplicate list in piderrors variable
 	piderrors=set(piderrors)
 
-	print('Info about the following PIDs could not be retrieved. To investigate, try running "Get Versions" endpoint or Search API on these datasets:')
+	print('Info about the following PIDs could not be retrieved. To investigate, try running "Get JSON" endpoint or Search API on these datasets:')
 	print(*piderrors, sep='\n')
