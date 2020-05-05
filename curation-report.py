@@ -182,8 +182,8 @@ for pid in unique_dataset_pids:
 			# As a progress indicator, print a dot each time a row is written
 			sys.stdout.write('.')
 			sys.stdout.flush()
-print('\n')
-print('Finished writing info of %s dataset(s) and their file(s) to %s' %(len(unique_dataset_pids), csvfilepath))
+
+print('\nFinished writing info of %s dataset(s) and their file(s) to %s' %(len(unique_dataset_pids), csvfilepath))
 
 # If info of any PIDs could not be retrieved, print list of those PIDs
 if piderrors:
