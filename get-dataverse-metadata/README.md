@@ -6,7 +6,7 @@ If you're interested in getting the metadata of all datasets in the [Harvard Dat
 ## General
 The scripts can be grouped into three types of scripts:
  * One script, get_dataset_json_metadata.py, takes a list of dataset PIDs and downloads the metadata of the latest published versions of those datasets (in the Dataverse JSON standard)
- * Several scripts, such as get_basic_metadata.py, get_compound_metadata.py, parse the JSON files to extract metadata fields in Dataverse's Citation metadata block and write them into CSV files
+ * Several scripts, such as parse_basic_metadata.py and parse_compound_metadata.py, parse the JSON files to extract metadata fields in Dataverse's Citation metadata block and write them into CSV files
 
 To analyze the metadata, you can add the csv files to a database app, e.g. pgAdmin or DB Browser for SQLite, or join them using combine_tables.py or any of the many methods for joining tables.
 
@@ -47,26 +47,26 @@ Within the directory that you specified, the script will create a folder, whose 
 For each published dataset in the specified dataverse, the script will save a JSON file containing the metadata of the latest published dataset version.
 
 ### Writing metadata from JSON files to CSV files
-Run any of the scripts that start with get_, such as get_basic_metadata.py
+Run any of the scripts that start with parse_, such as parse_basic_metadata.py
 
 ```
-python3 get_basic_metadata.py
+python3 parse_basic_metadata.py
 ```
 
 In the window that pops up, browse to the folder that contains the JSON files with the metadata you want, browse to the folder you want to store the CSV files in, and click Start.
 
- * Running get_basic_metadata.py will create a CSV file where the values of basic metadata fields are written, such as dataset_id, publication date, and version number.
- * Running get_primitive_metadata.py will create multiple CSV files, one for each of the fields in Dataverse's Citation metadata block that do not contain subfields, called "primitive fields," such as title, subtitle, subject and production date.
- * To get the metadata of a get_compound_field, open get_compound_fields.py, edit the script to specify the database name of the field, save it and then run it.
+ * Running parse_basic_metadata.py will create a CSV file where the values of basic metadata fields are written, such as dataset_id, publication date, and version number.
+ * Running parse_primitive_metadata.py will create multiple CSV files, one for each of the fields in Dataverse's Citation metadata block that do not contain subfields, called "primitive fields," such as title, subtitle, subject and production date.
+ * To get the metadata of a parse_compound_field, open parse_compound_fields.py, edit the script to specify the database name of the field, save it and then run it.
 
 ### Analyzing using the CSV files
-To analyze the metadata, you can add the csv files to a database app, e.g. pgAdmin or DB Browser for SQLite, or join them using combine_tables.py or any of the many methods for joining tables.
+To analyze the metadata, you can add the CSV files to a database app, e.g. pgAdmin or DB Browser for SQLite, or join them using combine_tables.py or any of the many methods for joining tables.
 
 ## Further reading
 For more information the metadata model that ships with the Dataverse software, including the database names of each field, see the [Appendix of Dataverse's User Guide](http://guides.dataverse.org/en/latest/user/appendix.html). Harvard Dataverse's metadata model is the same model that ships with the Dataverse software, but each Dataverse-based repository is able to change this model (e.g. they may have different fields and hierarchies) and learning about a repository's custom metadata model may take some investigation of the repository.
 
 ## FAQ
- * The scripts that create the CSV files look for fields in Dataverse's standard Citation metadata block. They can be adjusted, particularly the get_primitive_fields.py script, to get metadata in other metadata blocks.
+ * The scripts that create the CSV files look for fields in Dataverse's standard Citation metadata block. They can be adjusted, particularly the parse_primitive_fields.py script, to get metadata in other metadata blocks.
  * Python 2 is not supported primarily because I couldn't get Python 2's version of the CSV module to encode the JSON values as utf-8 before writing metadata values to CSV files. So I switched to Python 3 (and never looked back).
  * The "get_dataset_json_metadata.py" script won't work if the Dataverse repository requires an API key in order to use a Native API endpoint to download dataset metadata. If the script throws an error, this might be the reason.
  * For Mac OS users, some scripts return a message that starts with "objc[1775]: Class FIFinderSyncExtensionHost". It's related to the use of a module called tkinter, which I use to create a UI to accept user input. The message should not stop the scripts from working. More information about a similar message is at the thread at https://stackoverflow.com/questions/46999695/class-fifindersyncextensionhost-is-implemented-in-both-warning-in-xcode-si, in which some people agree that it's a MacOS problem that can be safely ignored.
