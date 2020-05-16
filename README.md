@@ -2,7 +2,7 @@
 Scripts for automating things in a Dataverse repository, plus some other scripts:
 
 ### get_dataset_PIDs.py
-Gets the persistent identifiers of any datasets in a given dataverse (and optionally any of the given dataverse's subdataverses)
+Gets the persistent identifiers of any datasets in a given dataverse (and optionally all of the dataverses within that dataverse)
 
 ### These scripts do things with a given list of dataset PIDs:
 
