@@ -14,10 +14,12 @@ from urllib.request import urlopen
 from urllib.parse import urlparse
 
 ####################################################################################
+
 # Create GUI for getting user input
+
 window=Tk()
 window.title('Get dataset PIDs')
-window.geometry('475x450') # width x height
+window.geometry('625x450') # width x height
 
 # Function called when Browse button is pressed
 def retrieve_directory():
@@ -70,7 +72,7 @@ entry_dataverseUrl=Entry(window, width=50, textvariable=dataverseUrl)
 entry_dataverseUrl.grid(sticky='w', column=0, row=1, pady=2)
 
 # Create help text for Dataverse URL field
-label_dataverseUrlHelpText=Label(window, text='Example: https://demo.dataverse.org/dataverse/dataversealias', foreground='grey', anchor='w')
+label_dataverseUrlHelpText=Label(window, text='Example: https://demo.dataverse.org or https://demo.dataverse.org/dataverse/dataversealias', foreground='grey', anchor='w')
 label_dataverseUrlHelpText.grid(sticky='w', column=0, row=2)
 
 # Create empty row in grid to improve spacing between the two fields
@@ -99,7 +101,7 @@ label_apikeyHelpText.grid(sticky='w', column=0, row=9)
 window.grid_rowconfigure(10, minsize=25)
 
 # Create label for Browse directory button
-label_browseDirectory=Label(window, text='Choose folder to store list of dataset PIDs:', anchor='w')
+label_browseDirectory=Label(window, text='Choose folder to store text file with list of dataset PIDs:', anchor='w')
 label_browseDirectory.grid(sticky='w', column=0, row=11, pady=2)
 
 # Create Browse directory button
@@ -113,84 +115,205 @@ button_Submit.grid(sticky='w', column=0, row=14, pady=40)
 # Keep window open until it's closed
 mainloop()
 
-# Parse dataverseUrl to get server name and alias
-parsed=urlparse(dataverseUrl)
-server=parsed.scheme + '://' + parsed.netloc
-alias=parsed.path.split('/')[2]
-
 # Save current time to append it to main folder name
 current_time=time.strftime('%Y.%m.%d_%H.%M.%S')
 
-####################################################################################
+# Parse dataverseUrl to get server name and alias
+parsed=urlparse(dataverseUrl)
+server=parsed.scheme + '://' + parsed.netloc
+# alias=parsed.path.split('/')[2]
 
-# Get ID of given dataverse alias
-if apikey:
-	url='%s/api/dataverses/%s?key=%s' %(server, alias, apikey)
-else:
-	url='%s/api/dataverses/%s' %(server, alias)
+try:
+	alias=parsed.path.split('/')[2]
+except IndexError:
+	alias=''
 
+# Get alias of the root dataverse
+url='%s/api/dataverses/1' %(server)
 data=json.load(urlopen(url))
-parent_dataverse_id=data['data']['id']
-
-# Create list and add ID of given dataverse
-dataverse_ids=[parent_dataverse_id]
-
-
-# If user wants datasets in subdataverses, search for and include IDs of subdataverses (excludes linked dataverses)
-
-# Get each subdataverse in the given dataverse
-if get_subdataverses==1:
-	print('Getting dataverse IDs in %s:' %(alias))
-
-	for dataverse_id in dataverse_ids:
-		# As a progress indicator, print a dot each time a row is written
-		sys.stdout.write('.')
-		sys.stdout.flush()
-		if apikey:
-			url='%s/api/dataverses/%s/contents?key=%s' %(server, dataverse_id, apikey)
-		else:
-			url='%s/api/dataverses/%s/contents' %(server, dataverse_id)
-		data=json.load(urlopen(url))
-		for i in data['data']:
-			if i['type']=='dataverse':
-				dataverse_id=i['id']
-				dataverse_ids.extend([dataverse_id])
-
-	print('\nFound 1 dataverse and %s subdataverses' %(len(dataverse_ids)-1))
+rootalias=data['data']['alias']
 
 ####################################################################################
-# For each dataverse in the list, add the PIDs of all datasets to a text file - excludes linked and harvested datasets
 
-txtfile='dataset_pids-%s(%s).txt' %(alias, current_time)
-txtfilepath=os.path.join(directory, txtfile)
+# If user provides no alias or the alias is the repository's root alias,
+# use Search API to find PIDs of all datasets in repository
 
-print('Writing dataset IDs to %s:' %(txtfilepath))
+if not alias or alias == rootalias:
 
-count=0
+	txtfile='dataset_pids-%s(%s).txt' %(rootalias, current_time)
+	txtfilepath=os.path.join(directory, txtfile)
 
-with open(txtfilepath, mode='w') as opentxtfile:
-	for id in dataverse_ids:
-		if apikey:
-			url='%s/api/dataverses/%s/contents?key=%s' %(server, id, apikey)
-		else:
-			url='%s/api/dataverses/%s/contents' %(server, id)
-		data=json.load(urlopen(url))
+	# Get name of installation to include as metadataSource (and exclude harvested datasets)
+	url='%s/api/dataverses/1' %(server)
+	data=json.load(urlopen(url))
+	metadataSource=data['data']['name'].replace(' ', '+')
 
-		for i in data['data']:
-			if i['type']=='dataset':
-				protocol=i['protocol']
-				authority=i['authority']
-				identifier=i['identifier']
-				dataset_pid='%s:%s/%s' %(protocol, authority, identifier)
-				
-				count+=1
+	# Get count of datasets
+	if apikey:
+		url='%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=1&start=0&sort=date&order=desc&key=%s' %(server, metadataSource, apikey)
+	else:
+		url='%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=1&start=0&sort=date&order=desc' %(server, metadataSource)
+	data=json.load(urlopen(url))
 
-				# Create new line with dataset PID
-				opentxtfile.write('%s\n' %(dataset_pid))
+	total=data['data']['total_count']
 
-				# As a progress indicator, print a dot each time a row is written
-				sys.stdout.write('.')
-				sys.stdout.flush()
+	if apikey:
+		print('\nSaving %s dataset PIDs\n(Search API returns the draft and published version of a dataset. List will be de-duplicated at the end)' %(total))
+	else:
+		print('Saving %s dataset PIDs to %s file' %(total))
+
+	with open(txtfilepath, mode='w') as opentxtfile:
+
+		# Initialization for paginating through Search API results
+		start=0
+		condition=True
+
+		# Create variable for for storing list of indexed dataset PIDs
+		dataset_pids=[]
+		# Create variable for storing count of misindexed datasets
+		misindexed_datasets_count=0
+
+		while (condition):
+			try:
+				per_page=10
+				if apikey:
+					url='%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&key=%s' %(server, metadataSource, per_page, start, apikey)
+				else:
+					url='%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' %(server, metadataSource, per_page, start)
+				data=json.load(urlopen(url))
+
+				# For each item object...
+				for i in data['data']['items']:
+					global_id=i['global_id']
+					dataset_pids.append(global_id)
+
+					# As a progress indicator, print a dot each time a row is written
+					sys.stdout.write('.')
+					sys.stdout.flush()
+
+				# Update variables to paginate through the search results
+				start=start+per_page
+
+			# Print error message if misindexed datasets break the Search API call, and try the next page. (See https://github.com/IQSS/dataverse/issues/4225)
+			except urllib.error.URLError:
+				try:
+					if apikey:
+						url='%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=1&start=%s&sort=date&order=desc&key=%s' %(server, metadataSource, start, apikey)
+					else:
+						url='%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=1&start=%s&sort=date&order=desc' %(server, metadataSource, start)
+					data=json.load(urlopen(url))
+
+					# For each item object...
+					for i in data['data']['items']:
+						global_id=i['global_id']
+
+						# As a progress indicator, print a dot each time a row is written
+						sys.stdout.write('.')
+						sys.stdout.flush()
+
+						# Update variables to paginate through the search results
+						start=start+per_page
+
+				except urllib.error.URLError:
+					misindexed_datasets_count+=1
+					misindexed_datasets_urls.append(url)
+					start=start+per_page
+
+			# Stop paginating when there are no more results
+			condition=start<total
+
+	if apikey:
+		dataset_pids=set(dataset_pids)
+		print('\n\nWriting %s dataset PIDs to %s' %(len(dataset_pids), txtfilepath))
+	else:
+		print('\n\nWriting %s dataset PIDs to %s' %(len(dataset_pids), txtfilepath))
+
+	# Write list of PIDs to the txt file
+	with open(txtfilepath, mode='w') as f:
+		for pid in dataset_pids:
+			f.write('%s\n' %(pid))
+
+			sys.stdout.write('.')
+			sys.stdout.flush()
+
+	print('\n\n%s dataset PIDs written to %s' %(len(dataset_pids), txtfilepath))
+
+	if misindexed_datasets_count:
+		print('\n\nUnretrievable dataset PIDs due to misindexing: %s\n' %(misindexed_datasets_count))
 
 
-print('\nDatasets written to .txt file: %s' %(count))
+####################################################################################
+
+# If user provides an alias, and it isn't the root dataverses's alias, use "Get content" endpoints instead of Search API
+
+else:
+	txtfile='dataset_pids-%s(%s).txt' %(alias, current_time)
+	txtfilepath=os.path.join(directory, txtfile)
+
+	# Get ID of given dataverse alias
+	if apikey:
+		url='%s/api/dataverses/%s?key=%s' %(server, alias, apikey)
+	else:
+		url='%s/api/dataverses/%s' %(server, alias)
+
+	data=json.load(urlopen(url))
+	parent_dataverse_id=data['data']['id']
+
+	# Create list and add ID of given dataverse
+	dataverse_ids=[parent_dataverse_id]
+
+
+	# If user wants datasets in subdataverses, search for and include IDs of subdataverses (excludes linked dataverses)
+
+	# Get each subdataverse in the given dataverse
+	if get_subdataverses==1:
+		print('\nGetting dataverse IDs in %s:' %(alias))
+
+		for dataverse_id in dataverse_ids:
+			# As a progress indicator, print a dot each time a row is written
+			sys.stdout.write('.')
+			sys.stdout.flush()
+			if apikey:
+				url='%s/api/dataverses/%s/contents?key=%s' %(server, dataverse_id, apikey)
+			else:
+				url='%s/api/dataverses/%s/contents' %(server, dataverse_id)
+			data=json.load(urlopen(url))
+			for i in data['data']:
+				if i['type']=='dataverse':
+					dataverse_id=i['id']
+					dataverse_ids.extend([dataverse_id])
+
+		print('\n\nFound 1 dataverse and %s subdataverses' %(len(dataverse_ids)-1))
+
+	# For each dataverse in the list, add the PIDs of all datasets to a text file - excludes linked and harvested datasets
+
+	print('\nWriting dataset IDs to %s:' %(txtfilepath))
+
+	count=0
+
+	with open(txtfilepath, mode='w') as opentxtfile:
+		for id in dataverse_ids:
+			if apikey:
+				url='%s/api/dataverses/%s/contents?key=%s' %(server, id, apikey)
+			else:
+				url='%s/api/dataverses/%s/contents' %(server, id)
+			data=json.load(urlopen(url))
+
+			for i in data['data']:
+				if i['type']=='dataset':
+					protocol=i['protocol']
+					authority=i['authority']
+					identifier=i['identifier']
+					dataset_pid='%s:%s/%s' %(protocol, authority, identifier)
+					
+					count+=1
+
+					# Create new line with dataset PID
+					opentxtfile.write('%s\n' %(dataset_pid))
+
+					# As a progress indicator, print a dot each time a row is written
+					sys.stdout.write('.')
+					sys.stdout.flush()
+
+
+	print('\n\nDataset PIDs written to the text file: %s' %(count))
