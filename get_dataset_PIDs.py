@@ -132,6 +132,7 @@ except IndexError:
 url='%s/api/dataverses/1' %(server)
 data=json.load(urlopen(url))
 rootalias=data['data']['alias']
+metadataSource=data['data']['name'].replace(' ', '+')
 
 ####################################################################################
 
@@ -141,41 +142,51 @@ rootalias=data['data']['alias']
 if not alias or alias == rootalias:
 
 	txtfile='dataset_pids-%s(%s).txt' %(rootalias, current_time)
-	txtfilepath=os.path.join(directory, txtfile)
+	txtfilepath=os.path.join(directory, txtfile)	
 
-	# Get name of installation to include as metadataSource (and exclude harvested datasets)
-	url='%s/api/dataverses/1' %(server)
-	data=json.load(urlopen(url))
-	metadataSource=data['data']['name'].replace(' ', '+')
-
-	# Get count of datasets
+	# Report count of datasets
 	if apikey:
 		url='%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=1&start=0&sort=date&order=desc&key=%s' %(server, metadataSource, apikey)
+		data=json.load(urlopen(url))
+		total=data['data']['total_count']
+		print('\nSaving %s dataset PIDs\n(Search API returns the draft and published version of a dataset. List will be de-duplicated at the end):' %(total))
 	else:
 		url='%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=1&start=0&sort=date&order=desc' %(server, metadataSource)
-	data=json.load(urlopen(url))
+		data=json.load(urlopen(url))
+		total=data['data']['total_count']
+		print('\nSaving %s dataset PIDs:' %(total))
 
-	total=data['data']['total_count']
+	# Initialization for paginating through Search API results
+	start=0
+	condition=True
 
-	if apikey:
-		print('\nSaving %s dataset PIDs\n(Search API returns the draft and published version of a dataset. List will be de-duplicated at the end)' %(total))
-	else:
-		print('Saving %s dataset PIDs to %s file' %(total))
+	# Create variable for for storing list of indexed dataset PIDs
+	dataset_pids=[]
+	# Create variable for storing count of misindexed datasets
+	misindexed_datasets_count=0
 
-	with open(txtfilepath, mode='w') as opentxtfile:
+	while (condition):
+		try:
+			per_page=10
+			if apikey:
+				url='%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&key=%s' %(server, metadataSource, per_page, start, apikey)
+			else:
+				url='%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' %(server, metadataSource, per_page, start)
+			data=json.load(urlopen(url))
 
-		# Initialization for paginating through Search API results
-		start=0
-		condition=True
+			# For each item object...
+			for i in data['data']['items']:
+				global_id=i['global_id']
+				dataset_pids.append(global_id)
+				print('%s of %s' %(len(dataset_pids), total), end='\r', flush=True)
 
-		# Create variable for for storing list of indexed dataset PIDs
-		dataset_pids=[]
-		# Create variable for storing count of misindexed datasets
-		misindexed_datasets_count=0
+			# Update variables to paginate through the search results
+			start=start+per_page
 
-		while (condition):
+		# Print error message if misindexed datasets break the Search API call, and try the next page. (See https://github.com/IQSS/dataverse/issues/4225)
+		except urllib.error.URLError:
 			try:
-				per_page=10
+				per_page=1
 				if apikey:
 					url='%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&key=%s' %(server, metadataSource, per_page, start, apikey)
 				else:
@@ -186,57 +197,30 @@ if not alias or alias == rootalias:
 				for i in data['data']['items']:
 					global_id=i['global_id']
 					dataset_pids.append(global_id)
+					print('%s of %s' %(len(dataset_pids), total), end='\r', flush=True)
 
-					# As a progress indicator, print a dot each time a row is written
-					sys.stdout.write('.')
-					sys.stdout.flush()
-
-				# Update variables to paginate through the search results
-				start=start+per_page
-
-			# Print error message if misindexed datasets break the Search API call, and try the next page. (See https://github.com/IQSS/dataverse/issues/4225)
-			except urllib.error.URLError:
-				try:
-					if apikey:
-						url='%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=1&start=%s&sort=date&order=desc&key=%s' %(server, metadataSource, start, apikey)
-					else:
-						url='%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=1&start=%s&sort=date&order=desc' %(server, metadataSource, start)
-					data=json.load(urlopen(url))
-
-					# For each item object...
-					for i in data['data']['items']:
-						global_id=i['global_id']
-
-						# As a progress indicator, print a dot each time a row is written
-						sys.stdout.write('.')
-						sys.stdout.flush()
-
-						# Update variables to paginate through the search results
-						start=start+per_page
-
-				except urllib.error.URLError:
-					misindexed_datasets_count+=1
-					misindexed_datasets_urls.append(url)
+					# Update variables to paginate through the search results
 					start=start+per_page
 
-			# Stop paginating when there are no more results
-			condition=start<total
+			except urllib.error.URLError:
+				misindexed_datasets_count+=1
+				start=start+per_page
+
+		# Stop paginating when there are no more results
+		condition=start<total
 
 	if apikey:
 		dataset_pids=set(dataset_pids)
-		print('\n\nWriting %s dataset PIDs to %s' %(len(dataset_pids), txtfilepath))
+		print('\n\nWriting %s dataset PIDs to %s:' %(len(dataset_pids), txtfilepath))
 	else:
-		print('\n\nWriting %s dataset PIDs to %s' %(len(dataset_pids), txtfilepath))
+		print('\n\nWriting %s dataset PIDs to %s:' %(len(dataset_pids), txtfilepath))
 
-	# Write list of PIDs to the txt file
+	# Create text file and write list of PIDs to it
 	with open(txtfilepath, mode='w') as f:
 		for pid in dataset_pids:
 			f.write('%s\n' %(pid))
-
-			sys.stdout.write('.')
-			sys.stdout.flush()
-
-	print('\n\n%s dataset PIDs written to %s' %(len(dataset_pids), txtfilepath))
+			print('%s of %s' %(len(dataset_pids), total), end='\r', flush=True)
+	print('\n')
 
 	if misindexed_datasets_count:
 		print('\n\nUnretrievable dataset PIDs due to misindexing: %s\n' %(misindexed_datasets_count))
@@ -292,11 +276,11 @@ else:
 	count=0
 
 	with open(txtfilepath, mode='w') as opentxtfile:
-		for id in dataverse_ids:
+		for dataverse_id in dataverse_ids:
 			if apikey:
-				url='%s/api/dataverses/%s/contents?key=%s' %(server, id, apikey)
+				url='%s/api/dataverses/%s/contents?key=%s' %(server, dataverse_id, apikey)
 			else:
-				url='%s/api/dataverses/%s/contents' %(server, id)
+				url='%s/api/dataverses/%s/contents' %(server, dataverse_id)
 			data=json.load(urlopen(url))
 
 			for i in data['data']:
