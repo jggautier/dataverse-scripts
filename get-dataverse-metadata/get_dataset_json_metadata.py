@@ -93,7 +93,7 @@ mainloop()
 current_time=time.strftime('%Y.%m.%d_%H.%M.%S')
 
 # Save directory with dataverse alias and current time
-metadataFileDirectoryPath=os.path.join(metadataFileDirectory, 'dataset_metadata_%s' %(current_time))
+metadataFileDirectoryPath=os.path.join(metadataFileDirectory, 'dataset_metadata_DataverseJSON_%s' %(current_time))
 
 # Create main directory
 os.mkdir(metadataFileDirectoryPath)

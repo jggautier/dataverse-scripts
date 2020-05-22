@@ -21,7 +21,7 @@ enddate='' # yyyy-mm-dd
 apikey='' # for getting unpublished datasets accessible to Dataverse account
 directory='' # directory for the CSV file containing the dataset and file info, e.g. '/Users/username/Desktop/'
 
-# Initialization for paginating through Search API results
+# Initialization for paginating through results of Search API calls
 start=0
 condition=True
 
@@ -51,7 +51,7 @@ while (condition):
 		# Update variables to paginate through the search results
 		start=start+per_page
 
-	# Print error message if misindexed datasets break the Search API call, and try the next page. (See https://github.com/IQSS/dataverse/issues/4225)
+	# If misindexed datasets break the Search API call, for the next 10 items try paginating with 1 item at a time. (See https://github.com/IQSS/dataverse/issues/4225)
 	except urllib.error.URLError:
 		try:
 			per_page=1
@@ -67,9 +67,9 @@ while (condition):
 			# Update variables to paginate through the search results
 			start=start+per_page
 
+		# If page fails to load, count a misindexed dataset and continue to the next page
 		except urllib.error.URLError:
 			misindexed_datasets_count+=1
-			misindexed_datasets_urls.append(url)
 			start=start+per_page
 
 	# Stop paginating when there are no more results
@@ -158,7 +158,7 @@ for pid in unique_dataset_pids:
 			contentType=datafile['dataFile']['contentType']
 			datafileinfo='%s (%s; %s)' %(datafilename, contentType, datafilesize)
 
-			# Add fields to a new for in the CSV file
+			# Add fields to a new row in the CSV file
 			with open(csvfilepath, mode='a', encoding='utf-8') as opencsvfile:
 
 				opencsvfile=csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)

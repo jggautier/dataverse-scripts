@@ -156,37 +156,18 @@ if not alias or alias == rootalias:
 		total=data['data']['total_count']
 		print('\nSaving %s dataset PIDs:' %(total))
 
-	# Initialization for paginating through Search API results
+	# Initialization for paginating through Search API results and showing progress
 	start=0
 	condition=True
-
-	# Create variable for for storing list of indexed dataset PIDs
-	dataset_pids=[]
+	count=0
+	
 	# Create variable for storing count of misindexed datasets
 	misindexed_datasets_count=0
 
-	while (condition):
-		try:
-			per_page=10
-			if apikey:
-				url='%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&key=%s' %(server, metadataSource, per_page, start, apikey)
-			else:
-				url='%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' %(server, metadataSource, per_page, start)
-			data=json.load(urlopen(url))
-
-			# For each item object...
-			for i in data['data']['items']:
-				global_id=i['global_id']
-				dataset_pids.append(global_id)
-				print('%s of %s' %(len(dataset_pids), total), end='\r', flush=True)
-
-			# Update variables to paginate through the search results
-			start=start+per_page
-
-		# Print error message if misindexed datasets break the Search API call, and try the next page. (See https://github.com/IQSS/dataverse/issues/4225)
-		except urllib.error.URLError:
+	with open(txtfilepath, mode='w') as f:
+		while (condition):
 			try:
-				per_page=1
+				per_page=10
 				if apikey:
 					url='%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&key=%s' %(server, metadataSource, per_page, start, apikey)
 				else:
@@ -196,35 +177,50 @@ if not alias or alias == rootalias:
 				# For each item object...
 				for i in data['data']['items']:
 					global_id=i['global_id']
-					dataset_pids.append(global_id)
-					print('%s of %s' %(len(dataset_pids), total), end='\r', flush=True)
+					f.write('%s\n' %(global_id))
+					count+=1
+					print('%s of %s' %(count, total), end='\r', flush=True)
 
-					# Update variables to paginate through the search results
-					start=start+per_page
-
-			except urllib.error.URLError:
-				misindexed_datasets_count+=1
+				# Update variables to paginate through the search results
 				start=start+per_page
 
-		# Stop paginating when there are no more results
-		condition=start<total
+			# Print error message if misindexed datasets break the Search API call, and try the next page. (See https://github.com/IQSS/dataverse/issues/4225)
+			except urllib.error.URLError:
+				try:
+					per_page=1
+					if apikey:
+						url='%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&key=%s' %(server, metadataSource, per_page, start, apikey)
+					else:
+						url='%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' %(server, metadataSource, per_page, start)
+					data=json.load(urlopen(url))
 
-	if apikey:
-		dataset_pids=set(dataset_pids)
-		print('\n\nWriting %s dataset PIDs to %s:' %(len(dataset_pids), txtfilepath))
-	else:
-		print('\n\nWriting %s dataset PIDs to %s:' %(len(dataset_pids), txtfilepath))
+					# For each item object...
+					for i in data['data']['items']:
+						global_id=i['global_id']
+						f.write('%s\n' %(global_id))
+						print('%s of %s' %(count, total), end='\r', flush=True)
 
-	# Create text file and write list of PIDs to it
-	with open(txtfilepath, mode='w') as f:
-		for pid in dataset_pids:
-			f.write('%s\n' %(pid))
-			print('%s of %s' %(len(dataset_pids), total), end='\r', flush=True)
-	print('\n')
+						# Update variables to paginate through the search results
+						start=start+per_page
+
+				except urllib.error.URLError:
+					misindexed_datasets_count+=1
+					start=start+per_page
+
+			# Stop paginating when there are no more results
+			condition=start<total
+
+		# Deduplicate PIDs in the text file
+		pid_seen=set() # holds lines already seen
+		for pid in open(txtfilepath, 'r'):
+			if pid not in pid_seen: # not a duplicate
+				f.write(pid)
+				pid_seen.add(pid)
+
+		print('\n%s dataset PIDs written to %s:' %(count, txtfilepath))
 
 	if misindexed_datasets_count:
 		print('\n\nUnretrievable dataset PIDs due to misindexing: %s\n' %(misindexed_datasets_count))
-
 
 ####################################################################################
 

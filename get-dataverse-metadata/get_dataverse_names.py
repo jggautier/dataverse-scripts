@@ -119,8 +119,6 @@ for pid in dataset_pids:
 	persistentUrl=data['data']['items'][0]['url']
 	dataverseName=data['data']['items'][0]['name_of_dataverse']
 	
-	# print('%s is in %s' %(datasetPersistentId, dataverseName))
-
 	# Write values of the three variables to a new row in the CSV
 	with open(filename, mode='a') as datasets:
 
