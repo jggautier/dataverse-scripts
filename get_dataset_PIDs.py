@@ -1,4 +1,5 @@
-# For a given dataverse, get its subdataverses or datasets. Includes deaccessioned datasets. Excludes harvested and linked datasets.
+# Get the PIDs of datasets in a given dataverse (and optionally any dataverses in that dataverse).
+# Includes deaccessioned datasets. Excludes harvested and linked datasets.
 
 import csv
 import glob
