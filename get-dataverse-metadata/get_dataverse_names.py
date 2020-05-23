@@ -96,7 +96,7 @@ with open(filename, mode='w') as opencsvfile:
 	opencsvfile=csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 	
 	# Create header row
-	opencsvfile.writerow(['dataset_id', 'datasetUrl', 'dataverseName'])
+	opencsvfile.writerow(['dataset_id', 'datasetUrl', 'dataverseAlias', 'dataverseName'])
 
 dataset_pids=open(dataset_pids)
 
@@ -118,6 +118,7 @@ for pid in dataset_pids:
 	dataset_id=data['data']['items'][0]['entity_id']
 	persistentUrl=data['data']['items'][0]['url']
 	dataverseName=data['data']['items'][0]['name_of_dataverse']
+	dataverseAlias=data['data']['items'][0]['identifier_of_dataverse']
 	
 	# Write values of the three variables to a new row in the CSV
 	with open(filename, mode='a') as datasets:
@@ -127,6 +128,6 @@ for pid in dataset_pids:
 			return [unicode(elem).encode('utf-8') for elem in lst]
 
 		datasets=csv.writer(datasets, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-		datasets.writerow([dataset_id, persistentUrl, dataverseName])
+		datasets.writerow([dataset_id, persistentUrl, dataverseAlias, dataverseName])
 
 print('Copied PIDs:', total, 'of total:', total)
