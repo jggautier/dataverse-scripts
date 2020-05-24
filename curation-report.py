@@ -5,9 +5,13 @@ This script first uses the Search API to find PIDs of datasets.
 For each dataset found, the script uses the "Get JSON" API endpoint to get dataset and file metadata of the latest version of each dataset,
 and formats and writes that metadata to a CSV file on the users computer. Users can then analyze the CSV file (e.g. grouping, sorting, pivot tables)
 for a quick view of what's been published within that date rage, what does and doesn't have files, and more.
+
+This script might break for repositories that are missing certain info from their Search API results, like the datasetPersistentId key (data/latestVersion/datasetPersistentId)
 '''
 
 import csv
+from datetime import datetime
+from dateutil import tz
 import json
 import os
 import sys
@@ -21,6 +25,12 @@ enddate='' # yyyy-mm-dd
 apikey='' # for getting unpublished datasets accessible to Dataverse account
 directory='' # directory for the CSV file containing the dataset and file info, e.g. '/Users/username/Desktop/'
 
+# Get alias of the root dataverse (for constructing Search API calls that exclude the repository's harvested datasets)
+url='%s/api/dataverses/1' %(server)
+data=json.load(urlopen(url))
+rootalias=data['data']['alias']
+metadataSource=data['data']['name'].replace(' ', '+')
+
 # Initialization for paginating through results of Search API calls
 start=0
 condition=True
@@ -33,7 +43,7 @@ print('Searching for dataset PIDs:')
 while (condition):
 	try:
 		per_page=10
-		url='%s/api/search?q=*&fq=metadataSource:"Harvard+Dataverse"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' %(server, per_page, start, startdate, enddate, apikey)
+		url='%s/api/search?q=*&fq=metadataSource:%s&type=dataset&per_page=%s&start=%s&sort=date&order=desc&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' %(server, metadataSource, per_page, start, startdate, enddate, apikey)
 		data=json.load(urlopen(url))
 
 		# Get total number of results
@@ -55,7 +65,7 @@ while (condition):
 	except urllib.error.URLError:
 		try:
 			per_page=1
-			url='%s/api/search?q=*&fq=metadataSource:"Harvard+Dataverse"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' %(server, per_page, start, startdate, enddate, apikey)
+			url='%s/api/search?q=*&fq=metadataSource:%s&type=dataset&per_page=%s&start=%s&sort=date&order=desc&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' %(server, metadataSource, per_page, start, startdate, enddate, apikey)
 			data=json.load(urlopen(url))
 
 			# Get dataset PID and save to dataset_pids list
@@ -92,12 +102,22 @@ filename='datasetinfo_%s-%s.csv' %(startdate.replace('-', '.'), enddate.replace(
 # Create variable for directory path and file name
 csvfilepath=os.path.join(directory, filename)
 
+# Convert given timestamp string with UTC timezone into datetime object with local timezone
+def convert_to_local_tz(timestamp):
+	# Save local timezone to local_timezone variable
+	local_timezone=tz.tzlocal()
+	# Convert string to datetime object
+	timestamp=datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S%z')
+	# Convert from UTC to local timezone
+	timestamp=timestamp.astimezone(local_timezone)
+	return timestamp
+
 # Create CSV file
 with open(csvfilepath, mode='w') as opencsvfile:
 	opencsvfile=csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 	
 	# Create header row
-	opencsvfile.writerow(['datasetURL (publicationState)', 'datasetTitle (dataverseName)', 'fileName (fileType, fileSize)'])
+	opencsvfile.writerow(['datasetURL (publicationState)', 'datasetTitle (dataverseName)', 'fileName (fileType, fileSize)', 'lastUpdateTime'])
 
 # For each data file in each dataset, add to the CSV file the dataset's URL and publication state, dataset title, data file name and data file contentType
 
@@ -120,9 +140,9 @@ for pid in unique_dataset_pids:
 	# Construct "Get JSON" API endpoint url and get data about each dataset's latest version
 	try:
 		if apikey:
-			url='https://dataverse.harvard.edu/api/datasets/:persistentId/?persistentId=%s&key=%s' %(pid, apikey)
+			url='%s/api/datasets/:persistentId/?persistentId=%s&key=%s' %(server, pid, apikey)
 		else:
-			url='https://dataverse.harvard.edu/api/datasets/:persistentId/?persistentId=%s' %(pid)
+			url='%s/api/datasets/:persistentId/?persistentId=%s' %(server, pid)
 		# Store dataset and file info from API call to "data" variable
 		data_getLatestVersion=json.load(urlopen(url))
 	except urllib.error.URLError:
@@ -146,9 +166,12 @@ for pid in unique_dataset_pids:
 
 	# Save dataset URL and publication state
 	datasetPersistentId=data_getLatestVersion['data']['latestVersion']['datasetPersistentId']
-	datasetURL='https://dataverse.harvard.edu/dataset.xhtml?persistentId=%s' %(datasetPersistentId)
+	datasetURL='%s/dataset.xhtml?persistentId=%s' %(server, datasetPersistentId)
 	versionState=data_getLatestVersion['data']['latestVersion']['versionState']
 	datasetURL_pubstate='%s (%s)' %(datasetURL, versionState)
+
+	# Get date of latest dataset version
+	lastUpdateTime=convert_to_local_tz(data_getLatestVersion['data']['latestVersion']['lastUpdateTime'])
 
 	# If the dataset's latest version contains files, write dataset and file info (file name, contenttype, and size) to the CSV
 	if data_getLatestVersion['data']['latestVersion']['files']:
@@ -164,7 +187,7 @@ for pid in unique_dataset_pids:
 				opencsvfile=csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 				
 				# Create new row with dataset and file info
-				opencsvfile.writerow([datasetURL_pubstate, ds_title_dvName, datafileinfo])
+				opencsvfile.writerow([datasetURL_pubstate, ds_title_dvName, datafileinfo, lastUpdateTime])
 
 				# As a progress indicator, print a dot each time a row is written
 				sys.stdout.write('.')
@@ -177,7 +200,7 @@ for pid in unique_dataset_pids:
 			opencsvfile=csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 			
 			# Create new row with dataset and file info
-			opencsvfile.writerow([datasetURL_pubstate, ds_title_dvName, '(no files found)'])
+			opencsvfile.writerow([datasetURL_pubstate, ds_title_dvName, '(no files found)', lastUpdateTime])
 
 			# As a progress indicator, print a dot each time a row is written
 			sys.stdout.write('.')
