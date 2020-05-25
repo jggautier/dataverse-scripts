@@ -11,7 +11,7 @@ from tkinter import *
 # Enter database name of the compound field
 compound_field=''
 
-#Enter database names of the compound field's subfields
+# Enter database names of the compound field's subfields
 subfields=['']
 
 # Create GUI for getting user input
