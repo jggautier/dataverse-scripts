@@ -1,32 +1,51 @@
-# For a given list of datasets, changes the date used in the dataset citation from the default 
-# (date when datasets were first published in the Dataverse repository) to the date in another date 
-# metadata field, e.g. distributionDate
+'''
+For a given list of datasets, changes the date used in the dataset citation from the default
+(date when datasets were first published in the Dataverse repository) to the date in another date
+metadata field, e.g. distributionDate
+'''
 
 import urllib.request
 
-server=''
-apikey=''
-data=b'distributionDate'
-pids=[]
-count=0
+server = ''  # Dataverse repository URL, e.g. https://demo.dataverse.org
+apikey = ''  # API key of super user account
+data = b'distributionDate'
 
-for pid in pids:
+file = ''  # Text file containing PIDs of datasets whose citation dates should be changed
 
-	url='%s/api/datasets/:persistentId/citationdate?persistentId=%s' %(server, pid)
+dataset_pids = open(file)
 
-	headers={
-		'X-Dataverse-key':apikey
-		}
+citation_dates_changed = []
+citation_dates_not_changed = []
 
-	req=urllib.request.Request(
+count = 0
+
+for dataset_pid in dataset_pids:
+	dataset_pid = dataset_pid.rstrip()
+	url = '%s/api/datasets/:persistentId/citationdate?persistentId=%s' % (server, dataset_pid)
+
+	headers = {
+		'X-Dataverse-key': apikey
+	}
+
+	req = urllib.request.Request(
 		url=url,
 		data=data,
 		headers=headers,
 		method='PUT'
-		)
+	)
 
-	response=urllib.request.urlopen(req)
+	try:
+		response = urllib.request.urlopen(req)
+		print('%s destroyed' % (dataset_pid))
+		citation_dates_changed.append(dataset_pid)
+	except Exception:
+		print('Could not destroy %s' % (dataset_pid))
+		citation_dates_not_changed.append(dataset_pid)
 
-	count+=1
+print('\nDatasets destroyed: %s' % (len(citation_dates_changed)))
+if citation_dates_changed:
+	print(citation_dates_changed)
 
-	print('Changing citation dates: %s of %s datasets' %(count, len(pid)), end='\r', flush=True)
+print('Datasets not destroyed: %s' % (len(citation_dates_not_changed)))
+if citation_dates_not_changed:
+	print(citation_dates_not_changed)
