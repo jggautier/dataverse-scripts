@@ -61,7 +61,6 @@ while (condition):
 		try:
 			per_page = 1
 			url = '%s/api/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' % (server, per_page, start, startdate, enddate, apikey)
-			print('\t' + url)
 			data = json.load(urlopen(url))
 
 			# Get dataset PID and save to dataset_pids list
