@@ -19,7 +19,7 @@ import urllib.request
 from urllib.request import urlopen
 
 # Get required info from user
-server = ''
+server = ''  # Base URL of the Dataverse repository, e.g. https://demo.dataverse.org
 startdate = ''  # yyyy-mm-dd
 enddate = ''  # yyyy-mm-dd
 apikey = ''  # for getting unpublished datasets accessible to Dataverse account
@@ -82,10 +82,12 @@ while (condition):
 if misindexed_datasets_count:
 	print('Datasets misindexed: %s\n' % (misindexed_datasets_count))
 
-# If api key is used, deduplicate PIDs in dataset_pids list. (For published datasets with a draft version, the Search API lists the PID twice, once for published and draft versions.)
+# If api key is used, deduplicate PIDs in dataset_pids list. (For published datasets with a draft version,
+# the Search API lists the PID twice, once for published versions and once for draft versions.)
 if apikey:
 	unique_dataset_pids = set(dataset_pids)
 	print('\nUnique datasets: %s (The Search API lists both the draft and most recently published versions of datasets)' % (len(unique_dataset_pids)))
+
 # Otherwise, copy dataset_pids to unique_dataset_pids variable
 else:
 	unique_dataset_pids = dataset_pids
@@ -135,6 +137,7 @@ def format_bytes(size):
 
 
 for pid in unique_dataset_pids:
+
 	# Construct "Get JSON" API endpoint url and get data about each dataset's latest version
 	try:
 		if apikey:
