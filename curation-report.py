@@ -33,6 +33,11 @@ condition = True
 dataset_pids = []
 misindexed_datasets_count = 0
 
+# Get total count of datasets
+url = '%s/api/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&start=%s&sort=date&order=desc&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' % (server, start, startdate, enddate, apikey)
+data = json.load(urlopen(url))
+total = data['data']['total_count']
+
 print('Searching for dataset PIDs:')
 while (condition):
 	try:
@@ -40,10 +45,7 @@ while (condition):
 		url = '%s/api/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' % (server, per_page, start, startdate, enddate, apikey)
 		data = json.load(urlopen(url))
 
-		# Get total number of results
-		total = data['data']['total_count']
-
-		# For each item object...
+		# For each dataset...
 		for i in data['data']['items']:
 
 			# Get the dataset PID and add it to the dataset_pids list
@@ -82,7 +84,7 @@ while (condition):
 if misindexed_datasets_count:
 	print('Datasets misindexed: %s\n' % (misindexed_datasets_count))
 
-# If api key is used, deduplicate PIDs in dataset_pids list. (For published datasets with a draft version,
+# If API key is used, deduplicate PIDs in dataset_pids list. (For published datasets with a draft version,
 # the Search API lists the PID twice, once for published versions and once for draft versions.)
 if apikey:
 	unique_dataset_pids = set(dataset_pids)
@@ -115,7 +117,7 @@ with open(csvfilepath, mode='w') as opencsvfile:
 	opencsvfile = csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
 	# Create header row
-	opencsvfile.writerow(['datasetURL (publicationState)', 'datasetTitle (dataverseName)', 'fileName (fileType, fileSize)', 'lastUpdateTime'])
+	opencsvfile.writerow(['datasetURL (publicationState)', 'datasetTitle (dataverseName)', 'fileName (fileType, fileSize)', 'lastUpdateTime', 'dvName'])
 
 # For each data file in each dataset, add to the CSV file the dataset's URL and publication state, dataset title, data file name and data file contentType
 
@@ -188,7 +190,7 @@ for pid in unique_dataset_pids:
 				opencsvfile = csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
 				# Create new row with dataset and file info
-				opencsvfile.writerow([datasetURL_pubstate, ds_title_dvName, datafileinfo, lastUpdateTime])
+				opencsvfile.writerow([datasetURL_pubstate, ds_title_dvName, datafileinfo, lastUpdateTime, dataverse_name])
 
 				# As a progress indicator, print a dot each time a row is written
 				sys.stdout.write('.')
@@ -201,7 +203,7 @@ for pid in unique_dataset_pids:
 			opencsvfile = csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
 			# Create new row with dataset and file info
-			opencsvfile.writerow([datasetURL_pubstate, ds_title_dvName, '(no files found)', lastUpdateTime])
+			opencsvfile.writerow([datasetURL_pubstate, ds_title_dvName, '(no files found)', lastUpdateTime, dataverse_name])
 
 			# As a progress indicator, print a dot each time a row is written
 			sys.stdout.write('.')

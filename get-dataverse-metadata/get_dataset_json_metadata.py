@@ -127,11 +127,11 @@ for pid in dataset_pids:
 
 	# Use Native API endpoint for getting JSON metadata of draft datasets if api key is provided
 	# if apikey:
-		# url='%s/api/datasets/:persistentId?persistentId=%s&key=%s' %(server, pid, api)
+		# url = '%s/api/datasets/:persistentId?persistentId=%s&key=%s' %(server, pid, api)
 
-		# response=urllib.request.urlopen(url)
-		# source=response.read()
-		# data=json.loads(source)
+		# response = urllib.request.urlopen(url)
+		# source = response.read()
+		# data = json.loads(source)
 
 		# Write the JSON to the new file
 		# with open(os.path.join(metadataFileDirectoryPath, filename), mode='w') as f:
