@@ -103,10 +103,10 @@ for fieldname in primativefields:
 			# Copy content to dataset_metadata variable
 			dataset_metadata = f1.read()
 
-			# Overwrite variable with content as a json object
+			# Overwrite variable with content as a python dict
 			dataset_metadata = json.loads(dataset_metadata)
 
-			if dataset_metadata['status'] == 'OK':
+			if (dataset_metadata['status'] == 'OK') and ('latestVersion' in dataset_metadata['data']):
 
 				# Save the dataset id of each dataset
 				dataset_id = str(dataset_metadata['data']['id'])
@@ -161,4 +161,5 @@ print('\n')
 
 if parseerrordatasets:
 	parseerrordatasets = set(parseerrordatasets)
-	print('The following %s JSON files could not be parsed. They may be draft datasets.\n%s' % (len(parseerrordatasets), parseerrordatasets))
+	print('The following %s JSON file(s) could not be parsed. It/they may be draft or deaccessioned dataset(s):' % (len(parseerrordatasets)))
+	print(*parseerrordatasets, sep='\n')

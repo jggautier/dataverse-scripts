@@ -9,7 +9,7 @@ from tkinter import ttk
 from tkinter import *
 
 # Enter database name of the parent compound field, e.g. dsDescription
-compound_field = ''
+parent_compound_field = ''
 
 # Enter database names of the compound field's subfields, e.g. 'dsDescriptionValue', 'dsDescriptionDate'
 subfields = ['']
@@ -18,7 +18,7 @@ subfields = ['']
 
 # Create, title and size the window
 window = Tk()
-window.title('Get %s metadata' % (compound_field))
+window.title('Get %s metadata' % (parent_compound_field))
 window.geometry('550x250')  # width x height
 
 
@@ -78,10 +78,10 @@ button_Start.grid(sticky='w', column=0, row=7, pady=40)
 mainloop()
 
 
-def getsubfields(compound_field, subfield):
+def getsubfields(parent_compound_field, subfield):
 	try:
 		for fields in dataset_metadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
-			if fields['typeName'] == compound_field:  # Find compound name
+			if fields['typeName'] == parent_compound_field:  # Find compound name
 				subfield = fields['value'][index][subfield]['value']  # Find value in subfield
 	except KeyError:
 		subfield = ''
@@ -89,7 +89,7 @@ def getsubfields(compound_field, subfield):
 
 
 # Create table in directory user chose
-filename = '%ss.csv' % (compound_field)
+filename = '%ss.csv' % (parent_compound_field)
 filepath = os.path.join(csvDirectory, filename)
 
 print('Creating CSV file')
@@ -104,7 +104,7 @@ with open(filepath, mode='w') as metadatafile:
 
 print('Getting metadata:')
 
-bad_metadata_files = []
+parseerrordatasets = []
 
 # For each file in a folder of json files
 for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
@@ -115,14 +115,14 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 		# Copy content to dataset_metadata variable
 		dataset_metadata = f1.read()
 
-		# Overwrite variable with content as a json object
+		# Overwrite variable with content as a python dict
 		dataset_metadata = json.loads(dataset_metadata)
 
-	if dataset_metadata['status'] == 'OK':
+	if (dataset_metadata['status'] == 'OK') and ('latestVersion' in dataset_metadata['data']):
 
-	    # Count number of the given compound fields
+		# Count number of the given compound fields
 		for fields in dataset_metadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
-			if fields['typeName'] == compound_field:  # Find compound name
+			if fields['typeName'] == parent_compound_field:  # Find compound name
 				total = len(fields['value'])
 
 				# If there are compound fields
@@ -140,7 +140,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 
 						# Save subfield values to variables
 						for subfield in subfields:
-							globals()[subfield] = getsubfields(compound_field, subfield)
+							globals()[subfield] = getsubfields(parent_compound_field, subfield)
 
 						# Append fields to the csv file
 						with open(filepath, mode='a') as metadatafile:
@@ -167,8 +167,11 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 						condition = index < total
 
 	else:
-		bad_metadata_files.append(file)
-print('\n')
-if bad_metadata_files:
-	print('%s file(s) contain(s) no metadata:\n' % (len(bad_metadata_files)))
-	print(*bad_metadata_files, sep='\n')
+		parseerrordatasets.append(file)
+
+print('\nFinished writing metadata to %s' % (csv_files_directory))
+
+if parseerrordatasets:
+	parseerrordatasets = set(parseerrordatasets)
+	print('The following %s JSON file(s) could not be parsed. It/they may be draft or deaccessioned dataset(s):' % (len(parseerrordatasets)))
+	print(*parseerrordatasets, sep='\n')
