@@ -18,31 +18,31 @@ window.geometry('550x250')  # width x height
 
 # Function called when Browse button is pressed
 def retrieve_csvdirectory():
-	global csvDirectory
+    global csvDirectory
 
-	# Call the OS's file directory window and store selected object path as a global variable
-	csvDirectory = filedialog.askdirectory()
+    # Call the OS's file directory window and store selected object path as a global variable
+    csvDirectory = filedialog.askdirectory()
 
-	# Show user which directory she chose
-	label_showChosenDirectory = Label(window, text='You chose: ' + csvDirectory, anchor='w', foreground='green')
-	label_showChosenDirectory.grid(sticky='w', column=0, row=2)
+    # Show user which directory she chose
+    label_showChosenDirectory = Label(window, text='You chose: ' + csvDirectory, anchor='w', foreground='green')
+    label_showChosenDirectory.grid(sticky='w', column=0, row=2)
 
 
 # Function called when Browse button is pressed
 def retrieve_mergedfiledirectory():
-	global mergedFileDirectory
+    global mergedFileDirectory
 
-	# Call the OS's file directory window and store selected object path as a global variable
-	mergedFileDirectory = filedialog.askdirectory()
+    # Call the OS's file directory window and store selected object path as a global variable
+    mergedFileDirectory = filedialog.askdirectory()
 
-	# Show user which directory she chose
-	label_showChosenDirectory = Label(window, text='You chose: ' + mergedFileDirectory, anchor='w', foreground='green')
-	label_showChosenDirectory.grid(sticky='w', column=0, row=6)
+    # Show user which directory she chose
+    label_showChosenDirectory = Label(window, text='You chose: ' + mergedFileDirectory, anchor='w', foreground='green')
+    label_showChosenDirectory.grid(sticky='w', column=0, row=6)
 
 
 # Function called when Browse button is pressed
 def start():
-	window.destroy()
+    window.destroy()
 
 
 # Create label for button to browse for directory containing JSON files
@@ -84,7 +84,7 @@ dataframes = [pd.read_csv(table, sep=',') for table in all_tables]
 
 # For each dataframe, set the indexes (or the common columns across the dataframes to join on)
 for dataframe in dataframes:
-	dataframe.set_index(['dataset_id', 'persistentUrl'], inplace=True)
+    dataframe.set_index(['dataset_id', 'persistentUrl'], inplace=True)
 
 # Merge all dataframes and save to the 'merged' variable
 merged = reduce(lambda left, right: left.join(right, how='outer'), dataframes)

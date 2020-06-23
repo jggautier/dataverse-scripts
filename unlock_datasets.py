@@ -1,27 +1,25 @@
 import urllib.request
 
-server=''
-apikey=''
+server = ''
+apikey = ''
 
-pids=[]
+pids = []
 
-count=0
+count = 0
 
 for pid in pids:
-	url='%s/api/datasets/:persistentId/locks?persistentId=%s' %(server, pid)
+    url = '%s/api/datasets/:persistentId/locks?persistentId=%s' % (server, pid)
 
-	headers={
-		'X-Dataverse-key':apikey
-		}
+    headers = {
+        'X-Dataverse-key': apikey}
 
-	req=urllib.request.Request(
-		url=url,
-		headers=headers,
-		method='DELETE'
-		)
+    req = urllib.request.Request(
+        url=url,
+        headers=headers,
+        method='DELETE')
 
-	response=urllib.request.urlopen(req)
+    response = urllib.request.urlopen(req)
 
-	count+=1
+    count += 1
 
-	print('Unlocked %s, %s of %s datasets' %(pid, count, len(pids)))
+    print('Unlocked %s, %s of %s datasets' % (pid, count, len(pids)))

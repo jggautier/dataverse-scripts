@@ -40,88 +40,88 @@ token = raw_input('\n' + 'Paste superuser API token:')
 # Ask user if they're linking or unlinking
 mode = raw_input('\n' + 'Type 1 to link or type 2 to unlink:')
 if mode == '1':
-	mode = 'link'
-	print('You typed 1 to link.')
+    mode = 'link'
+    print('You typed 1 to link.')
 
-	# Ask user if they're linking datasets or dataverses
-	object = raw_input('\n' + 'Type 1 to link datasets or type 2 to link dataveres:')
-	if object == '1':
-		object = 'datasets'
-		print('\n' + 'Linking datasets in %s...' % (alias))
-		# To-do: Wait for user to press Enter/Return
+    # Ask user if they're linking datasets or dataverses
+    object = raw_input('\n' + 'Type 1 to link datasets or type 2 to link dataveres:')
+    if object == '1':
+        object = 'datasets'
+        print('\n' + 'Linking datasets in %s...' % (alias))
+        # To-do: Wait for user to press Enter/Return
 
-		# Run script for linking datasets
-		if os.path.isfile(filename):
-			start = 0
-			# total = len(open(filename).readlines()) # Save total number of IDs (lines) in file as $total.
+        # Run script for linking datasets
+        if os.path.isfile(filename):
+            start = 0
+            # total = len(open(filename).readlines()) # Save total number of IDs (lines) in file as $total.
 
-			for database_id in openfile:
-				database_id = database_id.strip()
-				url_add_link = '%s/api/datasets/%s/link/%s' % (server, database_id, alias)  # Add link to dataverse
-				r = requests.put(url_add_link, headers={'X-Dataverse-key': token})  # Add link to dataverse
+            for database_id in openfile:
+                database_id = database_id.strip()
+                url_add_link = '%s/api/datasets/%s/link/%s' % (server, database_id, alias)  # Add link to dataverse
+                r = requests.put(url_add_link, headers={'X-Dataverse-key': token})  # Add link to dataverse
 
-				# To-do: Check request status, and report if API failed and which dataset ID it failed on.
+                # To-do: Check request status, and report if API failed and which dataset ID it failed on.
 
-				print('Datasets linked: %s of total: %s' % (start, total))
-				start += 1
-			print('Datasets linked: %s of total: %s' % (total, total))
+                print('Datasets linked: %s of total: %s' % (start, total))
+                start += 1
+            print('Datasets linked: %s of total: %s' % (total, total))
 
-	elif object == '2':
-		object = 'dataverses'
-		print('\n' + 'Linking dataverses in %s...' % (alias))
-		# To-do: Wait for user to press Enter/Return
+    elif object == '2':
+        object = 'dataverses'
+        print('\n' + 'Linking dataverses in %s...' % (alias))
+        # To-do: Wait for user to press Enter/Return
 
-		# Run script for linking dataverses
-		if os.path.isfile(filename):
-			start = 0
-			# total = len(open(filename).readlines()) # Save total number of IDs (lines) in file as $total.
+        # Run script for linking dataverses
+        if os.path.isfile(filename):
+            start = 0
+            # total = len(open(filename).readlines()) # Save total number of IDs (lines) in file as $total.
 
-			for database_id in openfile:
-				database_id = database_id.strip()
-				url_add_link = '%s/api/dataverses/%s/link/%s' % (server, database_id, alias)  # Add link to dataverse
-				r = requests.put(url_add_link, headers={'X-Dataverse-key': token})  # Add link to dataverse
+            for database_id in openfile:
+                database_id = database_id.strip()
+                url_add_link = '%s/api/dataverses/%s/link/%s' % (server, database_id, alias)  # Add link to dataverse
+                r = requests.put(url_add_link, headers={'X-Dataverse-key': token})  # Add link to dataverse
 
-				print('Dataverses linked: %s of total: %s' % (start, total))
-				start += 1
-			print('Dataverses linked: %s of total: %s' % (total, total))
+                print('Dataverses linked: %s of total: %s' % (start, total))
+                start += 1
+            print('Dataverses linked: %s of total: %s' % (total, total))
 
 
 elif mode == '2':
-	mode = 'deleteLink'
-	# Ask user if they're unlinking datasets or dataverses
-	object = raw_input('\n' + 'Type 1 to unlink datasets or type 2 to unlink dataveres:')
-	if object == '1':
-		object = 'datasets'
-		print('\n' + 'Unlinking datasets in %s...' % (alias))
-		# To-do: Wait for user to press Enter/Return
+    mode = 'deleteLink'
+    # Ask user if they're unlinking datasets or dataverses
+    object = raw_input('\n' + 'Type 1 to unlink datasets or type 2 to unlink dataveres:')
+    if object == '1':
+        object = 'datasets'
+        print('\n' + 'Unlinking datasets in %s...' % (alias))
+        # To-do: Wait for user to press Enter/Return
 
-		# Run script for unlinking datasets
-		if os.path.isfile(filename):
-			start = 0
-			# total = len(open(filename).readlines()) # Save total number of IDs (lines) in file as $total.
+        # Run script for unlinking datasets
+        if os.path.isfile(filename):
+            start = 0
+            # total = len(open(filename).readlines()) # Save total number of IDs (lines) in file as $total.
 
-			for database_id in openfile:
-				database_id = database_id.strip()
-				url_delete_link = '%s/api/datasets/%s/deleteLink/%s' % (server, database_id, alias)  # Remove link from a dataverse
-				r = requests.delete(url_delete_link, headers={'X-Dataverse-key': token})  # Remove link from a dataverse
-				print('Datasets unlinked: %s of total: %s' % (start, total))
-				start += 1
-			print('Datasets linked: %s of total: %s' % (total, total))
+            for database_id in openfile:
+                database_id = database_id.strip()
+                url_delete_link = '%s/api/datasets/%s/deleteLink/%s' % (server, database_id, alias)  # Remove link from a dataverse
+                r = requests.delete(url_delete_link, headers={'X-Dataverse-key': token})  # Remove link from a dataverse
+                print('Datasets unlinked: %s of total: %s' % (start, total))
+                start += 1
+            print('Datasets linked: %s of total: %s' % (total, total))
 
-	elif object == '2':
-		object = 'dataverses'
-		print('\n' + 'Unlinking dataverses in %s...' % (alias))
-		# To-do: Wait for user to press Enter/Return
+    elif object == '2':
+        object = 'dataverses'
+        print('\n' + 'Unlinking dataverses in %s...' % (alias))
+        # To-do: Wait for user to press Enter/Return
 
-		# Run script for unlinking datasets
-		if os.path.isfile(filename):
-			start = 0
-			# total = len(open(filename).readlines()) # Save total number of IDs (lines) in file as $total.
+        # Run script for unlinking datasets
+        if os.path.isfile(filename):
+            start = 0
+            # total = len(open(filename).readlines()) # Save total number of IDs (lines) in file as $total.
 
-			for database_id in openfile:
-				database_id = database_id.strip()
-				url_delete_link = '%s/api/dataverses/%s/deleteLink/%s' % (server, database_id, alias)  # Remove link from a dataverse
-				r = requests.delete(url_delete_link, headers={'X-Dataverse-key': token})  # Remove link from a dataverse
-				print('Dataverses unlinked: %s of total: %s' % (start, total))
-				start += 1
-			print('Datasets linked: %s of total: %s' % (total, total))
+            for database_id in openfile:
+                database_id = database_id.strip()
+                url_delete_link = '%s/api/dataverses/%s/deleteLink/%s' % (server, database_id, alias)  # Remove link from a dataverse
+                r = requests.delete(url_delete_link, headers={'X-Dataverse-key': token})  # Remove link from a dataverse
+                print('Dataverses unlinked: %s of total: %s' % (start, total))
+                start += 1
+            print('Datasets linked: %s of total: %s' % (total, total))

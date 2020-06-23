@@ -11,7 +11,7 @@ data = pd.read_csv('name_of_file.csv')
 name_of_column = data['name_of_column'].unique()
 name_of_column = name_of_column.tolist()
 
-# Loop through the list of distinct values in the groupby column to create new groups of tables 
+# Loop through the list of distinct values in the groupby column to create new groups of tables
 # and export each as csv files that take the name of the distinct value
 for i, value in enumerate(name_of_column):
-    data[data['name_of_column'] == value].to_csv(str(value)+r'.csv', index = False)
+    data[data['name_of_column'] == value].to_csv(str(value) + r'.csv', index=False)
