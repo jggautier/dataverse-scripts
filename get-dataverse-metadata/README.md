@@ -8,7 +8,7 @@ The scripts can be grouped into three types of scripts:
  * One script, get_dataset_json_metadata.py, takes a list of dataset PIDs and downloads the metadata of the latest published versions of those datasets (in the Dataverse JSON standard)
  * Several scripts, such as parse_basic_metadata.py and parse_compound_metadata.py, parse the JSON files to extract metadata fields in Dataverse's Citation metadata block and write them into CSV files
 
-To analyze the metadata, you can add the csv files to a database app, e.g. pgAdmin or DB Browser for SQLite, or join them using combine_tables.py or any of the many methods for joining tables.
+To analyze the metadata in the CSVs, you can manipulate and analyze them using many methods, including MS Excel, Apple's Numbers, Google Sheets, OpenRefine, R, Python, and database applications like pgAdmin or DB Browser for SQLite.
 
 ## Installation
  * Install Python 3 if you don't already have it. There's a handy guide at https://docs.python-guide.org.
