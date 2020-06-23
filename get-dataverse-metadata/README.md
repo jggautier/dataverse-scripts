@@ -44,7 +44,7 @@ The script creates a UI for entering the URL of the dataverse repository, the lo
 
 Within the directory that you specified, the script will create a folder, whose name will include a timestamp, to store the downloaded JSON metadata files.
 
-For each published dataset in the specified dataverse, the script will save a JSON file containing the metadata of the latest published dataset version.
+For each dataset PID in the provided text file, the script will save a JSON file containing the metadata of the latest published dataset version.
 
 ### Writing metadata from JSON files to CSV files
 Run any of the scripts that start with parse_, such as parse_basic_metadata.py
@@ -56,14 +56,14 @@ python3 parse_basic_metadata.py
 In the window that pops up, browse to the folder that contains the JSON files with the metadata you want, browse to the folder you want to store the CSV files in, and click Start.
 
  * Running parse_basic_metadata.py will create a CSV file where the values of basic metadata fields are written, such as dataset_id, publication date, and version number.
- * Running parse_primitive_metadata.py will create multiple CSV files, one for each of the fields in Dataverse's Citation metadata block that do not contain subfields, called "primitive fields," such as title, subtitle, subject and production date.
- * To get the metadata of a parse_compound_field, open parse_compound_fields.py, edit the script to specify the database name of the field, save it and then run it.
+ * Running parse_primitive_metadata.py will create multiple CSV files, one for each given "primitive fields" field in Dataverse's Citation metadata block. "Primitive fields" are just one field - they don't contain subfields. You'll have to open parse_primitive_metadata.py, edit the script to specify the database name of the primitive field, save the script and then run it.
+ * To get the metadata of a compound fields, or fields that do have subfields, open parse_compound_fields.py, edit the script to specify the database name of the parent field and all of it's subfields, save the script and then run it.
 
 ### Analyzing using the CSV files
-To analyze the metadata, you can add the CSV files to a database app, e.g. pgAdmin or DB Browser for SQLite, or join them using combine_tables.py or any of the many methods for joining tables.
+To analyze the metadata, you can manipulate and analyze them using many methods, including MS Excel, Apple's Numbers, Google Sheets, OpenRefine, R, Python, and database applications like pgAdmin or DB Browser for SQLite. The combine_tables.py script is provided to quickly join all of the CSV files in a directory full of CSV files, joining on the dataset_id and persistentUrl.
 
 ## Further reading
-For more information the metadata model that ships with the Dataverse software, including the database names of each field, see the [Appendix of Dataverse's User Guide](http://guides.dataverse.org/en/latest/user/appendix.html). Harvard Dataverse's metadata model is the same model that ships with the Dataverse software, but each Dataverse-based repository is able to change this model (e.g. they may have different fields and hierarchies) and learning about a repository's custom metadata model may take some investigation of the repository.
+For more information about the metadata model that ships with the Dataverse software, including the database names of each field, see the [Appendix of Dataverse's User Guide](http://guides.dataverse.org/en/latest/user/appendix.html). Harvard Dataverse's metadata model is the same model that ships with the Dataverse software, but each Dataverse-based repository is able to change this model (e.g. they may have different fields and hierarchies) and learning about a repository's custom metadata model may take some investigation into the repository.
 
 ## FAQ
  * The scripts that create the CSV files look for fields in Dataverse's standard Citation metadata block. They can be adjusted, particularly the parse_primitive_fields.py script, to get metadata in other metadata blocks.
