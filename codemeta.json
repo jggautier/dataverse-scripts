@@ -5,7 +5,7 @@
   "description" :  "This is a collection of Python 3 scripts for extracting the metadata of datasets, files and dataverses in a Dataverse-based data repository, useful for analysis, reporting, and metadata development.",
   "license" :  "https://creativecommons.org/publicdomain/zero/1.0",
   "softwareVersion" : "2.1",
-  "operatingSystem"  : ["OSX", "Windows 10"],
+  "operatingSystem"  : ["OSX"],
   "datePublished" : "2019-12-15",
   "softwareRequirements" :  ["Python 3", "Pandas", "pyDataverse"],
   "url" : "https://github.com/jggautier/dataverse-scripts",
