@@ -134,9 +134,8 @@ except IndexError:
 
 # Get alias of the root dataverse
 url = '%s/api/dataverses/1' % (server)
-data = json.load(urlopen(url))
-rootalias = data['data']['alias']
-metadataSource = data['data']['name'].replace(' ', '+')
+dataverse_data = json.load(urlopen(url))
+rootalias = dataverse_data['data']['alias']
 
 ####################################################################################
 
@@ -144,18 +143,18 @@ metadataSource = data['data']['name'].replace(' ', '+')
 # use Search API to find PIDs of all datasets in repository
 
 if not alias or alias == rootalias:
-
-    txtfile = 'dataset_pids-%s(%s).txt' % (rootalias, current_time)
+    installation_name = dataverse_data['data']['name']
+    txtfile = 'dataset_pids-%s_%s.txt' % (installation_name.replace(' ', '_'), current_time)
     txtfilepath = os.path.join(directory, txtfile)
 
     # Report count of datasets
     if apikey:
-        url = '%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=1&start=0&sort=date&order=desc&key=%s' % (server, metadataSource, apikey)
+        url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&start=0&sort=date&order=desc&key=%s' % (server, apikey)
         data = json.load(urlopen(url))
         total = data['data']['total_count']
         print('\nSaving %s dataset PIDs\n(Search API returns the draft and published version of a dataset. List will be de-duplicated at the end):' % (total))
     else:
-        url = '%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=1&start=0&sort=date&order=desc' % (server, metadataSource)
+        url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&start=0&sort=date&order=desc' % (server)
         data = json.load(urlopen(url))
         total = data['data']['total_count']
         print('\nSaving %s dataset PIDs:' % (total))
@@ -173,9 +172,9 @@ if not alias or alias == rootalias:
             try:
                 per_page = 10
                 if apikey:
-                    url = '%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&key=%s' % (server, metadataSource, per_page, start, apikey)
+                    url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&key=%s' % (server, per_page, start, apikey)
                 else:
-                    url = '%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (server, metadataSource, per_page, start)
+                    url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (server, per_page, start)
                 data = json.load(urlopen(url))
 
                 # For each item object...
@@ -193,9 +192,9 @@ if not alias or alias == rootalias:
                 try:
                     per_page = 1
                     if apikey:
-                        url = '%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&key=%s' % (server, metadataSource, per_page, start, apikey)
+                        url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&key=%s' % (server, per_page, start, apikey)
                     else:
-                        url = '%s/api/search?q=*&fq=metadataSource:"%s"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (server, metadataSource, per_page, start)
+                        url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (server, per_page, start)
                     data = json.load(urlopen(url))
 
                     # For each item object...
