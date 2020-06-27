@@ -14,9 +14,9 @@ from datetime import datetime
 from dateutil import tz
 import json
 import os
+import requests
+from requests.exceptions import HTTPError
 import sys
-import urllib.request
-from urllib.request import urlopen
 
 # Get required info from user
 server = ''  # Base URL of the Dataverse repository, e.g. https://demo.dataverse.org
@@ -35,7 +35,8 @@ misindexed_datasets_count = 0
 
 # Get total count of datasets
 url = '%s/api/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&start=%s&sort=date&order=desc&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' % (server, start, startdate, enddate, apikey)
-data = json.load(urlopen(url))
+response = requests.get(url)
+data = response.json()
 total = data['data']['total_count']
 
 print('Searching for dataset PIDs:')
@@ -43,7 +44,8 @@ while (condition):
     try:
         per_page = 10
         url = '%s/api/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' % (server, per_page, start, startdate, enddate, apikey)
-        data = json.load(urlopen(url))
+        response = requests.get(url)
+        data = response.json()
 
         # For each dataset...
         for i in data['data']['items']:
@@ -57,12 +59,14 @@ while (condition):
         # Update variables to paginate through the search results
         start = start + per_page
 
-    # If misindexed datasets break the Search API call, for the next 10 items try paginating with 1 item at a time. (See https://github.com/IQSS/dataverse/issues/4225)
-    except urllib.error.URLError:
+    # If misindexed datasets break the Search API call where per_page=10, try calls where per_page=1 until the call causing the failure is found,
+    # then continue with per_page=10 (See https://github.com/IQSS/dataverse/issues/4225)
+    except Exception:
         try:
             per_page = 1
             url = '%s/api/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' % (server, per_page, start, startdate, enddate, apikey)
-            data = json.load(urlopen(url))
+            response = requests.get(url)
+            data = response.json()
 
             # Get dataset PID and save to dataset_pids list
             global_id = data['data']['items'][0]['global_id']
@@ -74,7 +78,8 @@ while (condition):
             start = start + per_page
 
         # If page fails to load, count a misindexed dataset and continue to the next page
-        except urllib.error.URLError:
+        # except:
+        except Exception:
             misindexed_datasets_count += 1
             start = start + per_page
 
@@ -82,13 +87,13 @@ while (condition):
     condition = start < total
 
 if misindexed_datasets_count:
-    print('Datasets misindexed: %s\n' % (misindexed_datasets_count))
+    print('\n\nDatasets misindexed: %s\n' % (misindexed_datasets_count))
 
 # If API key is used, deduplicate PIDs in dataset_pids list. (For published datasets with a draft version,
 # the Search API lists the PID twice, once for published versions and once for draft versions.)
 if apikey:
     unique_dataset_pids = set(dataset_pids)
-    print('\nUnique datasets: %s (The Search API lists both the draft and most recently published versions of datasets)' % (len(unique_dataset_pids)))
+    print('Unique datasets: %s (The Search API lists both the draft and most recently published versions of datasets)' % (len(unique_dataset_pids)))
 
 # Otherwise, copy dataset_pids to unique_dataset_pids variable
 else:
