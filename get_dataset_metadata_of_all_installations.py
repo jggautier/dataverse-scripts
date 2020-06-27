@@ -64,7 +64,6 @@ for installation in mapdata['installations']:
     print('\nChecking %s of %s repositories: %s' % (installation_progress_count, count_of_installations, installation_name))
 
     # Get status code of repository website or report no response from website
-    # print('\tPinging repository URL:')
     try:
         response = requests.get(installation_url, headers=headers, timeout=20, verify=False)
 
@@ -81,8 +80,8 @@ for installation in mapdata['installations']:
         installation_status = 'NA'
     print('\tInstallation status: %s' % (installation_status))
 
+    # If there's a good response from the installation, check if Search API works by searching for repository's non-harvested datasets
     if installation_status != 'NA':
-        # Check if Search API works by searching for repository's non-harvested datasets
         search_api_url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&sort=date&order=desc' % (installation_url)
         search_api_url = search_api_url.replace('//api', '/api')
         search_api_status = checkapiendpoint(search_api_url)
@@ -98,11 +97,11 @@ for installation in mapdata['installations']:
         dataset_count = 'NA'
     print('\tSearch API status: %s' % (search_api_status))
 
+    # Report if the repository has no published, non-harvested datasets
     if dataset_count == 0:
-        # installation_error = 'Failure: Repository has 0 published, non-harvested datasets'
         print('\tRepository has 0 published, non-harvested datasets')
 
-    # If there are local datasets, get the PID of a local dataset (to use to check "Get dataset JSON" endpoint)
+    # If there are local datasets, get the PID of a local dataset (used to check "Get dataset JSON" endpoint)
     if dataset_count != 'NA' and dataset_count > 0:
         test_dataset_pid = search_api_data['data']['items'][0]['global_id']
     else:
@@ -111,19 +110,18 @@ for installation in mapdata['installations']:
     # If a local dataset PID can be retreived, check if "Get dataset JSON" endpoint works
     if test_dataset_pid != 'NA':
         get_json_api_url = '%s/api/v1/datasets/:persistentId/?persistentId=%s' % (installation_url, test_dataset_pid)
+        get_json_api_url = get_json_api_url.replace('//api', '/api')
         get_json_api_status = checkapiendpoint(get_json_api_url)
     else:
         get_json_api_status = 'NA'
     print('\t"Get dataset JSON" status: %s' % (get_json_api_status))
 
-    # If the "Get dataset JSON" endpoint works, use the Search API
-    # to get the repository's dataset PIDs and write them to a text
-    # file, and use the "Get dataset JSON" endpoint to get those
-    # datasets' metadata
+    # If the "Get dataset JSON" endpoint works, use the Search API to get the repository's dataset PIDs and write them to a text file,
+    # and use the "Get dataset JSON" endpoint to get those datasets' metadata
 
     if get_json_api_status == 'OK':
 
-        # Save current time to append it to CSV file
+        # Save current time to append it to the repository's directory and text file
         current_time = time.strftime('%Y.%m.%d_%H.%M.%S')
 
         # Create directory for repository
@@ -134,13 +132,7 @@ for installation in mapdata['installations']:
         file_path = repository_directory + '/' + 'dataset_pids_%s_%s.txt' % (installation_name, current_time)
 
         # Use Search API to get repository's dataset PIDs and write them to a text file
-
-        # Report count of datasets
-        url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&sort=date&order=desc&' % (installation_url)
-        response = requests.get(url, headers=headers, timeout=20, verify=False)
-        data = response.json()
-        total_dataset_pids_count = data['data']['total_count']
-        print('\tWriting %s dataset PIDs to text file:' % (total_dataset_pids_count))
+        print('\tWriting %s dataset PIDs to text file:' % (dataset_count))
 
         # Initialization for paginating through Search API results and showing progress
         start = 0
@@ -163,12 +155,13 @@ for installation in mapdata['installations']:
                         global_id = i['global_id']
                         f1.write('%s\n' % (global_id))
                         dataset_pid_count += 1
-                        print('\t\t%s of %s' % (dataset_pid_count, total_dataset_pids_count), end='\r', flush=True)
+                        print('\t\t%s of %s' % (dataset_pid_count, dataset_count), end='\r', flush=True)
 
                     # Update variables to paginate through the search results
                     start = start + per_page
 
-                # Print error message if misindexed datasets break the Search API call, and try the next page. (See https://github.com/IQSS/dataverse/issues/4225)
+                # Print error message if misindexed datasets break the Search API call, and try the next page.
+                # See https://github.com/IQSS/dataverse/issues/4225
                 except Exception:
                     print('\t\tper_page=10 url broken. Checking per_page=1')
                     try:
@@ -182,7 +175,7 @@ for installation in mapdata['installations']:
                             global_id = i['global_id']
                             f1.write('%s\n' % (global_id))
                             dataset_pid_count += 1
-                            print('\t\t%s of %s' % (dataset_pid_count, total_dataset_pids_count), end='\r', flush=True)
+                            print('\t\t%s of %s' % (dataset_pid_count, dataset_count), end='\r', flush=True)
 
                             # Update variables to paginate through the search results
                             start = start + per_page
@@ -192,9 +185,9 @@ for installation in mapdata['installations']:
                         start = start + per_page
 
                 # Stop paginating when there are no more results
-                condition = start < total_dataset_pids_count
+                condition = start < dataset_count
 
-            print('\n\t%s dataset PIDs written to text file' % (total_dataset_pids_count))
+            print('\n\t%s dataset PIDs written to text file' % (dataset_count))
 
         if misindexed_datasets_count:
             print('\n\n\tUnretrievable dataset PIDs due to misindexing: %s\n' % (misindexed_datasets_count))
@@ -237,16 +230,15 @@ for installation in mapdata['installations']:
                 metadata_downloaded_count += 1
 
                 # Print progress
-                print('\t\tDownloaded %s of %s JSON files' % (metadata_downloaded_count, total_dataset_pids_count), end='\r', flush=True)
+                print('\t\tDownloaded %s of %s JSON files' % (metadata_downloaded_count, dataset_count), end='\r', flush=True)
 
             except Exception:
                 metadata_not_downloaded.append(dataset_pid)
 
-        print('\t\tDownloaded %s of %s JSON files' % (metadata_downloaded_count, total_dataset_pids_count))
+        print('\t\tDownloaded %s of %s JSON files' % (metadata_downloaded_count, dataset_count))
 
         if metadata_not_downloaded:
             print('The metadata of the following %s dataset(s) could not be downloaded:' % (len(metadata_not_downloaded)))
-            # print(*metadata_not_downloaded, sep='\n')
             print(metadata_not_downloaded)
 
     installation_progress_count += 1
