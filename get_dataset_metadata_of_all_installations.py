@@ -204,7 +204,6 @@ for installation in mapdata['installations']:
 
         # Initiate counts for progress indicator
         metadata_downloaded_count = 0
-
         metadata_not_downloaded = []
 
         dataset_pids = open(file_path)
