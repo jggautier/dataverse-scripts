@@ -1,0 +1,247 @@
+# Download dataset metadata of as many known Dataverse-based repositories as possible
+
+import json
+import os
+from pathlib import Path
+from pyDataverse.api import Api
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+import time
+from urllib.parse import urlparse
+
+# Enter directory path for installation directories (if on a Windows machine, use forward slashes, which will be converted to back slashes)
+base_directory = ''  # e.g. /Users/Owner/Desktop
+
+# Save current time to append it to CSV file
+current_time = time.strftime('%Y.%m.%d_%H.%M.%S')
+
+# Enter directory path for installation directories (if on a Windows machine, use forward slashes, which will be converted to back slashes)
+all_installation_metadata_directory = str(Path(base_directory + '/' + 'all_installation_metadata_%s' % (current_time)))
+os.mkdir(all_installation_metadata_directory)
+
+
+def checkapiendpoint(url):
+    try:
+        response = requests.get(url, headers=headers, timeout=20, verify=False)
+        data = response.json()
+        status = data['status']
+        if status == 'ERROR':
+            status = '%s: %s' % (status, data['message'])
+    except Exception:
+        status = 'NA'
+    return status
+
+
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36',
+    'From': 'juliangautier@g.harvard.edu'}
+
+# Suppress warning message that appears when requests tries to get response from a website whose SSL
+# cert requests can't verify because the request call isn't verifying certificate (verify=False)
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+# Get JSON data from Dataverse installations map
+print('Getting Dataverse installation data...')
+map_data_url = 'https://raw.githubusercontent.com/IQSS/dataverse-installations/master/data/data.json'
+response = requests.get(map_data_url, headers=headers)
+mapdata = response.json()
+
+count_of_installations = len(mapdata['installations'])
+
+installation_errors = []
+
+installation_progress_count = 1
+
+for installation in mapdata['installations']:
+    installation_name = installation['name']
+    hostname = installation['hostname']
+    installation_url = 'http://%s' % (hostname)
+    print('\nChecking %s of %s repositories: %s' % (installation_progress_count, count_of_installations, installation_name))
+
+    # Get status code of repository website or report no response from website
+    # print('\tPinging repository URL:')
+    try:
+        response = requests.get(installation_url, headers=headers, timeout=20, verify=False)
+
+        # Save final URL redirect to installation_url variable
+        installation_url = response.url
+
+        # Save only the base URL to the installation_url variable
+        o = urlparse(installation_url)
+        installation_url = o.scheme + '://' + o.netloc
+
+        if (response.status_code == 200 or response.status_code == 301 or response.status_code == 302):
+            installation_status = str(response.status_code)
+    except Exception:
+        installation_status = 'NA'
+    print('\tInstallation status: %s' % (installation_status))
+
+    if installation_status != 'NA':
+        # Check if Search API works by searching for repository's non-harvested datasets
+        search_api_url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&sort=date&order=desc' % (installation_url)
+        search_api_url = search_api_url.replace('//api', '/api')
+        search_api_status = checkapiendpoint(search_api_url)
+    else:
+        search_api_status = 'NA'
+
+    # If Search API works, from Search API query results, get count of local (non-harvested) datasets
+    if search_api_status == 'OK':
+        response = requests.get(search_api_url, headers=headers, timeout=20, verify=False)
+        search_api_data = response.json()
+        dataset_count = search_api_data['data']['total_count']
+    else:
+        dataset_count = 'NA'
+    print('\tSearch API status: %s' % (search_api_status))
+
+    if dataset_count == 0:
+        # installation_error = 'Failure: Repository has 0 published, non-harvested datasets'
+        print('\tRepository has 0 published, non-harvested datasets')
+
+    # If there are local datasets, get the PID of a local dataset (to use to check "Get dataset JSON" endpoint)
+    if dataset_count != 'NA' and dataset_count > 0:
+        test_dataset_pid = search_api_data['data']['items'][0]['global_id']
+    else:
+        test_dataset_pid = 'NA'
+
+    # If a local dataset PID can be retreived, check if "Get dataset JSON" endpoint works
+    if test_dataset_pid != 'NA':
+        get_json_api_url = '%s/api/v1/datasets/:persistentId/?persistentId=%s' % (installation_url, test_dataset_pid)
+        get_json_api_status = checkapiendpoint(get_json_api_url)
+    else:
+        get_json_api_status = 'NA'
+    print('\t"Get dataset JSON" status: %s' % (get_json_api_status))
+
+    # If the "Get dataset JSON" endpoint works, use the Search API
+    # to get the repository's dataset PIDs and write them to a text
+    # file, and use the "Get dataset JSON" endpoint to get those
+    # datasets' metadata
+
+    if get_json_api_status == 'OK':
+
+        # Save current time to append it to CSV file
+        current_time = time.strftime('%Y.%m.%d_%H.%M.%S')
+
+        # Create directory for repository
+        repository_directory = all_installation_metadata_directory + '/' + installation_name.replace(' ', '_') + '_%s' % (current_time)
+        os.mkdir(repository_directory)
+
+        # Create path and file name of text file
+        file_path = repository_directory + '/' + 'dataset_pids_%s_%s.txt' % (installation_name, current_time)
+
+        # Use Search API to get repository's dataset PIDs and write them to a text file
+
+        # Report count of datasets
+        url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&sort=date&order=desc&' % (installation_url)
+        response = requests.get(url, headers=headers, timeout=20, verify=False)
+        data = response.json()
+        total_dataset_pids_count = data['data']['total_count']
+        print('\tWriting %s dataset PIDs to text file:' % (total_dataset_pids_count))
+
+        # Initialization for paginating through Search API results and showing progress
+        start = 0
+        condition = True
+        dataset_pid_count = 0
+
+        # Create variable for storing count of misindexed datasets
+        misindexed_datasets_count = 0
+
+        with open(file_path, mode='w') as f1:
+            while (condition):
+                try:
+                    per_page = 10
+                    url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (installation_url, per_page, start)
+                    response = requests.get(url, headers=headers, verify=False)
+                    data = response.json()
+
+                    # For each dataset, write the dataset PID to the text file
+                    for i in data['data']['items']:
+                        global_id = i['global_id']
+                        f1.write('%s\n' % (global_id))
+                        dataset_pid_count += 1
+                        print('\t\t%s of %s' % (dataset_pid_count, total_dataset_pids_count), end='\r', flush=True)
+
+                    # Update variables to paginate through the search results
+                    start = start + per_page
+
+                # Print error message if misindexed datasets break the Search API call, and try the next page. (See https://github.com/IQSS/dataverse/issues/4225)
+                except Exception:
+                    print('\t\tper_page=10 url broken. Checking per_page=1')
+                    try:
+                        per_page = 1
+                        url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (installation_url, per_page, start)
+                        response = requests.get(url, headers=headers, verify=False)
+                        data = response.json()
+
+                        # For each dataset, write the dataset PID to the text file
+                        for i in data['data']['items']:
+                            global_id = i['global_id']
+                            f1.write('%s\n' % (global_id))
+                            dataset_pid_count += 1
+                            print('\t\t%s of %s' % (dataset_pid_count, total_dataset_pids_count), end='\r', flush=True)
+
+                            # Update variables to paginate through the search results
+                            start = start + per_page
+
+                    except Exception:
+                        misindexed_datasets_count += 1
+                        start = start + per_page
+
+                # Stop paginating when there are no more results
+                condition = start < total_dataset_pids_count
+
+            print('\n\t%s dataset PIDs written to text file' % (total_dataset_pids_count))
+
+        if misindexed_datasets_count:
+            print('\n\n\tUnretrievable dataset PIDs due to misindexing: %s\n' % (misindexed_datasets_count))
+
+        # Create directory for dataset JSON metadata
+        json_metadata_directory = repository_directory + '/' + 'JSON_metadata' + '_%s' % (current_time)
+        os.mkdir(json_metadata_directory)
+
+        # For each dataset PID in text file, download dataset's JSON metadata
+        print('\tDownloading JSON metadata to dataset_metadata folder:')
+
+        # Use pyDataverse to establish connection with server
+        api = Api(installation_url)
+
+        # Initiate counts for progress indicator
+        metadata_downloaded_count = 0
+
+        metadata_not_downloaded = []
+
+        dataset_pids = open(file_path)
+
+        # For each dataset persistent identifier in the txt file, download the dataset's Dataverse JSON file into the metadata folder
+        for dataset_pid in dataset_pids:
+
+            # Remove any trailing spaces from pid
+            dataset_pid = dataset_pid.rstrip()
+
+            # Use the pid as the file name, replacing the colon and slashes with underscores
+            metadata_file = json_metadata_directory + '/' + '%s.json' % (dataset_pid.replace(':', '_').replace('/', '_'))
+
+            # Use pyDataverse to get the metadata of the dataset
+            try:
+                resp = api.get_dataset(dataset_pid)
+
+                # Write the JSON to the new file
+                with open(metadata_file, mode='w') as f2:
+                    f2.write(json.dumps(resp.json(), indent=4))
+
+                # Increase count variable to track progress
+                metadata_downloaded_count += 1
+
+                # Print progress
+                print('\t\tDownloaded %s of %s JSON files' % (metadata_downloaded_count, total_dataset_pids_count), end='\r', flush=True)
+
+            except Exception:
+                metadata_not_downloaded.append(dataset_pid)
+
+        print('\t\tDownloaded %s of %s JSON files' % (metadata_downloaded_count, total_dataset_pids_count))
+
+        if metadata_not_downloaded:
+            print('The metadata of the following %s dataset(s) could not be downloaded:' % (len(metadata_not_downloaded)))
+            # print(*metadata_not_downloaded, sep='\n')
+            print(metadata_not_downloaded)
+
+    installation_progress_count += 1
