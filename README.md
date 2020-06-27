@@ -1,5 +1,5 @@
 # dataverse-scripts
-Scripts for automating things in a Dataverse repository, plus some other scripts. The scripts are written using Python 3 and a Mac OS. Compatability with Python 2 and Windows is limited, although I plan to improve compability with Windows over time. 
+Scripts for automating things in a Dataverse repository, plus some other scripts. The scripts are written using Python 3 and a Mac OS. Compatability with Python 2 and Windows is limited, although I plan to improve compatibility with Windows over time. 
 
 ### get_dataset_PIDs.py
 Gets the persistent identifiers of any datasets in a given Dataverse installation or a given dataverse within that installation (and optionally all of the dataverses within that dataverse)
