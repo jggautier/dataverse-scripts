@@ -16,8 +16,8 @@ Gets the persistent identifiers of any datasets in a given Dataverse installatio
 ### curation-report.py
 This script creates an overview of datasets created in a Dataverse-based repository in a given time frame, which can be useful for regular repository curation.
 
-### download_all_files_in_a_dataset.sh
-This broken script used to download all files in given dataset.
+### get_dataset_metadata_of_all_installations.py
+This script downloads dataset metadata of as many known Dataverse-based repositories as possible. Used to create the dataset at https://doi.org/10.7910/DVN/DCDKZQ.
 
 ### Misc
 - #### publish_multiple_datasets.command
