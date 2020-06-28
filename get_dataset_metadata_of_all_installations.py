@@ -24,7 +24,7 @@ headers = {
 # Save current time to append it to CSV file
 current_time = time.strftime('%Y.%m.%d_%H.%M.%S')
 
-# Enter directory path for installation directories (if on a Windows machine, use forward slashes, which will be converted to back slashes)
+# Create the main directory that will store a directory for each repository
 all_installation_metadata_directory = str(Path(base_directory + '/' + 'all_installation_metadata_%s' % (current_time)))
 os.mkdir(all_installation_metadata_directory)
 
