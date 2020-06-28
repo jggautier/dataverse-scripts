@@ -25,8 +25,8 @@ headers = {
 current_time = time.strftime('%Y.%m.%d_%H.%M.%S')
 
 # Create the main directory that will store a directory for each repository
-all_installation_metadata_directory = str(Path(base_directory + '/' + 'all_installation_metadata_%s' % (current_time)))
-os.mkdir(all_installation_metadata_directory)
+all_installations_metadata_directory = str(Path(base_directory + '/' + 'all_installation_metadata_%s' % (current_time)))
+os.mkdir(all_installations_metadata_directory)
 
 
 def checkapiendpoint(url):
@@ -125,7 +125,7 @@ for installation in mapdata['installations']:
         current_time = time.strftime('%Y.%m.%d_%H.%M.%S')
 
         # Create directory for repository
-        repository_directory = all_installation_metadata_directory + '/' + installation_name.replace(' ', '_') + '_%s' % (current_time)
+        repository_directory = all_installations_metadata_directory + '/' + installation_name.replace(' ', '_') + '_%s' % (current_time)
         os.mkdir(repository_directory)
 
         # Create path and file name of text file
