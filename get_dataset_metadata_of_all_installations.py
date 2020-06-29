@@ -219,11 +219,11 @@ for installation in mapdata['installations']:
 
             # Use pyDataverse to get the metadata of the dataset
             try:
-                resp = api.get_dataset(dataset_pid)
+                response = api.get_dataset(dataset_pid)
 
                 # Write the JSON to the new file
                 with open(metadata_file, mode='w') as f2:
-                    f2.write(json.dumps(resp.json(), indent=4))
+                    f2.write(json.dumps(response.json(), indent=4))
 
                 # Increase count variable to track progress
                 metadata_downloaded_count += 1

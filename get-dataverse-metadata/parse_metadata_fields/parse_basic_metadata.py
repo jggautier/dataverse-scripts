@@ -13,7 +13,8 @@ from tkinter import *
 # Create, title and size the window
 window = Tk()
 window.title('Get basic dataset metadata')
-window.geometry('550x250') # width x height
+window.geometry('550x250')  # width x height
+
 
 # Function called when Browse button is pressed
 def retrieve_jsondirectory():
@@ -95,7 +96,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
 	latestversionnumber = str(dataset_metadata['data']['latestVersion']['versionNumber']) + '.' + str(dataset_metadata['data']['latestVersion']['versionMinorNumber'])
 	versionreleasetime = dataset_metadata['data']['latestVersion']['releaseTime']
 
-	# Append fields to the csv file
+	# Write fields to the csv file
 	with open(filename, mode='a') as metadatafile:
 
 		# Convert all characters to utf-8

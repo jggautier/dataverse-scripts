@@ -152,7 +152,8 @@ for pid in unique_dataset_pids:
         else:
             url = '%s/api/datasets/:persistentId/?persistentId=%s' % (server, pid)
         # Store dataset and file info from API call to "data" variable
-        data_getLatestVersion = json.load(urlopen(url))
+        response = requests.get(url)
+        data_getLatestVersion = response.json()
     except urllib.error.URLError:
         piderrors.append(pid)
 
@@ -163,7 +164,8 @@ for pid in unique_dataset_pids:
         else:
             url = '%s/api/search?q="%s"&type=dataset' % (server, pid)
         # Store Search API result to "data_dvName" variable
-        data_dvName = json.load(urlopen(url))
+        response = requests.get(url)
+        data_dvName = response.json()
     except urllib.error.URLError:
         piderrors.append(pid)
 
@@ -214,7 +216,7 @@ for pid in unique_dataset_pids:
             sys.stdout.write('.')
             sys.stdout.flush()
 
-print('\nFinished writing info of %s dataset(s) and their file(s) to %s' % (len(unique_dataset_pids), csvfilepath))
+print('\nFinished writing dataset and file info of %s dataset(s) to %s' % (len(unique_dataset_pids), csvfilepath))
 
 # If info of any PIDs could not be retrieved, print list of those PIDs
 if piderrors:
