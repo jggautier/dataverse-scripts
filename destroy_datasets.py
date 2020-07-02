@@ -2,15 +2,21 @@
 
 import urllib.request
 
-server = ''  # Dataverse repository URL, e.g. https://demo.dataverse.org
-apikey = ''  # API key of super user account
+# Dataverse repository URL, e.g. https://demo.dataverse.org
+server = ''
 
-file = ''  # Text file containing PIDs of datasets to be destroyed
+# API key of super user account
+apikey = ''
+
+# Text file containing PIDs of datasets to be destroyed, e.g. doi:12345/abc/XYZ
+file = ''
 
 dataset_pids = open(file)
 
 destroyed_datasets = []
 not_destroyed_datasets = []
+
+print('Trying to destroy datasets...')
 
 for dataset_pid in dataset_pids:
     dataset_pid = dataset_pid.rstrip()
@@ -36,6 +42,6 @@ print('\nDatasets destroyed: %s' % (len(destroyed_datasets)))
 if destroyed_datasets:
     print(destroyed_datasets)
 
-print('Datasets not destroyed: %s' % (len(not_destroyed_datasets)))
+print('\nDatasets not destroyed: %s' % (len(not_destroyed_datasets)))
 if not_destroyed_datasets:
     print(not_destroyed_datasets)
