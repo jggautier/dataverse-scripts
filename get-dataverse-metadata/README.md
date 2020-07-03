@@ -57,7 +57,7 @@ In the window that pops up, browse to the folder that contains the JSON files wi
 
  * Running parse_basic_metadata.py will create a CSV file where the values of basic metadata fields are written, such as dataset_id, publication date, and version number.
  * Running parse_primitive_metadata.py will create multiple CSV files, one for each given "primitive fields" field in Dataverse's Citation metadata block. "Primitive fields" are just one field - they don't contain subfields. You'll have to open parse_primitive_metadata.py, edit the script to specify the database name of the primitive field, save the script and then run it.
- * To get the metadata of a compound fields, or fields that do have subfields, open parse_compound_fields.py, edit the script to specify the database name of the parent field and all of it's subfields, save the script and then run it.
+ * To get the metadata of a compound fields, or fields that do have child fields, open parse_compound_fields.py, edit the script to specify the database names of the parent fields and all of their subfields, save the script and then run it.
 
 ### Analyzing using the CSV files
 To analyze the metadata, you can manipulate and analyze them using many methods, including MS Excel, Apple's Numbers, Google Sheets, OpenRefine, R, Python, and database applications like pgAdmin or DB Browser for SQLite. The combine_tables.py script is provided to quickly join all of the CSV files in a directory full of CSV files, joining on the dataset_id and persistentUrl.
