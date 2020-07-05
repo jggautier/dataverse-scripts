@@ -13,10 +13,22 @@ from tkinter import *
 # Create, title and size the window
 window = Tk()
 window.title('Get metadata from primitive fields')
-window.geometry('550x250')  # width x height
+window.geometry('600x300')  # width x height
 
 
-# Function called when Browse button is pressed
+# Function called when user presses the browse button to choose the metadatablock file
+def retrieve_metadatablockfile():
+	global metadatablockfile
+
+	# Call the OS's file directory window and store selected object path as a global variable
+	metadatablockfile = filedialog.askopenfilename(filetypes=[('JSON file', '*.json')])
+
+	# Show user which directory she chose
+	label_showChosenDirectory = Label(window, text='You chose: ' + metadatablockfile, anchor='w', foreground='green')
+	label_showChosenDirectory.grid(sticky='w', column=0, row=2)
+
+
+# Function called when user presses the browse button to choose the folder containing the JSON metadata files
 def retrieve_jsondirectory():
 	global jsonDirectory
 
@@ -28,7 +40,7 @@ def retrieve_jsondirectory():
 	label_showChosenDirectory.grid(sticky='w', column=0, row=2)
 
 
-# Function called when Browse button is pressed
+# Function called when user presses the browse button to choose the folder to add the CSV files to
 def retrieve_csvdirectory():
 	global csvDirectory
 
@@ -45,31 +57,48 @@ def start():
 	window.destroy()
 
 
-# Create label for button to browse for directory containing JSON files
-label_getJSONFiles = Label(window, text='Choose folder containing the JSON files:', anchor='w')
-label_getJSONFiles.grid(sticky='w', column=0, row=0, pady=2)
+# Create label for button to browse for the JSON file containing metadatablock information
+label_getMetadatablockFile = Label(window, text='Choose JSON file containing information about the metadatablock you\'re interested in:', anchor='w')
+label_getMetadatablockFile.grid(sticky='w', column=0, row=0, pady=2)
 
-# Create button to browse for directory containing JSON files
-button_getJSONFiles = ttk.Button(window, text='Browse', command=lambda: retrieve_jsondirectory())
-button_getJSONFiles.grid(sticky='w', column=0, row=1)
+# Create button to browse for JSON file containing metadatablock information
+button_getMetadatablockFile = ttk.Button(window, text='Browse', command=lambda: retrieve_metadatablockfile())
+button_getMetadatablockFile.grid(sticky='w', column=0, row=1)
 
 # Create empty row in grid to improve spacing between the two fields
 window.grid_rowconfigure(3, minsize=25)
 
+# Create label for button to browse for directory containing JSON files
+label_getJSONFiles = Label(window, text='Choose folder containing the JSON metadata files:', anchor='w')
+label_getJSONFiles.grid(sticky='w', column=0, row=4, pady=2)
+
+# Create button to browse for directory containing JSON metadata files
+button_getJSONFiles = ttk.Button(window, text='Browse', command=lambda: retrieve_jsondirectory())
+button_getJSONFiles.grid(sticky='w', column=0, row=5)
+
+# Create empty row in grid to improve spacing between the two fields
+window.grid_rowconfigure(7, minsize=25)
+
 # Create label for button to browse for directory to add csv files in
 label_tablesDirectory = Label(window, text='Choose folder to store the csv files:', anchor='w')
-label_tablesDirectory.grid(sticky='w', column=0, row=4, pady=2)
+label_tablesDirectory.grid(sticky='w', column=0, row=8, pady=2)
 
 # Create button to browse for directory containing JSON files
 button_tablesDirectory = ttk.Button(window, text='Browse', command=lambda: retrieve_csvdirectory())
-button_tablesDirectory.grid(sticky='w', column=0, row=5)
+button_tablesDirectory.grid(sticky='w', column=0, row=9)
 
 # Create start button
 button_Start = ttk.Button(window, text='Start', command=lambda: start())
-button_Start.grid(sticky='w', column=0, row=7, pady=40)
+button_Start.grid(sticky='w', column=0, row=11, pady=40)
 
 # Keep window open until it's closed
 mainloop()
+
+
+# Get the difference between two lists
+def diff(list1, list2):
+    return (list(set(list1) - set(list2)))
+
 
 # Save list with names of primative fields in the citation metadata block
 primativefields = [
@@ -163,3 +192,18 @@ if parseerrordatasets:
 	parseerrordatasets = set(parseerrordatasets)
 	print('The following %s JSON file(s) could not be parsed. It/they may be draft or deaccessioned dataset(s):' % (len(parseerrordatasets)))
 	print(*parseerrordatasets, sep='\n')
+
+# Delete any CSV files that are empty and report
+deletedfiles = []
+for file in glob.glob(os.path.join(csvDirectory, '*.csv')):
+    with open(file, 'r') as f:
+        reader = csv.reader(f, delimiter=',')
+        data = list(reader)
+        row_count = len(data) - 1
+        if row_count == 0:
+            filename = Path(file).name
+            deletedfiles.append(filename)
+            os.remove(file)
+if deletedfiles:
+    print('\n%s files have no metadata and were deleted:' % (len(deletedfiles)))
+    print(deletedfiles)

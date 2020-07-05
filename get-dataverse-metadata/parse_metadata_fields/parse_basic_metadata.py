@@ -1,4 +1,4 @@
-# For each dataset listed in dataset_pids.txt, get basic metadata in Citation block, e.g. title, dates, versions
+# For each dataset listed in dataset_pids.txt, get the basic metadata that lives outside of the metadata blocks
 
 import csv
 import json
