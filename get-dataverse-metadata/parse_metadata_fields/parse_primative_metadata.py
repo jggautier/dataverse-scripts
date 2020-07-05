@@ -58,7 +58,7 @@ def start():
 
 
 # Create label for button to browse for the JSON file containing metadatablock information
-label_getMetadatablockFile = Label(window, text='Choose JSON file containing information about the metadatablock you\'re interested in:', anchor='w')
+label_getMetadatablockFile = Label(window, text='Choose metadatablock JSON file:', anchor='w')
 label_getMetadatablockFile.grid(sticky='w', column=0, row=0, pady=2)
 
 # Create button to browse for JSON file containing metadatablock information
