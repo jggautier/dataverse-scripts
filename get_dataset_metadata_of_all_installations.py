@@ -10,12 +10,12 @@ import time
 from urllib.parse import urlparse
 
 # Enter directory path for installation directories (if on a Windows machine, use forward slashes, which will be converted to back slashes)
-base_directory = ''  # e.g. /Users/Owner/Desktop
+base_directory = '/Users/juliangautier/Desktop'  # e.g. /Users/Owner/Desktop
 
 # Enter a user agent and your email address. Some Dataverse-based repositories block requests from scripts.
 # See https://www.whatismybrowser.com/detect/what-is-my-user-agent to get your user agent
-user_agent = ''
-email_address = ''
+user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36'
+email_address = 'juliangautier@g.harvard.edu'
 
 headers = {
     'User-Agent': user_agent,
@@ -47,9 +47,13 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 # Get JSON data from Dataverse installations map
 print('Getting Dataverse installation data...')
-map_data_url = 'https://raw.githubusercontent.com/IQSS/dataverse-installations/master/data/data.json'
-response = requests.get(map_data_url, headers=headers)
-mapdata = response.json()
+# map_data_url = 'https://raw.githubusercontent.com/IQSS/dataverse-installations/master/data/data.json'
+# response = requests.get(map_data_url, headers=headers)
+# mapdata = response.json()
+
+with open('/Users/juliangautier/Desktop/mapdata.json', 'r') as f:  # Open file in read mode
+    mapdata = f.read()  # Copy content to dataset_metadata variable
+    mapdata = json.loads(mapdata)  # Load content as a python dict
 
 count_of_installations = len(mapdata['installations'])
 
@@ -114,21 +118,67 @@ for installation in mapdata['installations']:
         get_json_api_status = checkapiendpoint(get_json_api_url)
     else:
         get_json_api_status = 'NA'
-    print('\t"Get dataset JSON" status: %s' % (get_json_api_status))
+    print('\t"Get dataset JSON" API status: %s' % (get_json_api_status))
 
-    # If the "Get dataset JSON" endpoint works, use the Search API to get the repository's dataset PIDs and write them to a text file,
-    # and use the "Get dataset JSON" endpoint to get those datasets' metadata
+    # If the "Get dataset JSON" endpoint works, download the repository's metadatablock JSON files, dataset PIDs, and dataset metadata
 
     if get_json_api_status == 'OK':
 
         # Save current time to append it to the repository's directory and text file
         current_time = time.strftime('%Y.%m.%d_%H.%M.%S')
 
-        # Create directory for repository
+        # Create directory for the repository
         repository_directory = all_installations_metadata_directory + '/' + installation_name.replace(' ', '_') + '_%s' % (current_time)
         os.mkdir(repository_directory)
 
-        # Create path and file name of text file
+        # Use the "Get Version" endpoint to get repository's Dataverse version (or set version as 'NA')
+        get_installation_version_api_url = '%s/api/v1/info/version' % (installation_url)
+        get_installation_version_api_url = get_installation_version_api_url.replace('//api', '/api')
+        get_installation_version_api_status = checkapiendpoint(get_installation_version_api_url)
+
+        if get_installation_version_api_status == 'OK':
+            response = requests.get(get_installation_version_api_url, headers=headers, timeout=20, verify=False)
+            get_installation_version_api_data = response.json()
+            dataverse_version = get_installation_version_api_data['data']['version']
+            dataverse_version = str(dataverse_version.lstrip('v'))
+        else:
+            dataverse_version = 'NA'
+
+        print('\tDataverse version: %s' % (dataverse_version))
+
+        # Create a directory for the repository's metadatablock files
+        metadatablockFileDirectoryPath = repository_directory + '/' + 'metadatablocks_(Dataverse_version_%s)' % (dataverse_version)
+        os.mkdir(metadatablockFileDirectoryPath)
+
+        # Download metadatablock JSON files
+
+        # Get list of the repository's metadatablock names
+        metadatablocks_api = '%s/api/v1/metadatablocks' % (installation_url)
+        metadatablocks_api = metadatablocks_api.replace('//api', '/api')
+
+        response = requests.get(metadatablocks_api, verify=False)
+        metadatablock_data = response.json()
+
+        metadatablock_names = []
+        for i in metadatablock_data['data']:
+            metadatablock_name = i['name']
+            metadatablock_names.append(metadatablock_name)
+
+        print('\tDownloading %s metadatablock JSON file(s) into metadatablocks folder' % ((len(metadatablock_names))))
+
+        for metadatablock_name in metadatablock_names:
+            metadatablock_api = '%s/%s' % (metadatablocks_api, metadatablock_name)
+            response = requests.get(metadatablock_api, verify=False)
+
+            metadatablock_file = str(Path(metadatablockFileDirectoryPath)) + '/' '%s_(Dataverse_version_%s).json' % (metadatablock_name, dataverse_version)
+
+            with open(metadatablock_file, mode='w') as f:
+                f.write(json.dumps(response.json(), indent=4))
+
+        # Use the Search API to get the repository's dataset PIDs and write them to a text file,
+        # and use the "Get dataset JSON" endpoint to get those datasets' metadata
+
+        # Create path and file name of text file for the dataset PIDs
         file_path = repository_directory + '/' + 'dataset_pids_%s_%s.txt' % (installation_name, current_time)
 
         # Use Search API to get repository's dataset PIDs and write them to a text file
