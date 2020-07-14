@@ -107,7 +107,7 @@ for parent_compound_field in compoundfields:
     subfields = compoundfields[parent_compound_field]
 
     # Create table in directory user chose
-    filename = '%ss.csv' % (parent_compound_field)
+    filename = '%s.csv' % (parent_compound_field)
     filepath = os.path.join(csvDirectory, filename)
 
     print('\nCreating CSV file for %s metadata' % (parent_compound_field))

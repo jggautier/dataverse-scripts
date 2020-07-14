@@ -4,6 +4,7 @@ import csv
 import json
 import glob
 import os
+from pathlib import Path
 from tkinter import filedialog
 from tkinter import ttk
 from tkinter import *
@@ -13,48 +14,48 @@ from tkinter import *
 # Create, title and size the window
 window = Tk()
 window.title('Get metadata from primitive fields')
-window.geometry('600x300')  # width x height
+window.geometry('600x400')  # width x height
 
 
 # Function called when user presses the browse button to choose the metadatablock file
 def retrieve_metadatablockfile():
-	global metadatablockfile
+    global metadatablockfile
 
-	# Call the OS's file directory window and store selected object path as a global variable
-	metadatablockfile = filedialog.askopenfilename(filetypes=[('JSON file', '*.json')])
+    # Call the OS's file directory window and store selected object path as a global variable
+    metadatablockfile = filedialog.askopenfilename(filetypes=[('JSON file', '*.json')])
 
-	# Show user which directory she chose
-	label_showChosenDirectory = Label(window, text='You chose: ' + metadatablockfile, anchor='w', foreground='green')
-	label_showChosenDirectory.grid(sticky='w', column=0, row=2)
+    # Show user which directory she chose
+    label_showChosenDirectory = Label(window, text='You chose: ' + metadatablockfile, anchor='w', foreground='green')
+    label_showChosenDirectory.grid(sticky='w', column=0, row=2)
 
 
 # Function called when user presses the browse button to choose the folder containing the JSON metadata files
 def retrieve_jsondirectory():
-	global jsonDirectory
+    global jsonDirectory
 
-	# Call the OS's file directory window and store selected object path as a global variable
-	jsonDirectory = filedialog.askdirectory()
+    # Call the OS's file directory window and store selected object path as a global variable
+    jsonDirectory = filedialog.askdirectory()
 
-	# Show user which directory she chose
-	label_showChosenDirectory = Label(window, text='You chose: ' + jsonDirectory, anchor='w', foreground='green')
-	label_showChosenDirectory.grid(sticky='w', column=0, row=2)
+    # Show user which directory she chose
+    label_showChosenDirectory = Label(window, text='You chose: ' + jsonDirectory, anchor='w', foreground='green')
+    label_showChosenDirectory.grid(sticky='w', column=0, row=6)
 
 
 # Function called when user presses the browse button to choose the folder to add the CSV files to
 def retrieve_csvdirectory():
-	global csvDirectory
+    global csvDirectory
 
-	# Call the OS's file directory window and store selected object path as a global variable
-	csvDirectory = filedialog.askdirectory()
+    # Call the OS's file directory window and store selected object path as a global variable
+    csvDirectory = filedialog.askdirectory()
 
-	# Show user which directory she chose
-	label_showChosenDirectory = Label(window, text='You chose: ' + csvDirectory, anchor='w', foreground='green')
-	label_showChosenDirectory.grid(sticky='w', column=0, row=6)
+    # Show user which directory she chose
+    label_showChosenDirectory = Label(window, text='You chose: ' + csvDirectory, anchor='w', foreground='green')
+    label_showChosenDirectory.grid(sticky='w', column=0, row=10)
 
 
 # Function called when Browse button is pressed
 def start():
-	window.destroy()
+    window.destroy()
 
 
 # Create label for button to browse for the JSON file containing metadatablock information
@@ -80,7 +81,7 @@ button_getJSONFiles.grid(sticky='w', column=0, row=5)
 window.grid_rowconfigure(7, minsize=25)
 
 # Create label for button to browse for directory to add csv files in
-label_tablesDirectory = Label(window, text='Choose folder to store the csv files:', anchor='w')
+label_tablesDirectory = Label(window, text='Choose folder to store the folder of CSV files:', anchor='w')
 label_tablesDirectory.grid(sticky='w', column=0, row=8, pady=2)
 
 # Create button to browse for directory containing JSON files
@@ -100,98 +101,248 @@ def diff(list1, list2):
     return (list(set(list1) - set(list2)))
 
 
-# Save list with names of primative fields in the citation metadata block
-primativefields = [
-	'title', 'subtitle', 'alternativeTitle', 'alternativeURL', 'notesText',
-	'productionDate', 'productionPlace', 'distributionDate', 'depositor',
-	'dateOfDeposit', 'originOfSources', 'characteristicOfSources', 'accessToSources'
-	'subject', 'language', 'kindOfData', 'relatedMaterial', 'relatedDatasets',
-	'otherReferences', 'dataSources']
+# Read metadatablock file
+with open(metadatablockfile, 'r') as f:  # Open file in read mode
+    metadatablock_data = f.read()  # Copy content to a variable
+    metadatablock_data = json.loads(metadatablock_data)  # Resave content as a python dict
 
-for fieldname in primativefields:
+    # Get name of metadatablock from metadatablock file
+    metadatablock_name = metadatablock_data['data']['name']
 
-	# Store path of CSV file to filename variable
-	filename = os.path.join(csvDirectory, '%s.csv' % (fieldname))
+    # Get the names of fields that have childfields
+    compoundfields = []
+    for parent_compound_field in metadatablock_data['data']['fields']:
+        properties = metadatablock_data['data']['fields'][parent_compound_field]
+        for property in properties:
+            if 'childFields' in properties:
+                field = properties[property]
+                compoundfields.append(field)
+                break
 
-	with open(filename, mode='w') as metadatafile:
-		metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+# Create a dictionary containing the names of the compound fields and their child fields
+compound_field_dictionary = {}
+all_parent_and_child_fields = []
+for parentfield in compoundfields:
+    if parentfield in metadatablock_data['data']['fields']:
+        properties = metadatablock_data['data']['fields'][parentfield]['childFields']
+        all_parent_and_child_fields.append(parentfield)
+        subfields = []
+        for subfield in properties:
+            all_parent_and_child_fields.append(subfield)
+            subfields.append(subfield)
+            compound_field_dictionary[parentfield] = subfields
 
-		# Create header row
-		metadatafile.writerow(['dataset_id', 'persistentUrl', fieldname])
+    all_parent_and_child_fields = []
+    for parent_compound_field in compoundfields:
+        if parent_compound_field in metadatablock_data['data']['fields']:
+            properties = metadatablock_data['data']['fields'][parent_compound_field]['childFields']
+            all_parent_and_child_fields.append(parent_compound_field)
+            for subfield in properties:
+                all_parent_and_child_fields.append(subfield)
 
-	print('\nGetting %s metadata' % (fieldname))
 
-	parseerrordatasets = []
+def getsubfields(parent_compound_field, subfield):
+    try:
+        for fields in dataset_metadata['data']['latestVersion']['metadataBlocks'][metadatablock_name]['fields']:
+            if fields['typeName'] == parent_compound_field:  # Find compound name
+                subfield = fields['value'][index][subfield]['value']  # Find value in subfield
+    except KeyError:
+        subfield = ''
+    return subfield
 
-	# For each file in the folder of JSON files
-	for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 
-		# Open each file in read mode
-		with open(file, 'r') as f1:
+for parent_compound_field in compound_field_dictionary:
+    subfields = compound_field_dictionary[parent_compound_field]
 
-			# Copy content to dataset_metadata variable
-			dataset_metadata = f1.read()
+    # Create table in directory user chose
+    compound_field_csv_filename = '%s.csv' % (parent_compound_field)
+    compound_field_csv_filepath = os.path.join(csvDirectory, compound_field_csv_filename)
 
-			# Overwrite variable with content as a python dict
-			dataset_metadata = json.loads(dataset_metadata)
+    print('\nCreating CSV file for %s metadata' % (parent_compound_field))
 
-			if (dataset_metadata['status'] == 'OK') and ('latestVersion' in dataset_metadata['data']):
+    # Create column names for the header row
+    ids = ['dataset_id', 'persistentUrl']
+    header_row = ids + subfields
 
-				# Save the dataset id of each dataset
-				dataset_id = str(dataset_metadata['data']['id'])
+    with open(compound_field_csv_filepath, mode='w') as metadatafile:
+        metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        metadatafile.writerow(header_row)  # Create header row
 
-				# Couple each field value with the dataset_id and write as a row to subjects.csv
-				for fields in dataset_metadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
-					if fields['typeName'] == fieldname:
-						value = fields['value']
+    print('Getting %s metadata:' % (parent_compound_field))
 
-						# Check if value is a string, which means the field doesn't allow multiple values
-						if isinstance(value, str):
-							persistentUrl = dataset_metadata['data']['persistentUrl']
-							dataset_id = str(dataset_metadata['data']['id'])
+    parseerrordatasets = []
 
-							with open(filename, mode='a') as metadatafile:
+    # For each file in a folder of json files
+    for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 
-								# Convert all characters to utf-8 to avoid encoding errors when writing to the csv file
-								def to_utf8(lst):
-									return [unicode(elem).encode('utf-8') for elem in lst]
+        # Open each file in read mode
+        with open(file, 'r') as f1:
 
-								metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            # Copy content to dataset_metadata variable
+            dataset_metadata = f1.read()
 
-								# Write new row
-								metadatafile.writerow([dataset_id, persistentUrl, value])
+            # Overwrite variable with content as a python dict
+            dataset_metadata = json.loads(dataset_metadata)
 
-								# As a progress indicator, print a dot each time a row is written
-								sys.stdout.write('.')
-								sys.stdout.flush()
+        if (dataset_metadata['status'] == 'OK') and ('latestVersion' in dataset_metadata['data']):
 
-						# Check if value is a list, which means the field allows multiple values
-						elif isinstance(value, list):
-							for value in fields['value']:
-								persistentUrl = dataset_metadata['data']['persistentUrl']
-								with open(filename, mode='a') as metadatafile:
+            # Count number of the given compound fields
+            for fields in dataset_metadata['data']['latestVersion']['metadataBlocks'][metadatablock_name]['fields']:
+                if fields['typeName'] == parent_compound_field:  # Find compound name
+                    total = len(fields['value'])
 
-									# Convert all characters to utf-8 to avoid encoding errors when writing to the csv file
-									def to_utf8(lst):
-										return [unicode(elem).encode('utf-8') for elem in lst]
+                    # If there are compound fields
+                    if total:
+                        index = 0
+                        condition = True
 
-									metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                        while (condition):
 
-									# Write new row
-									metadatafile.writerow([dataset_id, persistentUrl, value])
+                            # Save the dataset id of each dataset
+                            dataset_id = str(dataset_metadata['data']['id'])
 
-									# As a progress indicator, print a dot each time a row is written
-									sys.stdout.write('.')
-									sys.stdout.flush()
-			else:
-				parseerrordatasets.append(file)
+                            # Save the identifier of each dataset
+                            persistentUrl = dataset_metadata['data']['persistentUrl']
 
-print('\n')
+                            # Save subfield values to variables
+                            for subfield in subfields:
+                                globals()[subfield] = getsubfields(parent_compound_field, subfield)
+
+                            # Append fields to the csv file
+                            with open(compound_field_csv_filepath, mode='a') as metadatafile:
+
+                                # Create list of variables
+                                row_variables = [dataset_id, persistentUrl]
+                                for subfield in subfields:
+                                    row_variables.append(globals()[subfield])
+
+                                # Convert all characters to utf-8
+                                def to_utf8(lst):
+                                    return [unicode(elem).encode('utf-8') for elem in lst]
+
+                                metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+                                # Write new row using list of variables
+                                metadatafile.writerow(row_variables)
+
+                                # As a progress indicator, print a dot each time a row is written
+                                sys.stdout.write('.')
+                                sys.stdout.flush()
+
+                            index += 1
+                            condition = index < total
+
+        else:
+            parseerrordatasets.append(file)
+
+    print('\nFinished writing %s metadata to %s' % (parent_compound_field, csvDirectory))
+
+    if parseerrordatasets:
+        parseerrordatasets = set(parseerrordatasets)
+        print('The following %s JSON file(s) could not be parsed. The file(s) may be draft or deaccessioned dataset(s):' % (len(parseerrordatasets)))
+        print(*parseerrordatasets, sep='\n')
+
+
+# Get list of primitive fields in the given metadatablock JSON file
+
+# Get the names of all fields
+all_fields = []
+for parentfield in metadatablock_data['data']['fields']:
+    properties = metadatablock_data['data']['fields'][parentfield]
+    for property in properties:
+        field = properties[property]
+        all_fields.append(field)
+        break
+
+# Get names of primitives fields by removing list of compound and child fields from the list of all fields
+primitive_fields = list(set(all_fields) - set(all_parent_and_child_fields))
+
+# Get metadata of the primitive fields
+
+for primitive_field in primitive_fields:
+
+    # Store path of CSV file to variable
+    primitive_field_csv_filepath = os.path.join(csvDirectory, '%s.csv' % (primitive_field))
+
+    with open(primitive_field_csv_filepath, mode='w') as metadatafile:
+        metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+        # Create header row
+        metadatafile.writerow(['dataset_id', 'persistentUrl', primitive_field])
+
+    print('\nGetting %s metadata:' % (primitive_field))
+
+    parseerrordatasets = []
+
+    # For each file in the folder of JSON files
+    for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
+
+        # Open each file in read mode
+        with open(file, 'r') as f1:
+
+            # Copy content to dataset_metadata variable
+            dataset_metadata = f1.read()
+
+            # Overwrite variable with content as a python dict
+            dataset_metadata = json.loads(dataset_metadata)
+
+            if (dataset_metadata['status'] == 'OK') and ('latestVersion' in dataset_metadata['data']):
+
+                # Save the dataset id of each dataset
+                dataset_id = str(dataset_metadata['data']['id'])
+
+                # Couple each field value with the dataset_id and write as a row to subjects.csv
+                for fields in dataset_metadata['data']['latestVersion']['metadataBlocks'][metadatablock_name]['fields']:
+                    if fields['typeName'] == primitive_field:
+                        value = fields['value']
+
+                        # Check if value is a string, which means the field doesn't allow multiple values
+                        if isinstance(value, str):
+                            persistentUrl = dataset_metadata['data']['persistentUrl']
+                            dataset_id = str(dataset_metadata['data']['id'])
+
+                            with open(primitive_field_csv_filepath, mode='a') as metadatafile:
+
+                                # Convert all characters to utf-8 to avoid encoding errors when writing to the csv file
+                                def to_utf8(lst):
+                                    return [unicode(elem).encode('utf-8') for elem in lst]
+
+                                metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+                                # Write new row
+                                metadatafile.writerow([dataset_id, persistentUrl, value])
+
+                                # As a progress indicator, print a dot each time a row is written
+                                sys.stdout.write('.')
+                                sys.stdout.flush()
+
+                        # Check if value is a list, which means the field allows multiple values
+                        elif isinstance(value, list):
+                            for value in fields['value']:
+                                persistentUrl = dataset_metadata['data']['persistentUrl']
+                                with open(primitive_field_csv_filepath, mode='a') as metadatafile:
+
+                                    # Convert all characters to utf-8 to avoid encoding errors when writing to the csv file
+                                    def to_utf8(lst):
+                                        return [unicode(elem).encode('utf-8') for elem in lst]
+
+                                    metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+                                    # Write new row
+                                    metadatafile.writerow([dataset_id, persistentUrl, value])
+
+                                    # As a progress indicator, print a dot each time a row is written
+                                    sys.stdout.write('.')
+                                    sys.stdout.flush()
+            else:
+                parseerrordatasets.append(file)
+
+    print('\nFinished writing %s metadata to %s' % (primitive_field, csvDirectory))
 
 if parseerrordatasets:
-	parseerrordatasets = set(parseerrordatasets)
-	print('The following %s JSON file(s) could not be parsed. It/they may be draft or deaccessioned dataset(s):' % (len(parseerrordatasets)))
-	print(*parseerrordatasets, sep='\n')
+    parseerrordatasets = set(parseerrordatasets)
+    print('The following %s JSON file(s) could not be parsed. It/they may be draft or deaccessioned dataset(s):' % (len(parseerrordatasets)))
+    print(*parseerrordatasets, sep='\n')
 
 # Delete any CSV files that are empty and report
 deletedfiles = []
