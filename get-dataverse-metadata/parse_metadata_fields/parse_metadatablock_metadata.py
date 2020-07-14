@@ -237,7 +237,6 @@ for parent_compound_field in compound_field_dictionary:
         print('The following %s JSON file(s) could not be parsed. The file(s) may be draft or deaccessioned dataset(s):' % (len(parseerrordatasets)))
         print(*parseerrordatasets, sep='\n')
 
-
 # Get list of primitive fields in the given metadatablock JSON file
 
 # Get the names of all fields
