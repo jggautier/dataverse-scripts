@@ -96,11 +96,6 @@ button_Start.grid(sticky='w', column=0, row=11, pady=40)
 mainloop()
 
 
-# Get the difference between two lists
-def diff(list1, list2):
-    return (list(set(list1) - set(list2)))
-
-
 # Read metadatablock file
 with open(metadatablockfile, 'r') as f:  # Open file in read mode
     metadatablock_data = f.read()  # Copy content to a variable
