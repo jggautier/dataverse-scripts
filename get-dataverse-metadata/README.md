@@ -6,7 +6,7 @@ If you're interested in getting the metadata of all datasets in the [Harvard Dat
 ## General
 The scripts can be grouped into three types of scripts:
  * One script, get_dataset_json_metadata.py, takes a list of dataset PIDs and downloads the metadata of the latest published versions of those datasets (in the Dataverse JSON standard)
- * Several scripts, such as parse_basic_metadata.py and parse_metadatablock_metadata.py, parse the JSON files to extract metadata fields in a given metadatablock JSON file and write them into CSV files
+ * Several scripts, such as parse_basic_metadata.py and parse_metadatablock_metadata.py, parse the JSON files to extract metadata fields and write that metadata into CSV files.
 
 You can manipulate and analyze the metadata in the CSV files using many methods and tools, including MS Excel, Apple's Numbers, Google Sheets, OpenRefine, R, Python, and database applications like pgAdmin or DB Browser for SQLite.
 
