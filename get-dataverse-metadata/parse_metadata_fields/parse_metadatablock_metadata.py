@@ -154,7 +154,7 @@ for parent_compound_field in compound_field_dictionary:
     subfields = compound_field_dictionary[parent_compound_field]
 
     # Create table in directory user chose
-    compound_field_csv_filename = '%s.csv' % (parent_compound_field)
+    compound_field_csv_filename = '%s.%s.csv' % (metadatablock_name, parent_compound_field)
     compound_field_csv_filepath = os.path.join(csvDirectory, compound_field_csv_filename)
 
     print('\nCreating CSV file for %s metadata' % (parent_compound_field))
@@ -260,7 +260,8 @@ primitive_fields = list(set(all_fields) - set(all_parent_and_child_fields))
 for primitive_field in primitive_fields:
 
     # Store path of CSV file to variable
-    primitive_field_csv_filepath = os.path.join(csvDirectory, '%s.csv' % (primitive_field))
+    primitive_field_filename = '%s.%s.csv' % (metadatablock_name, primitive_field)
+    primitive_field_csv_filepath = os.path.join(csvDirectory, primitive_field_filename)
 
     with open(primitive_field_csv_filepath, mode='w') as metadatafile:
         metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
