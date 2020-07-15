@@ -139,8 +139,12 @@ for parentfield in compoundfields:
 def getsubfields(parent_compound_field, subfield):
     try:
         for fields in dataset_metadata['data']['latestVersion']['metadataBlocks'][metadatablock_name]['fields']:
-            if fields['typeName'] == parent_compound_field:  # Find compound name
-                subfield = fields['value'][index][subfield]['value']  # Find value in subfield
+            # If the compound field allows multiple values, use the index variable to iterate over each variable
+            if fields['typeName'] == parent_compound_field and fields['multiple'] is True:
+                subfield = fields['value'][index][subfield]['value']
+            # If the compound field doesn't allow multiple values, the index isn't needed
+            elif fields['typeName'] == parent_compound_field and fields['multiple'] is False:
+                subfield = fields['value'][subfield]['value']
     except KeyError:
         subfield = ''
     return subfield
@@ -184,7 +188,12 @@ for parent_compound_field in compound_field_dictionary:
             # Count number of the given compound fields
             for fields in dataset_metadata['data']['latestVersion']['metadataBlocks'][metadatablock_name]['fields']:
                 if fields['typeName'] == parent_compound_field:  # Find compound name
-                    total = len(fields['value'])
+                    # If there compound field allow multiple values, assign the number of values to the total variable
+                    if fields['multiple'] is True:
+                        total = len(fields['value'])
+                    # Otherwise, the compound field allows only one value
+                    else:
+                        total = 1
 
                     # If there are compound fields
                     if total:
