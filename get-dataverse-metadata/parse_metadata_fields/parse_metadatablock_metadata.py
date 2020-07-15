@@ -165,8 +165,6 @@ for parent_compound_field in compound_field_dictionary:
 
     print('Getting %s metadata:' % (parent_compound_field))
 
-    parseerrordatasets = []
-
     # For each file in a folder of json files
     for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 
@@ -179,7 +177,9 @@ for parent_compound_field in compound_field_dictionary:
             # Overwrite variable with content as a python dict
             dataset_metadata = json.loads(dataset_metadata)
 
-        if (dataset_metadata['status'] == 'OK') and ('latestVersion' in dataset_metadata['data']):
+        # Check if status is OK, there's a latestversion key (the dataset isn't deaccessioned,
+        # and there's metadata for fields in the given metadatablock
+        if (dataset_metadata['status'] == 'OK') and ('latestVersion' in dataset_metadata['data']) and (metadatablock_name in dataset_metadata['data']['latestVersion']['metadataBlocks']):
 
             # Count number of the given compound fields
             for fields in dataset_metadata['data']['latestVersion']['metadataBlocks'][metadatablock_name]['fields']:
@@ -228,14 +228,9 @@ for parent_compound_field in compound_field_dictionary:
                             condition = index < total
 
         else:
-            parseerrordatasets.append(file)
+            continue
 
-    print('\nFinished writing %s metadata to %s' % (parent_compound_field, csvDirectory))
-
-    if parseerrordatasets:
-        parseerrordatasets = set(parseerrordatasets)
-        print('The following %s JSON file(s) could not be parsed. The file(s) may be draft or deaccessioned dataset(s):' % (len(parseerrordatasets)))
-        print(*parseerrordatasets, sep='\n')
+    print('\nFinished writing %s metadata to %s' % (parent_compound_field, compound_field_csv_filepath))
 
 # Get list of primitive fields in the given metadatablock JSON file
 
@@ -266,8 +261,6 @@ for primitive_field in primitive_fields:
 
     print('\nGetting %s metadata:' % (primitive_field))
 
-    parseerrordatasets = []
-
     # For each file in the folder of JSON files
     for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 
@@ -280,7 +273,7 @@ for primitive_field in primitive_fields:
             # Overwrite variable with content as a python dict
             dataset_metadata = json.loads(dataset_metadata)
 
-            if (dataset_metadata['status'] == 'OK') and ('latestVersion' in dataset_metadata['data']):
+            if (dataset_metadata['status'] == 'OK') and ('latestVersion' in dataset_metadata['data']) and (metadatablock_name in dataset_metadata['data']['latestVersion']['metadataBlocks']):
 
                 # Save the dataset id of each dataset
                 dataset_id = str(dataset_metadata['data']['id'])
@@ -329,14 +322,9 @@ for primitive_field in primitive_fields:
                                     sys.stdout.write('.')
                                     sys.stdout.flush()
             else:
-                parseerrordatasets.append(file)
+                continue
 
-    print('\nFinished writing %s metadata to %s' % (primitive_field, csvDirectory))
-
-if parseerrordatasets:
-    parseerrordatasets = set(parseerrordatasets)
-    print('The following %s JSON file(s) could not be parsed. It/they may be draft or deaccessioned dataset(s):' % (len(parseerrordatasets)))
-    print(*parseerrordatasets, sep='\n')
+    print('\nFinished writing %s metadata to %s' % (primitive_field, primitive_field_csv_filepath))
 
 # Delete any CSV files that are empty and report
 deletedfiles = []
