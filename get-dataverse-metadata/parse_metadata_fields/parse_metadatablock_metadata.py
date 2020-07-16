@@ -13,7 +13,7 @@ from tkinter import *
 
 # Create, title and size the window
 window = Tk()
-window.title('Get metadata from primitive fields')
+window.title('Get metadata from a metadatablock')
 window.geometry('600x400')  # width x height
 
 
@@ -81,7 +81,7 @@ button_getJSONFiles.grid(sticky='w', column=0, row=5)
 window.grid_rowconfigure(7, minsize=25)
 
 # Create label for button to browse for directory to add csv files in
-label_tablesDirectory = Label(window, text='Choose folder to store the folder of CSV files:', anchor='w')
+label_tablesDirectory = Label(window, text='Choose folder to store the CSV files:', anchor='w')
 label_tablesDirectory.grid(sticky='w', column=0, row=8, pady=2)
 
 # Create button to browse for directory containing JSON files
