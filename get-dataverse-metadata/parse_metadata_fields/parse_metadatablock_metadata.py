@@ -196,8 +196,6 @@ for parent_compound_field in compound_field_dictionary:
                     else:
                         total = 1
 
-                    # If there are compound fields
-                    # if total:
                     index = 0
                     condition = True
 
@@ -211,9 +209,6 @@ for parent_compound_field in compound_field_dictionary:
                         # Save subfield values to variables
                         for subfield in subfields:
                             globals()[subfield] = getsubfields(parent_compound_field, subfield)
-
-                        # Append fields to the csv file
-                        # with open(compound_field_csv_filepath, mode='a', newline='') as metadatafile:
 
                         # Create list of variables
                         row_variables = [dataset_id, persistentUrl]
