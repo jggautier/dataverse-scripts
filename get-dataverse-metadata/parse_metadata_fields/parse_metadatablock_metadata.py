@@ -139,7 +139,7 @@ for parentfield in compoundfields:
 def getsubfields(parent_compound_field, subfield):
     try:
         for fields in dataset_metadata['data']['latestVersion']['metadataBlocks'][metadatablock_name]['fields']:
-            # If the compound field allows multiple values, use the index variable to iterate over each variable
+            # If the compound field allows multiple instances, use the index variable to iterate over each instance
             if fields['typeName'] == parent_compound_field and fields['multiple'] is True:
                 subfield = fields['value'][index][subfield]['value']
             # If the compound field doesn't allow multiple values, the index isn't needed
