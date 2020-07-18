@@ -155,7 +155,8 @@ for parent_compound_field in compound_field_dictionary:
 
     # Create table in directory user chose
     compound_field_csv_filename = '%s.%s.csv' % (metadatablock_name, parent_compound_field)
-    compound_field_csv_filepath = os.path.join(csvDirectory, compound_field_csv_filename)
+    # compound_field_csv_filepath = os.path.join(csvDirectory, compound_field_csv_filename)
+    compound_field_csv_filepath = Path(csvDirectory) / compound_field_csv_filename
 
     print('\nCreating CSV file for %s metadata' % (parent_compound_field))
 
@@ -343,7 +344,7 @@ for primitive_field in primitive_fields:
 deletedfiles = []
 # for file in glob.glob(os.path.join(csvDirectory, '*.csv')):
 for file in glob.glob(str(Path(csvDirectory)) + '/' + '*.csv'):
-    print(file)
+    # print(file)
 # for file in os.listdir(os.path.join(csvDirectory, '*.csv')):
     with open(file, 'r', encoding='utf-8') as f:
         num_rows = 0
@@ -351,10 +352,11 @@ for file in glob.glob(str(Path(csvDirectory)) + '/' + '*.csv'):
             num_rows += 1
         # reader = csv.reader(f, delimiter=',')
         # data = list(reader)
-        print('\tnum_rows is %s' % (num_rows))
-        row_count = len(data)  # - 1
-        print('\trow_count is %s' % (row_count))
-        if row_count == 0:
+        # print('\tnum_rows is %s' % (num_rows))
+        # row_count = len(data)  # - 1
+        # print('\trow_count is %s' % (row_count))
+        # if row_count == 1:
+        if num_rows == 1:
             filename = Path(file).name
             deletedfiles.append(filename)
             os.remove(file)
