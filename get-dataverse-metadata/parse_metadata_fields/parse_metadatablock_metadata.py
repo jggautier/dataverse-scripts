@@ -347,18 +347,19 @@ for file in glob.glob(str(Path(csvDirectory)) + '/' + '*.csv'):
     # print(file)
 # for file in os.listdir(os.path.join(csvDirectory, '*.csv')):
     with open(file, 'r', encoding='utf-8') as f:
-        num_rows = 0
-        for row in f:
-            num_rows += 1
-        # reader = csv.reader(f, delimiter=',')
-        # data = list(reader)
+        # num_rows = 0
+        # for row in f:
+        #     num_rows += 1
+        reader = csv.reader(f, delimiter=',')
+        data = list(reader)
         # print('\tnum_rows is %s' % (num_rows))
-        # row_count = len(data)  # - 1
+        row_count = len(data)
         # print('\trow_count is %s' % (row_count))
-        # if row_count == 1:
-        if num_rows == 1:
+        if row_count == 1:
+        # if num_rows == 1:
             filename = Path(file).name
             deletedfiles.append(filename)
+            f.close()
             os.remove(file)
 if deletedfiles:
     print('\n%s files have no metadata and were deleted:' % (len(deletedfiles)))
