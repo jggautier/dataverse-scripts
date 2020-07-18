@@ -164,7 +164,7 @@ for parent_compound_field in compound_field_dictionary:
     ids = ['dataset_id', 'persistentUrl']
     header_row = ids + subfields
 
-    with open(compound_field_csv_filepath, mode='w', encoding='utf-8', newline='') as metadatafile:
+    with open(compound_field_csv_filepath, mode='w', newline='') as metadatafile:
         metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         metadatafile.writerow(header_row)  # Create header row
 
@@ -214,7 +214,7 @@ for parent_compound_field in compound_field_dictionary:
                                 globals()[subfield] = getsubfields(parent_compound_field, subfield)
 
                             # Append fields to the csv file
-                            with open(compound_field_csv_filepath, mode='a', encoding='utf-8', newline='') as metadatafile:
+                            with open(compound_field_csv_filepath, mode='a', newline='') as metadatafile:
 
                                 # Create list of variables
                                 row_variables = [dataset_id, persistentUrl]
@@ -261,7 +261,7 @@ for primitive_field in primitive_fields:
     # primitive_field_csv_filepath = os.path.join(csvDirectory, primitive_field_filename)
     primitive_field_csv_filepath = Path(csvDirectory) / primitive_field_filename
 
-    with open(primitive_field_csv_filepath, mode='w', encoding='utf-8', newline='') as metadatafile:
+    with open(primitive_field_csv_filepath, mode='w', newline='') as metadatafile:
         metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
         # Create header row
@@ -297,7 +297,7 @@ for primitive_field in primitive_fields:
                             # persistentUrl = dataset_metadata['data']['persistentUrl']
                             # dataset_id = str(dataset_metadata['data']['id'])
 
-                            with open(primitive_field_csv_filepath, mode='a', encoding='utf-8', newline='') as metadatafile:
+                            with open(primitive_field_csv_filepath, mode='a', newline='') as metadatafile:
 
                                 metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
@@ -312,7 +312,7 @@ for primitive_field in primitive_fields:
                         elif isinstance(value, list):
                             for value in fields['value']:
                                 # persistentUrl = dataset_metadata['data']['persistentUrl']
-                                with open(primitive_field_csv_filepath, mode='a', encoding='utf-8', newline='') as metadatafile:
+                                with open(primitive_field_csv_filepath, mode='a', newline='') as metadatafile:
 
                                     metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
