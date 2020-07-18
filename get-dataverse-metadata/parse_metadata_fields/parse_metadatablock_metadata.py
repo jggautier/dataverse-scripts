@@ -189,7 +189,7 @@ for parent_compound_field in compound_field_dictionary:
             # Count number of the given compound fields
             for fields in dataset_metadata['data']['latestVersion']['metadataBlocks'][metadatablock_name]['fields']:
                 if fields['typeName'] == parent_compound_field:  # Find compound name
-                    # If there compound field allow multiple values, assign the number of values to the total variable
+                    # If the compound field allows multiple values, assign the number of values to the total variable
                     if fields['multiple'] is True:
                         total = len(fields['value'])
                     # Otherwise, the compound field allows only one value
@@ -197,41 +197,42 @@ for parent_compound_field in compound_field_dictionary:
                         total = 1
 
                     # If there are compound fields
-                    if total:
-                        index = 0
-                        condition = True
+                    # if total:
+                    index = 0
+                    condition = True
 
-                        while (condition):
+                    while condition:
+                        # Save the dataset id of each dataset
+                        dataset_id = str(dataset_metadata['data']['id'])
 
-                            # Save the dataset id of each dataset
-                            dataset_id = str(dataset_metadata['data']['id'])
+                        # Save the identifier of each dataset
+                        persistentUrl = dataset_metadata['data']['persistentUrl']
 
-                            # Save the identifier of each dataset
-                            persistentUrl = dataset_metadata['data']['persistentUrl']
+                        # Save subfield values to variables
+                        for subfield in subfields:
+                            globals()[subfield] = getsubfields(parent_compound_field, subfield)
 
-                            # Save subfield values to variables
-                            for subfield in subfields:
-                                globals()[subfield] = getsubfields(parent_compound_field, subfield)
+                        # Append fields to the csv file
+                        # with open(compound_field_csv_filepath, mode='a', newline='') as metadatafile:
 
-                            # Append fields to the csv file
-                            with open(compound_field_csv_filepath, mode='a', newline='') as metadatafile:
+                        # Create list of variables
+                        row_variables = [dataset_id, persistentUrl]
+                        for subfield in subfields:
+                            row_variables.append(globals()[subfield])
 
-                                # Create list of variables
-                                row_variables = [dataset_id, persistentUrl]
-                                for subfield in subfields:
-                                    row_variables.append(globals()[subfield])
+                        # Append fields to the csv file
+                        with open(compound_field_csv_filepath, mode='a', newline='', encoding='utf-8') as metadatafile:
+                            metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-                                metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                            # Write new row using list of variables
+                            metadatafile.writerow(row_variables)
 
-                                # Write new row using list of variables
-                                metadatafile.writerow(row_variables)
+                            # As a progress indicator, print a dot each time a row is written
+                            sys.stdout.write('.')
+                            sys.stdout.flush()
 
-                                # As a progress indicator, print a dot each time a row is written
-                                sys.stdout.write('.')
-                                sys.stdout.flush()
-
-                            index += 1
-                            condition = index < total
+                        index += 1
+                        condition = index < total
 
         else:
             continue
@@ -297,7 +298,7 @@ for primitive_field in primitive_fields:
                             # persistentUrl = dataset_metadata['data']['persistentUrl']
                             # dataset_id = str(dataset_metadata['data']['id'])
 
-                            with open(primitive_field_csv_filepath, mode='a', newline='') as metadatafile:
+                            with open(primitive_field_csv_filepath, mode='a', newline='', encoding='utf-8') as metadatafile:
 
                                 metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
@@ -312,7 +313,7 @@ for primitive_field in primitive_fields:
                         elif isinstance(value, list):
                             for value in fields['value']:
                                 # persistentUrl = dataset_metadata['data']['persistentUrl']
-                                with open(primitive_field_csv_filepath, mode='a', newline='') as metadatafile:
+                                with open(primitive_field_csv_filepath, mode='a', newline='', encoding='utf-8') as metadatafile:
 
                                     metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
@@ -330,7 +331,7 @@ for primitive_field in primitive_fields:
 # Delete any CSV files that are empty and report
 deletedfiles = []
 for file in glob.glob(str(Path(csvDirectory)) + '/' + '*.csv'):
-    with open(file, 'r', encoding='utf-8') as f:
+    with open(file, mode='r', encoding='utf-8') as f:
 
         reader = csv.reader(f, delimiter=',')
         data = list(reader)
