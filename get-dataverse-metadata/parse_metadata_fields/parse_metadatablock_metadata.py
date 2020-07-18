@@ -163,7 +163,7 @@ for parent_compound_field in compound_field_dictionary:
     ids = ['dataset_id', 'persistentUrl']
     header_row = ids + subfields
 
-    with open(compound_field_csv_filepath, mode='w') as metadatafile:
+    with open(compound_field_csv_filepath, mode='w', encoding = 'utf-8') as metadatafile:
         metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         metadatafile.writerow(header_row)  # Create header row
 
@@ -213,7 +213,7 @@ for parent_compound_field in compound_field_dictionary:
                                 globals()[subfield] = getsubfields(parent_compound_field, subfield)
 
                             # Append fields to the csv file
-                            with open(compound_field_csv_filepath, mode='a') as metadatafile:
+                            with open(compound_field_csv_filepath, mode='a', encoding = 'utf-8') as metadatafile:
 
                                 # Create list of variables
                                 row_variables = [dataset_id, persistentUrl]
@@ -221,8 +221,8 @@ for parent_compound_field in compound_field_dictionary:
                                     row_variables.append(globals()[subfield])
 
                                 # Convert all characters to utf-8
-                                def to_utf8(lst):
-                                    return [unicode(elem).encode('utf-8') for elem in lst]
+                                # def to_utf8(lst):
+                                #     return [unicode(elem).encode('utf-8') for elem in lst]
 
                                 metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
@@ -261,9 +261,10 @@ for primitive_field in primitive_fields:
 
     # Store path of CSV file to variable
     primitive_field_filename = '%s.%s.csv' % (metadatablock_name, primitive_field)
-    primitive_field_csv_filepath = os.path.join(csvDirectory, primitive_field_filename)
+    # primitive_field_csv_filepath = os.path.join(csvDirectory, primitive_field_filename)
+    primitive_field_csv_filepath = Path(csvDirectory) / primitive_field_filename
 
-    with open(primitive_field_csv_filepath, mode='w') as metadatafile:
+    with open(primitive_field_csv_filepath, mode='w', encoding = 'utf-8') as metadatafile:
         metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
         # Create header row
@@ -287,6 +288,7 @@ for primitive_field in primitive_fields:
 
                 # Save the dataset id of each dataset
                 dataset_id = str(dataset_metadata['data']['id'])
+                persistentUrl = dataset_metadata['data']['persistentUrl']
 
                 # Couple each field value with the dataset_id and write as a row to subjects.csv
                 for fields in dataset_metadata['data']['latestVersion']['metadataBlocks'][metadatablock_name]['fields']:
@@ -295,14 +297,14 @@ for primitive_field in primitive_fields:
 
                         # Check if value is a string, which means the field doesn't allow multiple values
                         if isinstance(value, str):
-                            persistentUrl = dataset_metadata['data']['persistentUrl']
-                            dataset_id = str(dataset_metadata['data']['id'])
+                            # persistentUrl = dataset_metadata['data']['persistentUrl']
+                            # dataset_id = str(dataset_metadata['data']['id'])
 
-                            with open(primitive_field_csv_filepath, mode='a') as metadatafile:
+                            with open(primitive_field_csv_filepath, mode='a', encoding='utf-8') as metadatafile:
 
                                 # Convert all characters to utf-8 to avoid encoding errors when writing to the csv file
-                                def to_utf8(lst):
-                                    return [unicode(elem).encode('utf-8') for elem in lst]
+                                # def to_utf8(lst):
+                                #     return [unicode(elem).encode('utf-8') for elem in lst]
 
                                 metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
@@ -316,12 +318,12 @@ for primitive_field in primitive_fields:
                         # Check if value is a list, which means the field allows multiple values
                         elif isinstance(value, list):
                             for value in fields['value']:
-                                persistentUrl = dataset_metadata['data']['persistentUrl']
-                                with open(primitive_field_csv_filepath, mode='a') as metadatafile:
+                                # persistentUrl = dataset_metadata['data']['persistentUrl']
+                                with open(primitive_field_csv_filepath, mode='a', encoding='utf-8') as metadatafile:
 
                                     # Convert all characters to utf-8 to avoid encoding errors when writing to the csv file
-                                    def to_utf8(lst):
-                                        return [unicode(elem).encode('utf-8') for elem in lst]
+                                    # def to_utf8(lst):
+                                    #     return [unicode(elem).encode('utf-8') for elem in lst]
 
                                     metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
@@ -338,11 +340,19 @@ for primitive_field in primitive_fields:
 
 # Delete any CSV files that are empty and report
 deletedfiles = []
-for file in glob.glob(os.path.join(csvDirectory, '*.csv')):
-    with open(file, 'r') as f:
-        reader = csv.reader(f, delimiter=',')
-        data = list(reader)
-        row_count = len(data) - 1
+# for file in glob.glob(os.path.join(csvDirectory, '*.csv')):
+for file in glob.glob(str(Path(csvDirectory)) + '/' + '*.csv'):
+    print(file)
+# for file in os.listdir(os.path.join(csvDirectory, '*.csv')):
+    with open(file, 'r', encoding='utf-8') as f:
+        num_rows = 0
+        for row in f:
+            num_rows += 1
+        # reader = csv.reader(f, delimiter=',')
+        # data = list(reader)
+        print('\tnum_rows is %s' % (num_rows))
+        row_count = len(data) # - 1
+        print('\trow_count is %s' % (row_count))
         if row_count == 0:
             filename = Path(file).name
             deletedfiles.append(filename)
