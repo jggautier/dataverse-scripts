@@ -221,8 +221,8 @@ for parent_compound_field in compound_field_dictionary:
                                     row_variables.append(globals()[subfield])
 
                                 # Convert all characters to utf-8
-                                def to_utf8(lst):
-                                    return [unicode(elem).encode('utf-8') for elem in lst]
+                                # def to_utf8(lst):
+                                #     return [unicode(elem).encode('utf-8') for elem in lst]
 
                                 metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
@@ -301,8 +301,8 @@ for primitive_field in primitive_fields:
                             with open(primitive_field_csv_filepath, mode='a') as metadatafile:
 
                                 # Convert all characters to utf-8 to avoid encoding errors when writing to the csv file
-                                def to_utf8(lst):
-                                    return [unicode(elem).encode('utf-8') for elem in lst]
+                                # def to_utf8(lst):
+                                #     return [unicode(elem).encode('utf-8') for elem in lst]
 
                                 metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
@@ -320,8 +320,8 @@ for primitive_field in primitive_fields:
                                 with open(primitive_field_csv_filepath, mode='a') as metadatafile:
 
                                     # Convert all characters to utf-8 to avoid encoding errors when writing to the csv file
-                                    def to_utf8(lst):
-                                        return [unicode(elem).encode('utf-8') for elem in lst]
+                                    # def to_utf8(lst):
+                                        # return [unicode(elem).encode('utf-8') for elem in lst]
 
                                     metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
