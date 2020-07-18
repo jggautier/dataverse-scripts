@@ -221,10 +221,6 @@ for parent_compound_field in compound_field_dictionary:
                                 for subfield in subfields:
                                     row_variables.append(globals()[subfield])
 
-                                # Convert all characters to utf-8
-                                # def to_utf8(lst):
-                                #     return [unicode(elem).encode('utf-8') for elem in lst]
-
                                 metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                                 # Write new row using list of variables
@@ -303,10 +299,6 @@ for primitive_field in primitive_fields:
 
                             with open(primitive_field_csv_filepath, mode='a', encoding='utf-8', newline='') as metadatafile:
 
-                                # Convert all characters to utf-8 to avoid encoding errors when writing to the csv file
-                                # def to_utf8(lst):
-                                #     return [unicode(elem).encode('utf-8') for elem in lst]
-
                                 metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                                 # Write new row
@@ -321,11 +313,6 @@ for primitive_field in primitive_fields:
                             for value in fields['value']:
                                 # persistentUrl = dataset_metadata['data']['persistentUrl']
                                 with open(primitive_field_csv_filepath, mode='a', encoding='utf-8', newline='') as metadatafile:
-
-                                    # Convert all characters to utf-8 to avoid encoding errors when writing to the csv file
-                                    # def to_utf8(lst):
-                                        # return [unicode(elem).encode('utf-8') for elem in lst]
-                                    #     return [unicode(elem).encode('utf-8') for elem in lst]
 
                                     metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
@@ -342,21 +329,13 @@ for primitive_field in primitive_fields:
 
 # Delete any CSV files that are empty and report
 deletedfiles = []
-# for file in glob.glob(os.path.join(csvDirectory, '*.csv')):
 for file in glob.glob(str(Path(csvDirectory)) + '/' + '*.csv'):
-    # print(file)
-# for file in os.listdir(os.path.join(csvDirectory, '*.csv')):
     with open(file, 'r', encoding='utf-8') as f:
-        # num_rows = 0
-        # for row in f:
-        #     num_rows += 1
+
         reader = csv.reader(f, delimiter=',')
         data = list(reader)
-        # print('\tnum_rows is %s' % (num_rows))
         row_count = len(data)
-        # print('\trow_count is %s' % (row_count))
         if row_count == 1:
-        # if num_rows == 1:
             filename = Path(file).name
             deletedfiles.append(filename)
             f.close()
