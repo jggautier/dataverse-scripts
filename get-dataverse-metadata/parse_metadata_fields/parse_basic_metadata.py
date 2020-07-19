@@ -79,7 +79,7 @@ print('Creating CSV file')
 
 with open(filename, mode='w') as metadatafile:
 	metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-	metadatafile.writerow(['dataset_id', 'persistentUrl', 'publicationdate', 'versionstate', 'latestversionnumber', 'versionreleasetime'])  # Create header row
+	metadatafile.writerow(['dataset_id', 'persistentUrl', 'publicationdate', 'versionstate', 'latestversionnumber', 'versionreleasetime', 'publisher'])  # Create header row
 
 print('Getting metadata:')
 
@@ -95,6 +95,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
 	versionState = dataset_metadata['data']['latestVersion']['versionState']
 	latestversionnumber = str(dataset_metadata['data']['latestVersion']['versionNumber']) + '.' + str(dataset_metadata['data']['latestVersion']['versionMinorNumber'])
 	versionreleasetime = dataset_metadata['data']['latestVersion']['releaseTime']
+	publisher = dataset_metadata['data']['publisher']
 
 	# Write fields to the csv file
 	with open(filename, mode='a') as metadatafile:
@@ -106,7 +107,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
 		metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
 		# Write new row
-		metadatafile.writerow([dataset_id, persistentUrl, publicationDate, versionState, latestversionnumber, versionreleasetime])
+		metadatafile.writerow([dataset_id, persistentUrl, publicationDate, versionState, latestversionnumber, versionreleasetime, publisher])
 
 	# As a progress indicator, print a dot each time a row is written
 	sys.stdout.write('.')
