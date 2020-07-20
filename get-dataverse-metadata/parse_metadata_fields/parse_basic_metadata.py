@@ -4,6 +4,7 @@ import csv
 import json
 import glob
 import os
+from pathlib import Path
 from tkinter import filedialog
 from tkinter import ttk
 from tkinter import *
@@ -82,34 +83,37 @@ with open(filename, mode='w') as metadatafile:
 	metadatafile.writerow(['dataset_id', 'persistentUrl', 'publicationdate', 'versionstate', 'latestversionnumber', 'versionreleasetime', 'publisher'])  # Create header row
 
 print('Getting metadata:')
-
+error_files = []
 for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON file in a folder
 	with open(file, 'r') as f1:  # Open each file in read mode
 		dataset_metadata = f1.read()  # Copy content to dataset_metadata variable
 		dataset_metadata = json.loads(dataset_metadata)  # Load content in variable as a json object
 
-	# Save the metadata values in variables
-	dataset_id = dataset_metadata['data']['id']
-	persistentUrl = dataset_metadata['data']['persistentUrl']
-	publicationDate = dataset_metadata['data']['publicationDate']
-	versionState = dataset_metadata['data']['latestVersion']['versionState']
-	latestversionnumber = str(dataset_metadata['data']['latestVersion']['versionNumber']) + '.' + str(dataset_metadata['data']['latestVersion']['versionMinorNumber'])
-	versionreleasetime = dataset_metadata['data']['latestVersion']['releaseTime']
-	publisher = dataset_metadata['data']['publisher']
+		if dataset_metadata.get('data'):  # Check if JSON file has "data" key
+			dataset_id = dataset_metadata['data']['id']
+			persistentUrl = dataset_metadata['data']['persistentUrl']
+			publicationDate = dataset_metadata['data']['publicationDate']
+			versionState = dataset_metadata['data']['latestVersion']['versionState']
+			latestversionnumber = str(dataset_metadata['data']['latestVersion']['versionNumber']) + '.' + str(dataset_metadata['data']['latestVersion']['versionMinorNumber'])
+			versionreleasetime = dataset_metadata['data']['latestVersion']['releaseTime']
+			publisher = dataset_metadata['data']['publisher']
 
-	# Write fields to the csv file
-	with open(filename, mode='a') as metadatafile:
+			# Write fields to the csv file
+			with open(filename, mode='a') as metadatafile:
 
-		# Convert all characters to utf-8
-		def to_utf8(lst):
-			return [unicode(elem).encode('utf-8') for elem in lst]
+				# Convert all characters to utf-8
+				def to_utf8(lst):
+					return [unicode(elem).encode('utf-8') for elem in lst]
 
-		metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+				metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-		# Write new row
-		metadatafile.writerow([dataset_id, persistentUrl, publicationDate, versionState, latestversionnumber, versionreleasetime, publisher])
+				# Write new row
+				metadatafile.writerow([dataset_id, persistentUrl, publicationDate, versionState, latestversionnumber, versionreleasetime, publisher])
 
-	# As a progress indicator, print a dot each time a row is written
-	sys.stdout.write('.')
-	sys.stdout.flush()
-print('\n')
+			# As a progress indicator, print a dot each time a row is written
+			sys.stdout.write('.')
+			sys.stdout.flush()
+		else:  # If JSON file doens't have "data" key, add file to list of error_files
+			error_files.append(Path(file).name)
+if error_files:
+	print('\nThe following files may not have metadata:%s' % (error_files))
