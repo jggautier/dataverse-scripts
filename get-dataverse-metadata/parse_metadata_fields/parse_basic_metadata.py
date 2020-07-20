@@ -84,12 +84,19 @@ with open(filename, mode='w') as metadatafile:
 
 print('Getting metadata:')
 error_files = []
-for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON file in a folder
-	with open(file, 'r') as f1:  # Open each file in read mode
-		dataset_metadata = f1.read()  # Copy content to dataset_metadata variable
-		dataset_metadata = json.loads(dataset_metadata)  # Load content in variable as a json object
 
-		if dataset_metadata.get('data'):  # Check if JSON file has "data" key
+# For each JSON file in a folder
+for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
+
+	# Open each file in read mode
+	with open(file, 'r') as f1:
+		# Copy content to dataset_metadata variable
+		dataset_metadata = f1.read()
+		# Load content in variable as a json object
+		dataset_metadata = json.loads(dataset_metadata)
+
+		# Check if JSON file has "data" key
+		if dataset_metadata['status'] == 'OK':
 			dataset_id = dataset_metadata['data']['id']
 			persistentUrl = dataset_metadata['data']['persistentUrl']
 			publicationDate = dataset_metadata['data']['publicationDate']
@@ -113,7 +120,10 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
 			# As a progress indicator, print a dot each time a row is written
 			sys.stdout.write('.')
 			sys.stdout.flush()
-		else:  # If JSON file doens't have "data" key, add file to list of error_files
+
+		# If JSON file doens't have "data" key, add file to list of error_files
+		else:
 			error_files.append(Path(file).name)
+
 if error_files:
 	print('\nThe following files may not have metadata:%s' % (error_files))
