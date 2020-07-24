@@ -37,10 +37,19 @@ misindexed_datasets_count = 0
 url = '%s/api/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&start=%s&sort=date&order=desc&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' % (server, start, startdate, enddate, apikey)
 response = requests.get(url)
 data = response.json()
-total = data['data']['total_count']
+
+# If Search API is working, get total
+if data['status'] == 'OK':
+    total = data['data']['total_count']
+
+# If Search API is not working, print error message and stop script
+elif data['status'] == 'ERROR':
+    error_message = data['message']
+    print('error_message')
+    exit()
 
 print('Searching for dataset PIDs:')
-while (condition):
+while condition:
     try:
         per_page = 10
         url = '%s/api/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' % (server, per_page, start, startdate, enddate, apikey)
@@ -78,7 +87,6 @@ while (condition):
             start = start + per_page
 
         # If page fails to load, count a misindexed dataset and continue to the next page
-        # except:
         except Exception:
             misindexed_datasets_count += 1
             start = start + per_page
@@ -89,9 +97,9 @@ while (condition):
 if misindexed_datasets_count:
     print('\n\nDatasets misindexed: %s\n' % (misindexed_datasets_count))
 
-# If API key is used, deduplicate PIDs in dataset_pids list. (For published datasets with a draft version,
-# the Search API lists the PID twice, once for published versions and once for draft versions.)
-if apikey:
+# If there are duplicate PIDs, report the number of unique PIDs and explain: For published datasets with a draft version,
+# the Search API lists the PID twice, once for published versions and once for draft versions.
+if len(dataset_pids) != len(set(dataset_pids)):
     unique_dataset_pids = set(dataset_pids)
     print('Unique datasets: %s (The Search API lists both the draft and most recently published versions of datasets)' % (len(unique_dataset_pids)))
 
@@ -147,26 +155,22 @@ for pid in unique_dataset_pids:
 
     # Construct "Get JSON" API endpoint url and get data about each dataset's latest version
     try:
-        if apikey:
-            url = '%s/api/datasets/:persistentId/?persistentId=%s&key=%s' % (server, pid, apikey)
-        else:
-            url = '%s/api/datasets/:persistentId/?persistentId=%s' % (server, pid)
-        # Store dataset and file info from API call to "data" variable
+        url = '%s/api/datasets/:persistentId/?persistentId=%s&key=%s' % (server, pid, apikey)
+
+        # Store dataset and file info from API call to "data_getLatestVersion" variable
         response = requests.get(url)
         data_getLatestVersion = response.json()
-    except urllib.error.URLError:
+    except Exception:
         piderrors.append(pid)
 
     # Construct "Search API" url to get name of each dataset's dataverse
     try:
-        if apikey:
-            url = '%s/api/search?q="%s"&type=dataset&key=%s' % (server, pid, apikey)
-        else:
-            url = '%s/api/search?q="%s"&type=dataset' % (server, pid)
+        url = '%s/api/search?q="%s"&type=dataset&key=%s' % (server, pid, apikey)
+
         # Store Search API result to "data_dvName" variable
         response = requests.get(url)
         data_dvName = response.json()
-    except urllib.error.URLError:
+    except Exception:
         piderrors.append(pid)
 
     # Save dataset title and dataverse name
