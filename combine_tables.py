@@ -1,4 +1,4 @@
-# Join (full outer join) csv files in a given directory
+# Join (full outer join) CSV files in a given directory
 
 from functools import reduce
 import glob
@@ -12,7 +12,7 @@ from tkinter import *
 
 # Create, title and size the window
 window = Tk()
-window.title('Join csv files')
+window.title('Join CSV files')
 window.geometry('550x250')  # width x height
 
 
@@ -56,8 +56,8 @@ button_getCsvFiles.grid(sticky='w', column=0, row=1)
 # Create empty row in grid to improve spacing between the two fields
 window.grid_rowconfigure(3, minsize=25)
 
-# Create label for button to browse for directory to add csv files in
-label_mergedFileDirectory = Label(window, text='Choose folder to store the csv file:', anchor='w')
+# Create label for button to browse for directory to add CSV files in
+label_mergedFileDirectory = Label(window, text='Choose folder to store the CSV file:', anchor='w')
 label_mergedFileDirectory.grid(sticky='w', column=0, row=4, pady=2)
 
 # Create button to browse for directory containing JSON files
@@ -73,21 +73,29 @@ mainloop()
 
 directory_name = csvDirectory.split('/')[-1]
 
-# Create csv file in the directory that the user selected
+# Create CSV file in the directory that the user selected
 filename = os.path.join(mergedFileDirectory, '%s_merged.csv' % (directory_name))
 
-# Save directory paths to each csv file as a list and save in 'all_tables' variable
+# Save directory paths to each CSV file as a list and save in 'all_tables' variable
 all_tables = glob.glob(os.path.join(csvDirectory, '*.csv'))
 
-# Create a dataframe of each csv file in the 'all-tables' list
+print('Creating a dataframe for each CSV file...')
+
+# Create a dataframe of each CSV file in the 'all-tables' list
 dataframes = [pd.read_csv(table, sep=',') for table in all_tables]
 
 # For each dataframe, set the indexes (or the common columns across the dataframes to join on)
 for dataframe in dataframes:
     dataframe.set_index(['dataset_id', 'persistentUrl'], inplace=True)
 
+print('Joining dataframes into one dataframe...')
+
 # Merge all dataframes and save to the 'merged' variable
 merged = reduce(lambda left, right: left.join(right, how='outer'), dataframes)
 
-# Export merged dataframe to a csv file
+print('Exporting joined dataframe to a CSV file...')
+
+# Export merged dataframe to a CSV file
 merged.to_csv(filename)
+
+print('Joined dataframe exported to %s' % (filename))
