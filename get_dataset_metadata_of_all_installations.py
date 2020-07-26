@@ -47,13 +47,9 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 # Get JSON data from Dataverse installations map
 print('Getting Dataverse installation data...')
-# map_data_url = 'https://raw.githubusercontent.com/IQSS/dataverse-installations/master/data/data.json'
-# response = requests.get(map_data_url, headers=headers)
-# mapdata = response.json()
-
-with open('/Users/juliangautier/Desktop/mapdata.json', 'r') as f:  # Open file in read mode
-    mapdata = f.read()  # Copy content to dataset_metadata variable
-    mapdata = json.loads(mapdata)  # Load content as a python dict
+map_data_url = 'https://raw.githubusercontent.com/IQSS/dataverse-installations/master/data/data.json'
+response = requests.get(map_data_url, headers=headers)
+mapdata = response.json()
 
 count_of_installations = len(mapdata['installations'])
 
@@ -164,16 +160,20 @@ for installation in mapdata['installations']:
             metadatablock_name = i['name']
             metadatablock_names.append(metadatablock_name)
 
-        print('\tDownloading %s metadatablock JSON file(s) into metadatablocks folder' % ((len(metadatablock_names))))
+        print('\tDownloading metadatablock JSON file(s) into metadatablocks folder')
 
         for metadatablock_name in metadatablock_names:
             metadatablock_api = '%s/%s' % (metadatablocks_api, metadatablock_name)
             response = requests.get(metadatablock_api, verify=False)
+            metadata = response.json()
 
-            metadatablock_file = str(Path(metadatablockFileDirectoryPath)) + '/' '%s_(Dataverse_version_%s).json' % (metadatablock_name, dataverse_version)
+            # If the metadatablock has fields, download the metadatablock data into a JSON file
+            if len(metadata['data']['fields']) > 0:
 
-            with open(metadatablock_file, mode='w') as f:
-                f.write(json.dumps(response.json(), indent=4))
+                metadatablock_file = str(Path(metadatablockFileDirectoryPath)) + '/' '%s_(Dataverse_version_%s).json' % (metadatablock_name, dataverse_version)
+
+                with open(metadatablock_file, mode='w') as f:
+                    f.write(json.dumps(response.json(), indent=4))
 
         # Use the Search API to get the repository's dataset PIDs and write them to a text file,
         # and use the "Get dataset JSON" endpoint to get those datasets' metadata

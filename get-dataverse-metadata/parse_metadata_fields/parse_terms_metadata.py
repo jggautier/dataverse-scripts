@@ -104,43 +104,46 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
 		dataset_metadata = f1.read()  # Copy content to dataset_metadata variable
 		dataset_metadata = json.loads(dataset_metadata)  # Load content in variable as a json object
 
-	# Save the metadata values in variables
-	dataset_id = dataset_metadata['data']['id']
-	persistentUrl = dataset_metadata['data']['persistentUrl']
-	license = improved_get(dataset_metadata, 'data.latestVersion.license')
-	termsOfUse = improved_get(dataset_metadata, 'data.latestVersion.termsOfUse')
-	confidentialityDeclaration = improved_get(dataset_metadata, 'data.latestVersion.confidentialityDeclaration')
-	specialPermissions = improved_get(dataset_metadata, 'data.latestVersion.specialPermissions')
-	restrictions = improved_get(dataset_metadata, 'data.latestVersion.restrictions')
-	citationRequirements = improved_get(dataset_metadata, 'data.latestVersion.citationRequirements')
-	depositorRequirements = improved_get(dataset_metadata, 'data.latestVersion.depositorRequirements')
-	conditions = improved_get(dataset_metadata, 'data.latestVersion.conditions')
-	disclaimer = improved_get(dataset_metadata, 'data.latestVersion.disclaimer')
-	termsOfAccess = improved_get(dataset_metadata, 'data.latestVersion.termsOfAccess')
-	dataaccessPlace = improved_get(dataset_metadata, 'data.latestVersion.dataaccessPlace')
-	originalArchive = improved_get(dataset_metadata, 'data.latestVersion.originalArchive')
-	availabilityStatus = improved_get(dataset_metadata, 'data.latestVersion.availabilityStatus')
-	contactForAccess = improved_get(dataset_metadata, 'data.latestVersion.contactForAccess')
-	sizeOfCollection = improved_get(dataset_metadata, 'data.latestVersion.sizeOfCollection')
-	studyCompletion = improved_get(dataset_metadata, 'data.latestVersion.studyCompletion')
+	# Check if status is OK and there's a latestversion key (the dataset isn't deaccessioned)
+	if (dataset_metadata['status'] == 'OK') and ('latestVersion' in dataset_metadata['data']):
 
-	# Append fields to the csv file
-	with open(filename, mode='a') as metadatafile:
+		# Save the metadata values in variables
+		dataset_id = dataset_metadata['data']['id']
+		persistentUrl = dataset_metadata['data']['persistentUrl']
+		license = improved_get(dataset_metadata, 'data.latestVersion.license')
+		termsOfUse = improved_get(dataset_metadata, 'data.latestVersion.termsOfUse')
+		confidentialityDeclaration = improved_get(dataset_metadata, 'data.latestVersion.confidentialityDeclaration')
+		specialPermissions = improved_get(dataset_metadata, 'data.latestVersion.specialPermissions')
+		restrictions = improved_get(dataset_metadata, 'data.latestVersion.restrictions')
+		citationRequirements = improved_get(dataset_metadata, 'data.latestVersion.citationRequirements')
+		depositorRequirements = improved_get(dataset_metadata, 'data.latestVersion.depositorRequirements')
+		conditions = improved_get(dataset_metadata, 'data.latestVersion.conditions')
+		disclaimer = improved_get(dataset_metadata, 'data.latestVersion.disclaimer')
+		termsOfAccess = improved_get(dataset_metadata, 'data.latestVersion.termsOfAccess')
+		dataaccessPlace = improved_get(dataset_metadata, 'data.latestVersion.dataaccessPlace')
+		originalArchive = improved_get(dataset_metadata, 'data.latestVersion.originalArchive')
+		availabilityStatus = improved_get(dataset_metadata, 'data.latestVersion.availabilityStatus')
+		contactForAccess = improved_get(dataset_metadata, 'data.latestVersion.contactForAccess')
+		sizeOfCollection = improved_get(dataset_metadata, 'data.latestVersion.sizeOfCollection')
+		studyCompletion = improved_get(dataset_metadata, 'data.latestVersion.studyCompletion')
 
-		# Convert all characters to utf-8
-		def to_utf8(lst):
-			return [unicode(elem).encode('utf-8') for elem in lst]
+		# Append fields to the csv file
+		with open(filename, mode='a') as metadatafile:
 
-		metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+			# Convert all characters to utf-8
+			def to_utf8(lst):
+				return [unicode(elem).encode('utf-8') for elem in lst]
 
-		# Write new row
-		metadatafile.writerow([
-			dataset_id, persistentUrl, license, termsOfUse, confidentialityDeclaration,
-			specialPermissions, restrictions, citationRequirements, depositorRequirements,
-			conditions, disclaimer, termsOfAccess, dataaccessPlace, originalArchive,
-			availabilityStatus, contactForAccess, sizeOfCollection, studyCompletion])
+			metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-	# As a progress indicator, print a dot each time a row is written
-	sys.stdout.write('.')
-	sys.stdout.flush()
+			# Write new row
+			metadatafile.writerow([
+				dataset_id, persistentUrl, license, termsOfUse, confidentialityDeclaration,
+				specialPermissions, restrictions, citationRequirements, depositorRequirements,
+				conditions, disclaimer, termsOfAccess, dataaccessPlace, originalArchive,
+				availabilityStatus, contactForAccess, sizeOfCollection, studyCompletion])
+
+		# As a progress indicator, print a dot each time a row is written
+		sys.stdout.write('.')
+		sys.stdout.flush()
 print('\n')
