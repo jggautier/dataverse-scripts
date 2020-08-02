@@ -89,14 +89,14 @@ with open(filename, mode='w') as metadatafile:
 print('Getting metadata:')
 
 
-# Get value of nested key or return nothing if key doesn't exist
+# Get value of nested key and truncate value to 10,000 characters or return nothing if key doesn't exist
 def improved_get(_dict, path, default=None):
 	for key in path.split('.'):
 		try:
 			_dict = _dict[key]
 		except KeyError:
 			return default
-	return _dict
+	return _dict[:10000]
 
 
 for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON file in a folder
