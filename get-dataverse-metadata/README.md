@@ -6,9 +6,9 @@ If you're interested in getting the metadata of all datasets in the [Harvard Dat
 ## General
 The scripts can be grouped into three types of scripts:
  * One script, get_dataset_json_metadata.py, takes a list of dataset PIDs and downloads the metadata of the latest published versions of those datasets (in the Dataverse JSON standard)
- * Several scripts, such as parse_basic_metadata.py and parse_compound_metadata.py, parse the JSON files to extract metadata fields in Dataverse's Citation metadata block and write them into CSV files
+ * Several scripts, such as parse_basic_metadata.py and parse_metadatablock_metadata.py, parse the JSON files to extract metadata fields and write that metadata into CSV files.
 
-To analyze the metadata in the CSVs, you can manipulate and analyze them using many methods, including MS Excel, Apple's Numbers, Google Sheets, OpenRefine, R, Python, and database applications like pgAdmin or DB Browser for SQLite.
+You can manipulate and analyze the metadata in the CSV files using many methods and tools, including MS Excel, Apple's Numbers, Google Sheets, OpenRefine, R, Python, and database applications like pgAdmin or DB Browser for SQLite.
 
 ## Installation
  * Install Python 3 if you don't already have it. There's a handy guide at https://docs.python-guide.org.
@@ -40,7 +40,7 @@ Run get_dataset_json_metadata.py, which asks for the list of dataset PIDs.
 python3 get_dataset_json_metadata.py
 ```
 
-The script creates a UI for entering the URL of the dataverse repository, the location of the text file containing the dataset PIDs you're interested in, and where you want to save the metadata files. If you're using Mac OS, upon pressing "Start" in the UI, you may see a message in your terminal that starts with "Class FIFinderSyncExtensionHost", which can be ignored. ([See the FAQ](https://github.com/jggautier/get-dataverse-metadata/tree/tkinter-gui#faq) for more info.)
+The script creates a UI for entering the URL of the dataverse repository, the location of the text file containing the dataset PIDs you're interested in, and where you want to save the metadata files and metadatablock JSON files of the repository. If you're using Mac OS, upon pressing "Start" in the UI, you may see a message in your terminal that starts with "Class FIFinderSyncExtensionHost", which can be ignored. ([See the FAQ](https://github.com/jggautier/get-dataverse-metadata/tree/tkinter-gui#faq) for more info.)
 
 Within the directory that you specified, the script will create a folder, whose name will include a timestamp, to store the downloaded JSON metadata files.
 
@@ -53,11 +53,11 @@ Run any of the scripts that start with parse_, such as parse_basic_metadata.py
 python3 parse_basic_metadata.py
 ```
 
-In the window that pops up, browse to the folder that contains the JSON files with the metadata you want, browse to the folder you want to store the CSV files in, and click Start.
+Each script will generate a window that asks for certain files and directories on your computer, depending on the script.
 
- * Running parse_basic_metadata.py will create a CSV file where the values of basic metadata fields are written, such as dataset_id, publication date, and version number.
- * Running parse_primitive_metadata.py will create multiple CSV files, one for each given "primitive fields" field in Dataverse's Citation metadata block. "Primitive fields" are just one field - they don't contain subfields. You'll have to open parse_primitive_metadata.py, edit the script to specify the database name of the primitive field, save the script and then run it.
- * To get the metadata of a compound fields, or fields that do have child fields, open parse_compound_fields.py, edit the script to specify the database names of the parent fields and all of their subfields, save the script and then run it.
+ * Running parse_basic_metadata.py will create a CSV file where the values of basic metadata fields, that aren't part of any metadatablocks, are written, such as dataset_id, publication date, and version number.
+ * Running parse_terms_metadata.py will create a CSV file where the values of the Terms of Use and Access metadata fields are written, such as Waiver, Terms of Use, and Terms of Access.
+ * Running parse_metadatablock_metadata.py will create multiple CSV files, one for each field in a given metadatablock JSON file. You'll be asked for a metadatablock JSON file that contains information about the fields you're interested in in parsing into CSV files. (The get_dataset_json_metadata.py script also retrieves the Dataverse installation's metadatablock JSON files. Or you can use the Native API endpoints documented at http://guides.dataverse.org/en/latest/api/native-api.html#metadata-blocks to get the JSON files of metadatablocks whose fields you're interested in.)
 
 ### Analyzing using the CSV files
 To analyze the metadata, you can manipulate and analyze them using many methods, including MS Excel, Apple's Numbers, Google Sheets, OpenRefine, R, Python, and database applications like pgAdmin or DB Browser for SQLite. The combine_tables.py script is provided to quickly join all of the CSV files in a directory full of CSV files, joining on the dataset_id and persistentUrl.

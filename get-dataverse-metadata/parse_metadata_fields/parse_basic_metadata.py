@@ -1,9 +1,10 @@
-# For each dataset listed in dataset_pids.txt, get basic metadata in Citation block, e.g. title, dates, versions
+# For each dataset listed in dataset_pids.txt, get the basic metadata that lives outside of the metadata blocks
 
 import csv
 import json
 import glob
 import os
+from pathlib import Path
 from tkinter import filedialog
 from tkinter import ttk
 from tkinter import *
@@ -79,36 +80,50 @@ print('Creating CSV file')
 
 with open(filename, mode='w') as metadatafile:
 	metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-	metadatafile.writerow(['dataset_id', 'persistentUrl', 'publicationdate', 'versionstate', 'latestversionnumber', 'versionreleasetime'])  # Create header row
+	metadatafile.writerow(['dataset_id', 'persistentUrl', 'publicationdate', 'versionstate', 'latestversionnumber', 'versionreleasetime', 'publisher'])  # Create header row
 
 print('Getting metadata:')
+error_files = []
 
-for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON file in a folder
-	with open(file, 'r') as f1:  # Open each file in read mode
-		dataset_metadata = f1.read()  # Copy content to dataset_metadata variable
-		dataset_metadata = json.loads(dataset_metadata)  # Load content in variable as a json object
+# For each JSON file in a folder
+for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 
-	# Save the metadata values in variables
-	dataset_id = dataset_metadata['data']['id']
-	persistentUrl = dataset_metadata['data']['persistentUrl']
-	publicationDate = dataset_metadata['data']['publicationDate']
-	versionState = dataset_metadata['data']['latestVersion']['versionState']
-	latestversionnumber = str(dataset_metadata['data']['latestVersion']['versionNumber']) + '.' + str(dataset_metadata['data']['latestVersion']['versionMinorNumber'])
-	versionreleasetime = dataset_metadata['data']['latestVersion']['releaseTime']
+	# Open each file in read mode
+	with open(file, 'r') as f1:
+		# Copy content to dataset_metadata variable
+		dataset_metadata = f1.read()
+		# Load content in variable as a json object
+		dataset_metadata = json.loads(dataset_metadata)
 
-	# Write fields to the csv file
-	with open(filename, mode='a') as metadatafile:
+		# Check if JSON file has "data" key
+		if dataset_metadata['status'] == 'OK':
+			dataset_id = dataset_metadata['data']['id']
+			persistentUrl = dataset_metadata['data']['persistentUrl']
+			publicationDate = dataset_metadata['data']['publicationDate']
+			versionState = dataset_metadata['data']['latestVersion']['versionState']
+			latestversionnumber = str(dataset_metadata['data']['latestVersion']['versionNumber']) + '.' + str(dataset_metadata['data']['latestVersion']['versionMinorNumber'])
+			versionreleasetime = dataset_metadata['data']['latestVersion']['releaseTime']
+			publisher = dataset_metadata['data']['publisher']
 
-		# Convert all characters to utf-8
-		def to_utf8(lst):
-			return [unicode(elem).encode('utf-8') for elem in lst]
+			# Write fields to the csv file
+			with open(filename, mode='a') as metadatafile:
 
-		metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+				# Convert all characters to utf-8
+				def to_utf8(lst):
+					return [unicode(elem).encode('utf-8') for elem in lst]
 
-		# Write new row
-		metadatafile.writerow([dataset_id, persistentUrl, publicationDate, versionState, latestversionnumber, versionreleasetime])
+				metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-	# As a progress indicator, print a dot each time a row is written
-	sys.stdout.write('.')
-	sys.stdout.flush()
-print('\n')
+				# Write new row
+				metadatafile.writerow([dataset_id, persistentUrl, publicationDate, versionState, latestversionnumber, versionreleasetime, publisher])
+
+			# As a progress indicator, print a dot each time a row is written
+			sys.stdout.write('.')
+			sys.stdout.flush()
+
+		# If JSON file doens't have "data" key, add file to list of error_files
+		else:
+			error_files.append(Path(file).name)
+
+if error_files:
+	print('\nThe following files may not have metadata:%s' % (error_files))

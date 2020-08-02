@@ -1,5 +1,6 @@
 # dataverse-scripts
-Scripts for automating things in a Dataverse repository, plus some other scripts. The scripts are written using Python 3.7 and a Mac OS. Compatability with earlier versions of Python and in Windows is limited, although I plan to improve compatibility with Windows over time. 
+
+Scripts for automating things in a Dataverse repository/installation, plus some other scripts. The scripts are written using Python 3 and a Mac OS. Compatability with Python 2 and Windows is limited, although I plan to improve compatibility with Windows over time. 
 
 ### get_dataset_PIDs.py
 Gets the persistent identifiers of any datasets in a given Dataverse installation or a given dataverse within that installation (and optionally all of the dataverses within that dataverse)
@@ -8,16 +9,16 @@ Gets the persistent identifiers of any datasets in a given Dataverse installatio
 
 - #### change_citation_dates.py
 - #### destroy-datasets.py
-- #### [get-dataverse-metadata](https://github.com/jggautier/dataverse-scripts/tree/master/get-dataverse-metadata):
+- #### [Get and convert metadata of datasets](https://github.com/jggautier/dataverse-scripts/tree/master/get-dataverse-metadata):
   A collection of scripts for getting JSON metadata of given datasets and parsing metadata into csv files for metadata analysis, reporting and improving.
 - #### link_datasets.py
 - #### unlock_datasets.py
 
 ### curation-report.py
-This script creates an overview of datasets created in a Dataverse-based repository in a given time frame, which can be useful for regular repository curation.
+This script creates an overview of datasets created in a Dataverse-based installation in a given time frame, which can be useful for regular curation.
 
 ### get_dataset_metadata_of_all_installations.py
-This script downloads dataset metadata of as many known Dataverse-based repositories as possible. Used to create the dataset at https://doi.org/10.7910/DVN/DCDKZQ.
+This script downloads dataset metadata of as many known Dataverse-based installations as possible. Used to create the dataset at https://doi.org/10.7910/DVN/DCDKZQ.
 
 ### Misc
 - #### publish_multiple_datasets.command

@@ -1,16 +1,16 @@
 # Python script for downloading the Dataverse JSON metadata files of given list of datasets PIDs
+# and the repository's metadatablock JSON
 
 import csv
 import json
 import os
 from pathlib import Path
 from pyDataverse.api import Api
+import requests
 import time
 from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
-from urllib.request import urlopen
-from urllib.parse import urlparse
 
 # Create GUI for getting user input
 window = Tk()
@@ -45,7 +45,7 @@ button_browseForFile.grid(sticky='w', column=0, row=5)
 window.grid_rowconfigure(7, minsize=25)
 
 # Create label for Browse directory button
-label_browseDirectory = Label(window, text='Choose folder to put the metadata files folder into:', anchor='w')
+label_browseDirectory = Label(window, text='Choose folder to put the metadata files and metadatablock files folders into:', anchor='w')
 label_browseDirectory.grid(sticky='w', column=0, row=8, pady=2)
 
 # Create Browse directory button
@@ -100,10 +100,43 @@ current_time = time.strftime('%Y.%m.%d_%H.%M.%S')
 # Save directory with dataverse alias and current time
 metadataFileDirectoryPath = str(Path(metadataFileDirectory)) + '/' + 'dataset_metadata_DataverseJSON_%s' % (current_time)
 
-# Create main directory
-os.mkdir(metadataFileDirectoryPath)
+metadatablockFileDirectoryPath = str(Path(metadataFileDirectory)) + '/' + 'metadatablocks_%s' % (current_time)
 
-# Download JSON metadata from APIs
+# Create dataset metadata and metadatablock directories
+os.mkdir(metadataFileDirectoryPath)
+os.mkdir(metadatablockFileDirectoryPath)
+
+# Download metadatablock JSON files
+# Get list of the repository's metadatablock names
+metadatablocks_api = '%s/api/v1/metadatablocks' % (repositoryURL)
+metadatablocks_api = metadatablocks_api.replace('//api', '/api')
+
+response = requests.get(metadatablocks_api)
+data = response.json()
+
+metadatablock_names = []
+for i in data['data']:
+    name = i['name']
+    metadatablock_names.append(name)
+
+print('Downloading %s metadatablock JSON file(s) into metadatablocks folder:' % ((len(metadatablock_names))))
+
+for metadatablock_name in metadatablock_names:
+    metadatablock_api = '%s/%s' % (metadatablocks_api, metadatablock_name)
+    response = requests.get(metadatablock_api)
+
+    metadatablockFileDirectoryPath
+    metadatablock_file = str(Path(metadatablockFileDirectoryPath)) + '/' '%s_%s.json' % (metadatablock_name, current_time)
+
+    with open(metadatablock_file, mode='w') as f:
+        f.write(json.dumps(response.json(), indent=4))
+
+    sys.stdout.write('.')
+    sys.stdout.flush()
+
+print('\nFinished downloading %s metadatablock JSON file(s)' % (len(metadatablock_names)))
+
+# Download dataset JSON metadata
 print('Downloading JSON metadata to dataset_metadata folder:')
 
 # Initiate count for terminal progress indicator
@@ -124,7 +157,7 @@ for pid in dataset_pids:
 	pid = pid.rstrip()
 
 	# Use the pid as the file name, replacing the colon and slashes with underscores
-	filename = '%s.json' % (pid.replace(':', '_').replace('/', '_'))
+	metadata_file = '%s.json' % (pid.replace(':', '_').replace('/', '_'))
 
 	# Use Native API endpoint for getting JSON metadata of draft datasets if api key is provided
 	# if apikey:
@@ -146,11 +179,11 @@ for pid in dataset_pids:
 	# else:
 
 	# Use pyDataverse to get the metadata of the dataset
-	resp = api.get_dataset(pid)
+	response = api.get_dataset(pid)
 
 	# Write the JSON to the new file
-	with open(os.path.join(metadataFileDirectoryPath, filename), mode='w') as f:
-		f.write(json.dumps(resp.json(), indent=4))
+	with open(os.path.join(metadataFileDirectoryPath, metadata_file), mode='w') as f:
+		f.write(json.dumps(response.json(), indent=4))
 
 	# Increase count variable to track progress
 	count += 1

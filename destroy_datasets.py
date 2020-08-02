@@ -8,7 +8,7 @@ server = ''
 # API key of super user account
 apikey = ''
 
-# Text file containing PIDs of datasets to be destroyed, e.g. doi:12345/abc/XYZ
+# Text file containing PIDs of datasets to be destroyed, e.g. /Users/user/Desktop/dois.txt
 file = ''
 
 dataset_pids = open(file)
