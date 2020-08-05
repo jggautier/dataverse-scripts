@@ -14,7 +14,7 @@ from tkinter import *
 # Create, title and size the window
 window = Tk()
 window.title('Get basic dataset metadata')
-window.geometry('550x250')  # width x height
+window.geometry('550x500')  # width x height
 
 
 # Function called when Browse button is pressed
@@ -25,7 +25,7 @@ def retrieve_jsondirectory():
 	jsonDirectory = filedialog.askdirectory()
 
 	# Show user which directory she chose
-	label_showChosenDirectory = Label(window, text='You chose: ' + jsonDirectory, anchor='w', foreground='green')
+	label_showChosenDirectory = Label(window, text='You chose: ' + jsonDirectory, anchor='w', foreground='green', wraplength=500, justify='left')
 	label_showChosenDirectory.grid(sticky='w', column=0, row=2)
 
 
@@ -37,7 +37,7 @@ def retrieve_csvdirectory():
 	csvDirectory = filedialog.askdirectory()
 
 	# Show user which directory she chose
-	label_showChosenDirectory = Label(window, text='You chose: ' + csvDirectory, anchor='w', foreground='green')
+	label_showChosenDirectory = Label(window, text='You chose: ' + csvDirectory, anchor='w', foreground='green', wraplength=500, justify='left')
 	label_showChosenDirectory.grid(sticky='w', column=0, row=6)
 
 

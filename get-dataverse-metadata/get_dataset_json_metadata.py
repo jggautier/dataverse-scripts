@@ -65,7 +65,7 @@ def retrieve_file():
 	dataset_pids = filedialog.askopenfilename(filetypes=[('Text files', '*.txt')])
 
 	# Show user which file she chose
-	label_showChosenFile = Label(window, text='You chose: ' + dataset_pids, anchor='w', foreground='green')
+	label_showChosenFile = Label(window, text='You chose: ' + dataset_pids, anchor='w', foreground='green', wraplength=500, justify='left')
 	label_showChosenFile.grid(sticky='w', column=0, row=6)
 
 
@@ -77,7 +77,7 @@ def retrieve_directory():
 	metadataFileDirectory = filedialog.askdirectory()
 
 	# Show user which directory she chose
-	label_showChosenDirectory = Label(window, text='You chose: ' + metadataFileDirectory, anchor='w', foreground='green')
+	label_showChosenDirectory = Label(window, text='You chose: ' + metadataFileDirectory, anchor='w', foreground='green', wraplength=500, justify='left')
 	label_showChosenDirectory.grid(sticky='w', column=0, row=10)
 
 

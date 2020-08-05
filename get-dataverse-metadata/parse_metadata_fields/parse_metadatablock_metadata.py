@@ -25,7 +25,7 @@ def retrieve_metadatablockfile():
     metadatablockfile = filedialog.askopenfilename(filetypes=[('JSON file', '*.json')])
 
     # Show user which directory she chose
-    label_showChosenDirectory = Label(window, text='You chose: ' + metadatablockfile, anchor='w', foreground='green')
+    label_showChosenDirectory = Label(window, text='You chose: ' + metadatablockfile, anchor='w', foreground='green', wraplength=500, justify='left')
     label_showChosenDirectory.grid(sticky='w', column=0, row=2)
 
 
@@ -37,7 +37,7 @@ def retrieve_jsondirectory():
     jsonDirectory = filedialog.askdirectory()
 
     # Show user which directory she chose
-    label_showChosenDirectory = Label(window, text='You chose: ' + jsonDirectory, anchor='w', foreground='green')
+    label_showChosenDirectory = Label(window, text='You chose: ' + jsonDirectory, anchor='w', foreground='green', wraplength=500, justify='left')
     label_showChosenDirectory.grid(sticky='w', column=0, row=6)
 
 
