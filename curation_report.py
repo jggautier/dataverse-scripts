@@ -130,7 +130,7 @@ with open(csvfilepath, mode='w') as opencsvfile:
     opencsvfile = csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
     # Create header row
-    opencsvfile.writerow(['datasetURL (publicationState)', 'datasetTitle (dataverseName)', 'fileName (fileType, fileSize)', 'lastUpdateTime', 'dvName'])
+    opencsvfile.writerow(['datasetTitle (versionState) (DOI)', 'fileName (fileSize)', 'fileType', 'lastUpdateTime', 'dataverseName (alias)'])
 
 # For each data file in each dataset, add to the CSV file the dataset's URL and publication state, dataset title, data file name and data file contentType
 
@@ -167,33 +167,33 @@ for pid in unique_dataset_pids:
     try:
         url = '%s/api/search?q="%s"&type=dataset&key=%s' % (server, pid, apikey)
 
-        # Store Search API result to "data_dvName" variable
+        # Store Search API result to "data_dataverseName" variable
         response = requests.get(url)
-        data_dvName = response.json()
+        data_dataverseName = response.json()
     except Exception:
         piderrors.append(pid)
 
-    # Save dataset title and dataverse name
-    ds_title = data_getLatestVersion['data']['latestVersion']['metadataBlocks']['citation']['fields'][0]['value']
-    dataverse_name = data_dvName['data']['items'][0]['name_of_dataverse']
-    ds_title_dvName = '%s (%s)' % (ds_title, dataverse_name)
+    # Save dataverse name and alias
+    dataverse_name = data_dataverseName['data']['items'][0]['name_of_dataverse']
+    dataverse_alias = data_dataverseName['data']['items'][0]['identifier_of_dataverse']
+    dataverse_name_alias = '%s (%s)' % (dataverse_name, dataverse_alias)
 
-    # Save dataset URL and publication state
+    # Save dataset info
+    ds_title = data_getLatestVersion['data']['latestVersion']['metadataBlocks']['citation']['fields'][0]['value']
     datasetPersistentId = data_getLatestVersion['data']['latestVersion']['datasetPersistentId']
-    datasetURL = '%s/dataset.xhtml?persistentId=%s' % (server, datasetPersistentId)
     versionState = data_getLatestVersion['data']['latestVersion']['versionState']
-    datasetURL_pubstate = '%s (%s)' % (datasetURL, versionState)
+    datasetinfo = '%s (%s) (%s)' % (ds_title, versionState, datasetPersistentId)
 
     # Get date of latest dataset version
     lastUpdateTime = convert_to_local_tz(data_getLatestVersion['data']['latestVersion']['lastUpdateTime'])
 
-    # If the dataset's latest version contains files, write dataset and file info (file name, contenttype, and size) to the CSV
+    # If the dataset's latest version contains files, write dataset and file info (file name, file type, and size) to the CSV
     if data_getLatestVersion['data']['latestVersion']['files']:
         for datafile in data_getLatestVersion['data']['latestVersion']['files']:
             datafilename = datafile['label']
             datafilesize = format_bytes(datafile['dataFile']['filesize'])
-            contentType = datafile['dataFile']['contentType']
-            datafileinfo = '%s (%s; %s)' % (datafilename, contentType, datafilesize)
+            filetype = datafile['dataFile']['contentType']
+            datafileinfo = '%s (%s)' % (datafilename, datafilesize)
 
             # Add fields to a new row in the CSV file
             with open(csvfilepath, mode='a', encoding='utf-8') as opencsvfile:
@@ -201,7 +201,7 @@ for pid in unique_dataset_pids:
                 opencsvfile = csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                 # Create new row with dataset and file info
-                opencsvfile.writerow([datasetURL_pubstate, ds_title_dvName, datafileinfo, lastUpdateTime, dataverse_name])
+                opencsvfile.writerow([datasetinfo, datafileinfo, filetype, lastUpdateTime, dataverse_name_alias])
 
                 # As a progress indicator, print a dot each time a row is written
                 sys.stdout.write('.')
@@ -214,7 +214,7 @@ for pid in unique_dataset_pids:
             opencsvfile = csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
             # Create new row with dataset and file info
-            opencsvfile.writerow([datasetURL_pubstate, ds_title_dvName, '(no files found)', lastUpdateTime, dataverse_name])
+            opencsvfile.writerow([datasetinfo, '(no files found)', '(no files found)', lastUpdateTime, dataverse_name_alias])
 
             # As a progress indicator, print a dot each time a row is written
             sys.stdout.write('.')
