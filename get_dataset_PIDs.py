@@ -213,13 +213,6 @@ if not alias or alias == rootalias:
             # Stop paginating when there are no more results
             condition = start < total
 
-        # Deduplicate PIDs in the text file
-        pid_seen = set()  # holds lines already seen
-        for pid in open(txtfilepath, 'r'):
-            if pid not in pid_seen:  # not a duplicate
-                f.write(pid)
-                pid_seen.add(pid)
-
         print('\n%s dataset PIDs written to %s:' % (count, txtfilepath))
 
     if misindexed_datasets_count:
