@@ -45,7 +45,7 @@ if data['status'] == 'OK':
 # If Search API is not working, print error message and stop script
 elif data['status'] == 'ERROR':
     error_message = data['message']
-    print('error_message')
+    print(error_message)
     exit()
 
 print('Searching for dataset PIDs:')
