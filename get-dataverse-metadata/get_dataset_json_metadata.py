@@ -5,7 +5,6 @@ import csv
 import json
 import os
 from pathlib import Path
-from pyDataverse.api import Api
 import requests
 import time
 from tkinter import *
@@ -59,36 +58,36 @@ button_Submit.grid(sticky='w', column=0, row=11, pady=40)
 
 # Function called when Browse button is pressed for choosing text file with dataset PIDs
 def retrieve_file():
-	global dataset_pids
+    global dataset_pids
 
-	# Call the OS's file directory window and store selected object path as a global variable
-	dataset_pids = filedialog.askopenfilename(filetypes=[('Text files', '*.txt')])
+    # Call the OS's file directory window and store selected object path as a global variable
+    dataset_pids = filedialog.askopenfilename(filetypes=[('Text files', '*.txt')])
 
-	# Show user which file she chose
-	label_showChosenFile = Label(window, text='You chose: ' + dataset_pids, anchor='w', foreground='green', wraplength=500, justify='left')
-	label_showChosenFile.grid(sticky='w', column=0, row=6)
+    # Show user which file she chose
+    label_showChosenFile = Label(window, text='You chose: ' + dataset_pids, anchor='w', foreground='green', wraplength=500, justify='left')
+    label_showChosenFile.grid(sticky='w', column=0, row=6)
 
 
 # Function called when Browse button is pressed
 def retrieve_directory():
-	global metadataFileDirectory
+    global metadataFileDirectory
 
-	# Call the OS's file directory window and store selected object path as a global variable
-	metadataFileDirectory = filedialog.askdirectory()
+    # Call the OS's file directory window and store selected object path as a global variable
+    metadataFileDirectory = filedialog.askdirectory()
 
-	# Show user which directory she chose
-	label_showChosenDirectory = Label(window, text='You chose: ' + metadataFileDirectory, anchor='w', foreground='green', wraplength=500, justify='left')
-	label_showChosenDirectory.grid(sticky='w', column=0, row=10)
+    # Show user which directory she chose
+    label_showChosenDirectory = Label(window, text='You chose: ' + metadataFileDirectory, anchor='w', foreground='green', wraplength=500, justify='left')
+    label_showChosenDirectory.grid(sticky='w', column=0, row=10)
 
 
 # Function called when Start button is pressed
 def retrieve_input():
-	global repositoryURL
+    global repositoryURL
 
-	# Store what's entered in dataverseUrl text box as a global variable
-	repositoryURL = entry_repositoryURL.get()
+    # Store what's entered in dataverseUrl text box as a global variable
+    repositoryURL = entry_repositoryURL.get()
 
-	window.destroy()
+    window.destroy()
 
 
 # Keep window open until it's closed
@@ -144,7 +143,7 @@ for metadatablock_name in metadatablock_names:
 print('\nFinished downloading %s metadatablock JSON file(s)' % (len(metadatablock_names)))
 
 # Download dataset JSON metadata
-print('Downloading JSON metadata to dataset_metadata folder:')
+print('\nDownloading JSON metadata of all published dataset versions to dataset_metadata folder:')
 
 # Initiate count for terminal progress indicator
 count = 0
@@ -154,48 +153,45 @@ total = len(open(dataset_pids).readlines())
 
 dataset_pids = open(dataset_pids)
 
-# Use pyDataverse to establish connection with server
-api = Api(repositoryURL)
-
 # For each dataset persistent identifier in the txt file, download the dataset's Dataverse JSON file into the metadata folder
 for pid in dataset_pids:
 
-	# Remove any trailing spaces from pid
-	pid = pid.rstrip()
+    # Remove any trailing spaces from pid
+    pid = pid.rstrip()
 
-	# Use the pid as the file name, replacing the colon and slashes with underscores
-	metadata_file = '%s.json' % (pid.replace(':', '_').replace('/', '_'))
+    latest_version_url = '%s/api/datasets/:persistentId?persistentId=%s' % (repositoryURL, pid)
+    response = requests.get(latest_version_url)
+    latest_version_metadata = response.json()
 
-	# Use Native API endpoint for getting JSON metadata of draft datasets if api key is provided
-	# if apikey:
-		# url = '%s/api/datasets/:persistentId?persistentId=%s&key=%s' %(server, pid, api)
+    if latest_version_metadata['status'] == 'OK':
+        persistentUrl = latest_version_metadata['data']['persistentUrl']
+        publisher = latest_version_metadata['data']['publisher']
+        publicationDate = latest_version_metadata['data']['publicationDate']
 
-		# response = urllib.request.urlopen(url)
-		# source = response.read()
-		# data = json.loads(source)
+        all_version_url = '%s/api/datasets/:persistentId/versions?persistentId=%s' % (repositoryURL, pid)
+        response = requests.get(all_version_url)
+        all_versions_metadata = response.json()
 
-		# Write the JSON to the new file
-		# with open(os.path.join(metadataFileDirectoryPath, filename), mode='w') as f:
-		# 	json.dump(data, f, indent=4, sort_keys=True)
+        for v in all_versions_metadata['data']:
+            v = {
+                'status': latest_version_metadata['status'],
+                'data': {
+                    'persistentUrl': persistentUrl,
+                    'publisher': publisher,
+                    'publicationDate': publicationDate,
+                    'datasetVersion': v}}
 
-		# count += 1
+            majorversion = str(v['data']['datasetVersion']['versionNumber'])
+            minorversion = str(v['data']['datasetVersion']['versionMinorNumber'])
+            version = majorversion + '.' + minorversion
 
-		# Print progress
-		# print('Downloaded %s of %s JSON files' %(count, total), end='\r', flush=True)
+            metadata_file = '%s_v%s.json' % (pid.replace(':', '_').replace('/', '_'), version)
 
-	# else:
+            with open(os.path.join(metadataFileDirectoryPath, metadata_file), mode='w') as f:
+                f.write(json.dumps(v, indent=4))
 
-	# Use pyDataverse to get the metadata of the dataset
-	response = api.get_dataset(pid)
+    # Increase count variable to track progress
+    count += 1
 
-	# Write the JSON to the new file
-	with open(os.path.join(metadataFileDirectoryPath, metadata_file), mode='w') as f:
-		f.write(json.dumps(response.json(), indent=4))
-
-	# Increase count variable to track progress
-	count += 1
-
-	# Print progress
-	print('Downloaded %s of %s JSON files' % (count, total), end='\r', flush=True)
-
-print('Downloaded %s of %s JSON files' % (count, total))
+    # Print progress
+    print('%s of %s datasets' % (count, total), end='\r', flush=True)
