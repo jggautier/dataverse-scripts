@@ -144,7 +144,7 @@ rootalias = dataverse_data['data']['alias']
 
 if not alias or alias == rootalias:
     installation_name = dataverse_data['data']['name']
-    txtfile = 'dataset_pids-%s_%s.txt' % (installation_name.replace(' ', '_'), current_time)
+    txtfile = 'dataset_pids_%s_%s.txt' % (installation_name.replace(' ', '_'), current_time)
     txtfilepath = os.path.join(directory, txtfile)
 
     # Report count of datasets
@@ -223,7 +223,7 @@ if not alias or alias == rootalias:
 # If user provides an alias, and it isn't the root dataverses's alias, use "Get content" endpoints instead of Search API
 
 else:
-    txtfile = 'dataset_pids-%s(%s).txt' % (alias, current_time)
+    txtfile = 'dataset_pids_%s_%s.txt' % (alias, current_time)
     txtfilepath = os.path.join(directory, txtfile)
 
     # Get ID of given dataverse alias

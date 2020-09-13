@@ -143,7 +143,7 @@ for installation in mapdata['installations']:
         print('\tDataverse version: %s' % (dataverse_version))
 
         # Create a directory for the repository's metadatablock files
-        metadatablockFileDirectoryPath = repository_directory + '/' + 'metadatablocks_(Dataverse_version_%s)' % (dataverse_version)
+        metadatablockFileDirectoryPath = repository_directory + '/' + 'metadatablocks_v%s)' % (dataverse_version)
         os.mkdir(metadatablockFileDirectoryPath)
 
         # Download metadatablock JSON files
@@ -170,7 +170,7 @@ for installation in mapdata['installations']:
             # If the metadatablock has fields, download the metadatablock data into a JSON file
             if len(metadata['data']['fields']) > 0:
 
-                metadatablock_file = str(Path(metadatablockFileDirectoryPath)) + '/' '%s_(Dataverse_version_%s).json' % (metadatablock_name, dataverse_version)
+                metadatablock_file = str(Path(metadatablockFileDirectoryPath)) + '/' '%s_v%s).json' % (metadatablock_name, dataverse_version)
 
                 with open(metadatablock_file, mode='w') as f:
                     f.write(json.dumps(response.json(), indent=4))

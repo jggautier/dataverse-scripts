@@ -97,10 +97,17 @@ mainloop()
 # Save current time to append it to main folder name
 current_time = time.strftime('%Y.%m.%d_%H.%M.%S')
 
+# Use the "Get Version" endpoint to get repository's Dataverse version (or set version as 'NA')
+get_installation_version_api_url = '%s/api/v1/info/version' % (repositoryURL)
+response = requests.get(get_installation_version_api_url)
+get_installation_version_api_data = response.json()
+dataverse_version = get_installation_version_api_data['data']['version']
+dataverse_version = str(dataverse_version.lstrip('v'))
+
 # Save directory with dataverse alias and current time
 metadataFileDirectoryPath = str(Path(metadataFileDirectory)) + '/' + 'JSON_metadata_%s' % (current_time)
 
-metadatablockFileDirectoryPath = str(Path(metadataFileDirectory)) + '/' + 'metadatablocks_%s' % (current_time)
+metadatablockFileDirectoryPath = str(Path(metadataFileDirectory)) + '/' + 'metadatablocks_v%s' % (dataverse_version)
 
 # Create dataset metadata and metadatablock directories
 os.mkdir(metadataFileDirectoryPath)
