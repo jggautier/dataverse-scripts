@@ -265,7 +265,7 @@ for primitive_field in primitive_fields:
         metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
         # Create header row
-        metadatafile.writerow(['dataset_id', 'persistentUrl', primitive_field])
+        metadatafile.writerow(['datasetVersionId', 'persistentUrl', primitive_field])
 
     print('\nGetting %s metadata:' % (primitive_field))
 
