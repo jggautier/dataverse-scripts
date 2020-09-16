@@ -138,7 +138,7 @@ for parentfield in compoundfields:
 
 def getsubfields(parent_compound_field, subfield):
     try:
-        for fields in dataset_metadata['data']['latestVersion']['metadataBlocks'][metadatablock_name]['fields']:
+        for fields in dataset_metadata['data']['datasetVersion']['metadataBlocks'][metadatablock_name]['fields']:
 
             # If the compound field allows multiple instances, use the index variable to iterate over each instance
             if fields['typeName'] == parent_compound_field and fields['multiple'] is True:
@@ -166,7 +166,7 @@ for parent_compound_field in compound_field_dictionary:
     print('\nCreating CSV file for %s metadata' % (parent_compound_field))
 
     # Create column names for the header row
-    ids = ['dataset_id', 'persistentUrl']
+    ids = ['datasetVersionId', 'persistentUrl']
     header_row = ids + subfields
 
     with open(compound_field_csv_filepath, mode='w', newline='') as metadatafile:
@@ -187,12 +187,12 @@ for parent_compound_field in compound_field_dictionary:
             # Overwrite variable with content as a python dict
             dataset_metadata = json.loads(dataset_metadata)
 
-        # Check if status is OK, there's a latestversion key (the dataset isn't deaccessioned,
+        # Check if status is OK, there's a datasetVersion key (the dataset isn't deaccessioned,
         # and there's metadata for fields in the given metadatablock
-        if (dataset_metadata['status'] == 'OK') and ('latestVersion' in dataset_metadata['data']) and (metadatablock_name in dataset_metadata['data']['latestVersion']['metadataBlocks']):
+        if (dataset_metadata['status'] == 'OK') and ('datasetVersion' in dataset_metadata['data']) and (metadatablock_name in dataset_metadata['data']['datasetVersion']['metadataBlocks']):
 
             # Count number of the given compound fields
-            for fields in dataset_metadata['data']['latestVersion']['metadataBlocks'][metadatablock_name]['fields']:
+            for fields in dataset_metadata['data']['datasetVersion']['metadataBlocks'][metadatablock_name]['fields']:
                 if fields['typeName'] == parent_compound_field:  # Find compound name
                     # If the compound field allows multiple values, assign the number of values to the total variable
                     if fields['multiple'] is True:
@@ -205,10 +205,10 @@ for parent_compound_field in compound_field_dictionary:
                     condition = True
 
                     while condition:
-                        # Save the dataset id of each dataset
-                        dataset_id = str(dataset_metadata['data']['id'])
+                        # Save the id of the dataset's version
+                        datasetVersionId = str(dataset_metadata['data']['datasetVersion']['id'])
 
-                        # Save the identifier of each dataset
+                        # Save the persistent URL of each dataset
                         persistentUrl = dataset_metadata['data']['persistentUrl']
 
                         # Save subfield values to variables
@@ -216,7 +216,7 @@ for parent_compound_field in compound_field_dictionary:
                             globals()[subfield] = getsubfields(parent_compound_field, subfield)
 
                         # Create list of variables
-                        row_variables = [dataset_id, persistentUrl]
+                        row_variables = [datasetVersionId, persistentUrl]
                         for subfield in subfields:
                             row_variables.append(globals()[subfield])
 
@@ -281,14 +281,14 @@ for primitive_field in primitive_fields:
             # Overwrite variable with content as a python dict
             dataset_metadata = json.loads(dataset_metadata)
 
-            if (dataset_metadata['status'] == 'OK') and ('latestVersion' in dataset_metadata['data']) and (metadatablock_name in dataset_metadata['data']['latestVersion']['metadataBlocks']):
+            if (dataset_metadata['status'] == 'OK') and ('datasetVersion' in dataset_metadata['data']) and (metadatablock_name in dataset_metadata['data']['datasetVersion']['metadataBlocks']):
 
                 # Save the dataset id of each dataset
-                dataset_id = str(dataset_metadata['data']['id'])
+                datasetVersionId = str(dataset_metadata['data']['datasetVersion']['id'])
                 persistentUrl = dataset_metadata['data']['persistentUrl']
 
-                # Couple each field value with the dataset_id and write as a row to subjects.csv
-                for fields in dataset_metadata['data']['latestVersion']['metadataBlocks'][metadatablock_name]['fields']:
+                # Couple each field value with the dataset version ID and write as a row to subjects.csv
+                for fields in dataset_metadata['data']['datasetVersion']['metadataBlocks'][metadatablock_name]['fields']:
                     if fields['typeName'] == primitive_field:
                         value = fields['value']
 
@@ -303,7 +303,7 @@ for primitive_field in primitive_fields:
                                 metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                                 # Write new row
-                                metadatafile.writerow([dataset_id, persistentUrl, value])
+                                metadatafile.writerow([datasetVersionId, persistentUrl, value])
 
                                 # As a progress indicator, print a dot each time a row is written
                                 sys.stdout.write('.')
@@ -322,7 +322,7 @@ for primitive_field in primitive_fields:
                                     metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                                     # Write new row
-                                    metadatafile.writerow([dataset_id, persistentUrl, value])
+                                    metadatafile.writerow([datasetVersionId, persistentUrl, value])
 
                                     # As a progress indicator, print a dot each time a row is written
                                     sys.stdout.write('.')

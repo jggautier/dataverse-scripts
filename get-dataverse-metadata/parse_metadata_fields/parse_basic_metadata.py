@@ -80,7 +80,7 @@ print('Creating CSV file')
 
 with open(filename, mode='w') as metadatafile:
 	metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-	metadatafile.writerow(['dataset_id', 'persistentUrl', 'publicationdate', 'versionstate', 'latestversionnumber', 'versionreleasetime', 'publisher'])  # Create header row
+	metadatafile.writerow(['datasetVersionId', 'persistentUrl', 'publicationDate', 'versionState', 'majorVersionNumber', 'minorVersionNumber', 'versionReleaseTime', 'publisher'])  # Create header row
 
 print('Getting metadata:')
 error_files = []
@@ -97,12 +97,13 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 
 		# Check if JSON file has "data" key
 		if dataset_metadata['status'] == 'OK':
-			dataset_id = dataset_metadata['data']['id']
+			datasetVersionId = dataset_metadata['data']['datasetVersion']['id']
 			persistentUrl = dataset_metadata['data']['persistentUrl']
 			publicationDate = dataset_metadata['data']['publicationDate']
-			versionState = dataset_metadata['data']['latestVersion']['versionState']
-			latestversionnumber = str(dataset_metadata['data']['latestVersion']['versionNumber']) + '.' + str(dataset_metadata['data']['latestVersion']['versionMinorNumber'])
-			versionreleasetime = dataset_metadata['data']['latestVersion']['releaseTime']
+			versionState = dataset_metadata['data']['datasetVersion']['versionState']
+			majorVersionNumber = dataset_metadata['data']['datasetVersion']['versionNumber']
+			minorVersionNumber = dataset_metadata['data']['datasetVersion']['versionMinorNumber']
+			versionReleaseTime = dataset_metadata['data']['datasetVersion']['releaseTime']
 			publisher = dataset_metadata['data']['publisher']
 
 			# Write fields to the csv file
@@ -115,7 +116,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 				metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
 				# Write new row
-				metadatafile.writerow([dataset_id, persistentUrl, publicationDate, versionState, latestversionnumber, versionreleasetime, publisher])
+				metadatafile.writerow([datasetVersionId, persistentUrl, publicationDate, versionState, majorVersionNumber, minorVersionNumber, versionReleaseTime, publisher])
 
 			# As a progress indicator, print a dot each time a row is written
 			sys.stdout.write('.')
