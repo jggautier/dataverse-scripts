@@ -154,12 +154,12 @@ total = len(open(dataset_pids).readlines())
 dataset_pids = open(dataset_pids)
 
 # For each dataset persistent identifier in the txt file, download the dataset's Dataverse JSON file into the metadata folder
-for pid in dataset_pids:
+for dataset_pid in dataset_pids:
 
-    # Remove any trailing spaces from pid
-    pid = pid.rstrip()
+    # Remove any trailing spaces from dataset_pid
+    dataset_pid = dataset_pid.rstrip()
 
-    latest_version_url = '%s/api/datasets/:persistentId?persistentId=%s' % (repositoryURL, pid)
+    latest_version_url = '%s/api/datasets/:persistentId?persistentId=%s' % (repositoryURL, dataset_pid)
     response = requests.get(latest_version_url)
     latest_version_metadata = response.json()
 
@@ -168,7 +168,7 @@ for pid in dataset_pids:
         publisher = latest_version_metadata['data']['publisher']
         publicationDate = latest_version_metadata['data']['publicationDate']
 
-        all_version_url = '%s/api/datasets/:persistentId/versions?persistentId=%s' % (repositoryURL, pid)
+        all_version_url = '%s/api/datasets/:persistentId/versions?persistentId=%s' % (repositoryURL, dataset_pid)
         response = requests.get(all_version_url)
         all_versions_metadata = response.json()
 
@@ -185,7 +185,7 @@ for pid in dataset_pids:
             minorversion = str(v['data']['datasetVersion']['versionMinorNumber'])
             version = majorversion + '.' + minorversion
 
-            metadata_file = '%s_v%s.json' % (pid.replace(':', '_').replace('/', '_'), version)
+            metadata_file = '%s_v%s.json' % (dataset_pid.replace(':', '_').replace('/', '_'), version)
 
             with open(os.path.join(metadataFileDirectoryPath, metadata_file), mode='w') as f:
                 f.write(json.dumps(v, indent=4))

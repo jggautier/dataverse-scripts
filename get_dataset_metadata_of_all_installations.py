@@ -10,12 +10,12 @@ import time
 from urllib.parse import urlparse
 
 # Enter directory path for installation directories (if on a Windows machine, use forward slashes, which will be converted to back slashes)
-base_directory = '/Users/juliangautier/Desktop'  # e.g. /Users/Owner/Desktop
+base_directory = ''  # e.g. /Users/Owner/Desktop
 
 # Enter a user agent and your email address. Some Dataverse-based repositories block requests from scripts.
 # See https://www.whatismybrowser.com/detect/what-is-my-user-agent to get your user agent
-user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36'
-email_address = 'juliangautier@g.harvard.edu'
+user_agent = ''
+email_address = ''
 
 headers = {
     'User-Agent': user_agent,
@@ -60,19 +60,19 @@ installation_progress_count = 1
 for installation in mapdata['installations']:
     installation_name = installation['name']
     hostname = installation['hostname']
-    installation_url = 'http://%s' % (hostname)
+    repositoryURL = 'http://%s' % (hostname)
     print('\nChecking %s of %s repositories: %s' % (installation_progress_count, count_of_installations, installation_name))
 
     # Get status code of repository website or report no response from website
     try:
-        response = requests.get(installation_url, headers=headers, timeout=20, verify=False)
+        response = requests.get(repositoryURL, headers=headers, timeout=20, verify=False)
 
-        # Save final URL redirect to installation_url variable
-        installation_url = response.url
+        # Save final URL redirect to repositoryURL variable
+        repositoryURL = response.url
 
-        # Save only the base URL to the installation_url variable
-        o = urlparse(installation_url)
-        installation_url = o.scheme + '://' + o.netloc
+        # Save only the base URL to the repositoryURL variable
+        o = urlparse(repositoryURL)
+        repositoryURL = o.scheme + '://' + o.netloc
 
         if (response.status_code == 200 or response.status_code == 301 or response.status_code == 302):
             installation_status = str(response.status_code)
@@ -82,7 +82,7 @@ for installation in mapdata['installations']:
 
     # If there's a good response from the installation, check if Search API works by searching for repository's non-harvested datasets
     if installation_status != 'NA':
-        search_api_url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&sort=date&order=desc' % (installation_url)
+        search_api_url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&sort=date&order=desc' % (repositoryURL)
         search_api_url = search_api_url.replace('//api', '/api')
         search_api_status = checkapiendpoint(search_api_url)
     else:
@@ -109,7 +109,7 @@ for installation in mapdata['installations']:
 
     # If a local dataset PID can be retreived, check if "Get dataset JSON" endpoint works
     if test_dataset_pid != 'NA':
-        get_json_api_url = '%s/api/v1/datasets/:persistentId/?persistentId=%s' % (installation_url, test_dataset_pid)
+        get_json_api_url = '%s/api/v1/datasets/:persistentId/?persistentId=%s' % (repositoryURL, test_dataset_pid)
         get_json_api_url = get_json_api_url.replace('//api', '/api')
         get_json_api_status = checkapiendpoint(get_json_api_url)
     else:
@@ -128,7 +128,7 @@ for installation in mapdata['installations']:
         os.mkdir(repository_directory)
 
         # Use the "Get Version" endpoint to get repository's Dataverse version (or set version as 'NA')
-        get_installation_version_api_url = '%s/api/v1/info/version' % (installation_url)
+        get_installation_version_api_url = '%s/api/v1/info/version' % (repositoryURL)
         get_installation_version_api_url = get_installation_version_api_url.replace('//api', '/api')
         get_installation_version_api_status = checkapiendpoint(get_installation_version_api_url)
 
@@ -143,16 +143,16 @@ for installation in mapdata['installations']:
         print('\tDataverse version: %s' % (dataverse_version))
 
         # Create a directory for the repository's metadatablock files
-        metadatablockFileDirectoryPath = repository_directory + '/' + 'metadatablocks_v%s)' % (dataverse_version)
+        metadatablockFileDirectoryPath = repository_directory + '/' + 'metadatablocks_v%s' % (dataverse_version)
         os.mkdir(metadatablockFileDirectoryPath)
 
         # Download metadatablock JSON files
 
         # Get list of the repository's metadatablock names
-        metadatablocks_api = '%s/api/v1/metadatablocks' % (installation_url)
+        metadatablocks_api = '%s/api/v1/metadatablocks' % (repositoryURL)
         metadatablocks_api = metadatablocks_api.replace('//api', '/api')
 
-        response = requests.get(metadatablocks_api, verify=False)
+        response = requests.get(metadatablocks_api, headers=headers, timeout=20, verify=False)
         metadatablock_data = response.json()
 
         metadatablock_names = []
@@ -164,13 +164,13 @@ for installation in mapdata['installations']:
 
         for metadatablock_name in metadatablock_names:
             metadatablock_api = '%s/%s' % (metadatablocks_api, metadatablock_name)
-            response = requests.get(metadatablock_api, verify=False)
+            response = requests.get(metadatablock_api, headers=headers, timeout=20, verify=False)
             metadata = response.json()
 
             # If the metadatablock has fields, download the metadatablock data into a JSON file
             if len(metadata['data']['fields']) > 0:
 
-                metadatablock_file = str(Path(metadatablockFileDirectoryPath)) + '/' '%s_v%s).json' % (metadatablock_name, dataverse_version)
+                metadatablock_file = str(Path(metadatablockFileDirectoryPath)) + '/' '%s_v%s.json' % (metadatablock_name, dataverse_version)
 
                 with open(metadatablock_file, mode='w') as f:
                     f.write(json.dumps(response.json(), indent=4))
@@ -196,7 +196,7 @@ for installation in mapdata['installations']:
             while (condition):
                 try:
                     per_page = 10
-                    url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (installation_url, per_page, start)
+                    url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (repositoryURL, per_page, start)
                     response = requests.get(url, headers=headers, verify=False)
                     data = response.json()
 
@@ -216,8 +216,8 @@ for installation in mapdata['installations']:
                     print('\t\tper_page=10 url broken. Checking per_page=1')
                     try:
                         per_page = 1
-                        url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (installation_url, per_page, start)
-                        response = requests.get(url, headers=headers, verify=False)
+                        url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (repositoryURL, per_page, start)
+                        response = requests.get(url, headers=headers, timeout=20, verify=False)
                         data = response.json()
 
                         # For each dataset, write the dataset PID to the text file
@@ -249,9 +249,6 @@ for installation in mapdata['installations']:
         # For each dataset PID in text file, download dataset's JSON metadata
         print('\tDownloading JSON metadata to dataset_metadata folder:')
 
-        # Use pyDataverse to establish connection with server
-        api = Api(installation_url)
-
         # Initiate counts for progress indicator
         metadata_downloaded_count = 0
         metadata_not_downloaded = []
@@ -264,16 +261,39 @@ for installation in mapdata['installations']:
             # Remove any trailing spaces from pid
             dataset_pid = dataset_pid.rstrip()
 
-            # Use the pid as the file name, replacing the colon and slashes with underscores
-            metadata_file = json_metadata_directory + '/' + '%s.json' % (dataset_pid.replace(':', '_').replace('/', '_'))
-
-            # Use pyDataverse to get the metadata of the dataset
+            # Get the metadata of each version of the dataset
             try:
-                response = api.get_dataset(dataset_pid)
+                latest_version_url = '%s/api/datasets/:persistentId?persistentId=%s' % (repositoryURL, dataset_pid)
+                response = requests.get(latest_version_url, headers=headers, timeout=20, verify=False)
+                latest_version_metadata = response.json()
 
-                # Write the JSON to the new file
-                with open(metadata_file, mode='w') as f2:
-                    f2.write(json.dumps(response.json(), indent=4))
+                if latest_version_metadata['status'] == 'OK':
+                    persistentUrl = latest_version_metadata['data']['persistentUrl']
+                    publisher = latest_version_metadata['data']['publisher']
+                    publicationDate = latest_version_metadata['data']['publicationDate']
+
+                    all_version_url = '%s/api/datasets/:persistentId/versions?persistentId=%s' % (repositoryURL, dataset_pid)
+                    response = requests.get(all_version_url, headers=headers, timeout=20, verify=False)
+                    all_versions_metadata = response.json()
+
+                    for dataset_version in all_versions_metadata['data']:
+                        dataset_version = {
+                            'status': latest_version_metadata['status'],
+                            'data': {
+                                'persistentUrl': persistentUrl,
+                                'publisher': publisher,
+                                'publicationDate': publicationDate,
+                                'datasetVersion': dataset_version}}
+
+                        majorversion = str(v['data']['datasetVersion']['versionNumber'])
+                        minorversion = str(v['data']['datasetVersion']['versionMinorNumber'])
+                        version_number = majorversion + '.' + minorversion
+
+                        metadata_file = json_metadata_directory + '/' + '%s_v%s.json' % (dataset_pid.replace(':', '_').replace('/', '_'), version_number)
+
+                        # Write the JSON to the new file
+                        with open(metadata_file, mode='w') as f2:
+                            f2.write(json.dumps(dataset_version, indent=4))
 
                 # Increase count variable to track progress
                 metadata_downloaded_count += 1
