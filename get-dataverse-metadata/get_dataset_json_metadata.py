@@ -131,7 +131,6 @@ for metadatablock_name in metadatablock_names:
     metadatablock_api = '%s/%s' % (metadatablocks_api, metadatablock_name)
     response = requests.get(metadatablock_api)
 
-    metadatablockFileDirectoryPath
     metadatablock_file = str(Path(metadatablockFileDirectoryPath)) + '/' '%s_%s.json' % (metadatablock_name, current_time)
 
     with open(metadatablock_file, mode='w') as f:
@@ -159,39 +158,43 @@ for dataset_pid in dataset_pids:
     # Remove any trailing spaces from dataset_pid
     dataset_pid = dataset_pid.rstrip()
 
-    latest_version_url = '%s/api/datasets/:persistentId?persistentId=%s' % (repositoryURL, dataset_pid)
-    response = requests.get(latest_version_url)
-    latest_version_metadata = response.json()
+    try:
+        latest_version_url = '%s/api/datasets/:persistentId?persistentId=%s' % (repositoryURL, dataset_pid)
+        response = requests.get(latest_version_url)
+        latest_version_metadata = response.json()
 
-    if latest_version_metadata['status'] == 'OK':
-        persistentUrl = latest_version_metadata['data']['persistentUrl']
-        publisher = latest_version_metadata['data']['publisher']
-        publicationDate = latest_version_metadata['data']['publicationDate']
+        if latest_version_metadata['status'] == 'OK':
+            persistentUrl = latest_version_metadata['data']['persistentUrl']
+            publisher = latest_version_metadata['data']['publisher']
+            publicationDate = latest_version_metadata['data']['publicationDate']
 
-        all_version_url = '%s/api/datasets/:persistentId/versions?persistentId=%s' % (repositoryURL, dataset_pid)
-        response = requests.get(all_version_url)
-        all_versions_metadata = response.json()
+            all_version_url = '%s/api/datasets/:persistentId/versions?persistentId=%s' % (repositoryURL, dataset_pid)
+            response = requests.get(all_version_url)
+            all_versions_metadata = response.json()
 
-        for v in all_versions_metadata['data']:
-            v = {
-                'status': latest_version_metadata['status'],
-                'data': {
-                    'persistentUrl': persistentUrl,
-                    'publisher': publisher,
-                    'publicationDate': publicationDate,
-                    'datasetVersion': v}}
+            for dataset_version in all_versions_metadata['data']:
+                dataset_version = {
+                    'status': latest_version_metadata['status'],
+                    'data': {
+                        'persistentUrl': persistentUrl,
+                        'publisher': publisher,
+                        'publicationDate': publicationDate,
+                        'datasetVersion': dataset_version}}
 
-            majorversion = str(v['data']['datasetVersion']['versionNumber'])
-            minorversion = str(v['data']['datasetVersion']['versionMinorNumber'])
-            version = majorversion + '.' + minorversion
+                majorversion = str(dataset_version['data']['datasetVersion']['versionNumber'])
+                minorversion = str(dataset_version['data']['datasetVersion']['versionMinorNumber'])
+                version_number = majorversion + '.' + minorversion
 
-            metadata_file = '%s_v%s.json' % (dataset_pid.replace(':', '_').replace('/', '_'), version)
+                metadata_file = '%s_v%s.json' % (dataset_pid.replace(':', '_').replace('/', '_'), version_number)
 
-            with open(os.path.join(metadataFileDirectoryPath, metadata_file), mode='w') as f:
-                f.write(json.dumps(v, indent=4))
+                with open(os.path.join(metadataFileDirectoryPath, metadata_file), mode='w') as f:
+                    f.write(json.dumps(dataset_version, indent=4))
 
-    # Increase count variable to track progress
-    count += 1
+        # Increase count variable to track progress
+        count += 1
 
-    # Print progress
-    print('%s of %s datasets' % (count, total), end='\r', flush=True)
+        # Print progress
+        print('%s of %s datasets' % (count, total), end='\r', flush=True)
+
+    except Exception:
+        print('Could not download JSON metadata of %s' % (dataset_pid))

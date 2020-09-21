@@ -3,7 +3,6 @@
 import json
 import os
 from pathlib import Path
-from pyDataverse.api import Api
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import time
@@ -266,7 +265,6 @@ for installation in mapdata['installations']:
                 latest_version_url = '%s/api/datasets/:persistentId?persistentId=%s' % (repositoryURL, dataset_pid)
                 response = requests.get(latest_version_url, headers=headers, timeout=20, verify=False)
                 latest_version_metadata = response.json()
-
                 if latest_version_metadata['status'] == 'OK':
                     persistentUrl = latest_version_metadata['data']['persistentUrl']
                     publisher = latest_version_metadata['data']['publisher']
@@ -285,8 +283,8 @@ for installation in mapdata['installations']:
                                 'publicationDate': publicationDate,
                                 'datasetVersion': dataset_version}}
 
-                        majorversion = str(v['data']['datasetVersion']['versionNumber'])
-                        minorversion = str(v['data']['datasetVersion']['versionMinorNumber'])
+                        majorversion = str(dataset_version['data']['datasetVersion']['versionNumber'])
+                        minorversion = str(dataset_version['data']['datasetVersion']['versionMinorNumber'])
                         version_number = majorversion + '.' + minorversion
 
                         metadata_file = json_metadata_directory + '/' + '%s_v%s.json' % (dataset_pid.replace(':', '_').replace('/', '_'), version_number)
