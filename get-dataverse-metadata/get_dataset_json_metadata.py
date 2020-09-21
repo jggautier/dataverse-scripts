@@ -197,4 +197,4 @@ for dataset_pid in dataset_pids:
         print('%s of %s datasets' % (count, total), end='\r', flush=True)
 
     except Exception:
-        print('\t\tCould not download JSON metadata of %s' % (dataset_pid))
+        print('Could not download JSON metadata of %s' % (dataset_pid))
