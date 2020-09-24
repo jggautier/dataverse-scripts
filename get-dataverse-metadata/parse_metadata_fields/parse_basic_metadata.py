@@ -78,7 +78,7 @@ filename = os.path.join(csvDirectory, 'basic_metadata.csv')
 
 print('Creating CSV file')
 
-with open(filename, mode='w') as metadatafile:
+with open(filename, mode='w', newline='') as metadatafile:
 	metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 	metadatafile.writerow(['datasetVersionId', 'persistentUrl', 'publicationDate', 'versionState', 'majorVersionNumber', 'minorVersionNumber', 'versionReleaseTime', 'publisher'])  # Create header row
 
@@ -107,7 +107,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 			publisher = dataset_metadata['data']['publisher']
 
 			# Write fields to the csv file
-			with open(filename, mode='a') as metadatafile:
+			with open(filename, mode='a', newline='') as metadatafile:
 
 				# Convert all characters to utf-8
 				def to_utf8(lst):
