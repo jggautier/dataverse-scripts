@@ -77,7 +77,7 @@ filename = os.path.join(csvDirectory, 'terms.csv')
 
 print('Creating CSV file')
 
-with open(filename, mode='w') as metadatafile:
+with open(filename, mode='w', newline='') as metadatafile:
 	metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 	# Create header row
 	metadatafile.writerow([
@@ -128,7 +128,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
 		studyCompletion = improved_get(dataset_metadata, 'data.datasetVersion.studyCompletion')
 
 		# Append fields to the csv file
-		with open(filename, mode='a') as metadatafile:
+		with open(filename, mode='a', newline='') as metadatafile:
 
 			# Convert all characters to utf-8
 			def to_utf8(lst):
