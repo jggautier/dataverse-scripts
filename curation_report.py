@@ -1,12 +1,12 @@
 '''
 Provide a date range and optional API key and this script will get info for datasets and files created within that date range.
-Useful when curating deposited data, especially spotting problem datasets (e.g. dataset with no data).
+Useful when curating deposited data, especially spotting problem datasets (e.g. datasets with no data).
 This script first uses the Search API to find PIDs of datasets.
 For each dataset found, the script uses the "Get JSON" API endpoint to get dataset and file metadata of the latest version of each dataset,
-and formats and writes that metadata to a CSV file on the users computer. Users can then analyze the CSV file (e.g. grouping, sorting, pivot tables)
+and formats and writes that metadata to a CSV file on the user's computer. Users can then analyze the CSV file (e.g. grouping, sorting, pivot tables)
 for a quick view of what's been published within that date rage, what does and doesn't have files, and more.
 
-This script might break for repositories that are missing certain info from their Search API results, like the datasetPersistentId key (data/latestVersion/datasetPersistentId)
+This script might break for repositories that are missing certain info from their Search API JSON results, like the datasetPersistentId key (data/latestVersion/datasetPersistentId)
 '''
 
 import csv
@@ -20,9 +20,9 @@ import sys
 
 # Get required info from user
 server = ''  # Base URL of the Dataverse repository, e.g. https://demo.dataverse.org
-startdate = ''  # yyyy-mm-dd
-enddate = ''  # yyyy-mm-dd
-apikey = ''  # for getting unpublished datasets accessible to Dataverse account
+start_date = ''  # yyyy-mm-dd
+end_date = ''  # yyyy-mm-dd
+api_key = ''  # for getting unpublished datasets accessible to Dataverse account
 directory = ''  # directory for the CSV file containing the dataset and file info, e.g. '/Users/username/Desktop/'
 
 # Initialization for paginating through results of Search API calls
@@ -34,7 +34,7 @@ dataset_pids = []
 misindexed_datasets_count = 0
 
 # Get total count of datasets
-url = '%s/api/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&start=%s&sort=date&order=desc&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' % (server, start, startdate, enddate, apikey)
+url = '%s/api/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&start=%s&sort=date&order=desc&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' % (server, start, start_date, end_date, api_key)
 response = requests.get(url)
 data = response.json()
 
@@ -52,7 +52,7 @@ print('Searching for dataset PIDs:')
 while condition:
     try:
         per_page = 10
-        url = '%s/api/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' % (server, per_page, start, startdate, enddate, apikey)
+        url = '%s/api/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' % (server, per_page, start, start_date, end_date, api_key)
         response = requests.get(url)
         data = response.json()
 
@@ -73,7 +73,7 @@ while condition:
     except Exception:
         try:
             per_page = 1
-            url = '%s/api/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' % (server, per_page, start, startdate, enddate, apikey)
+            url = '%s/api/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' % (server, per_page, start, start_date, end_date, api_key)
             response = requests.get(url)
             data = response.json()
 
@@ -108,10 +108,10 @@ else:
     unique_dataset_pids = dataset_pids
 
 # Store name of CSV file, which includes the dataset start and end date range, to the 'filename' variable
-filename = 'datasetinfo_%s-%s.csv' % (startdate.replace('-', '.'), enddate.replace('-', '.'))
+file_name = 'datasetinfo_%s-%s.csv' % (start_date.replace('-', '.'), end_date.replace('-', '.'))
 
 # Create variable for directory path and file name
-csvfilepath = os.path.join(directory, filename)
+csv_file_path = os.path.join(directory, file_name)
 
 
 # Convert given timestamp string with UTC timezone into datetime object with local timezone
@@ -126,18 +126,18 @@ def convert_to_local_tz(timestamp):
 
 
 # Create CSV file
-with open(csvfilepath, mode='w') as opencsvfile:
-    opencsvfile = csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+with open(csv_file_path, mode='w') as open_csv_file:
+    open_csv_file = csv.writer(open_csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
     # Create header row
-    opencsvfile.writerow(['datasetTitle (versionState) (DOI)', 'fileName (fileSize)', 'fileType', 'lastUpdateTime', 'dataverseName (alias)'])
+    open_csv_file.writerow(['datasetTitle (versionState) (DOI)', 'fileName (fileSize)', 'fileType', 'lastUpdateTime', 'dataverseName (alias)'])
 
 # For each data file in each dataset, add to the CSV file the dataset's URL and publication state, dataset title, data file name and data file contentType
 
-print('\nWriting dataset and file info to %s:' % (csvfilepath))
+print('\nWriting dataset and file info to %s:' % (csv_file_path))
 
 # Create list to store any PIDs whose info can't be retrieved with "Get JSON" or Search API endpoints
-piderrors = []
+pid_errors = []
 
 
 # Function for converting bytes to more human-readable KB, MB, etc
@@ -155,56 +155,56 @@ for pid in unique_dataset_pids:
 
     # Construct "Get JSON" API endpoint url and get data about each dataset's latest version
     try:
-        url = '%s/api/datasets/:persistentId/?persistentId=%s&key=%s' % (server, pid, apikey)
+        url = '%s/api/datasets/:persistentId/?persistentId=%s&key=%s' % (server, pid, api_key)
 
-        # Store dataset and file info from API call to "data_getLatestVersion" variable
+        # Store dataset and file info from API call to "data_get_latest_version" variable
         response = requests.get(url)
-        data_getLatestVersion = response.json()
+        data_get_latest_version = response.json()
     except Exception:
-        piderrors.append(pid)
+        pid_errors.append(pid)
 
     # Check for "latestVersion" key. Deaccessioned datasets have no "latestVersion" key.
-    if 'latestVersion' in data_getLatestVersion['data']:
+    if 'latestVersion' in data_get_latest_version['data']:
 
         # Construct "Search API" url to get name of each dataset's dataverse
         try:
-            url = '%s/api/search?q="%s"&type=dataset&key=%s' % (server, pid, apikey)
+            url = '%s/api/search?q="%s"&type=dataset&key=%s' % (server, pid, api_key)
 
-            # Store Search API result to "data_dataverseName" variable
+            # Store Search API result to "data_dataverse_name" variable
             response = requests.get(url)
-            data_dataverseName = response.json()
+            data_dataverse_name = response.json()
         except Exception:
-            piderrors.append(pid)
+            pid_errors.append(pid)
 
         # Save dataverse name and alias
-        dataverse_name = data_dataverseName['data']['items'][0]['name_of_dataverse']
-        dataverse_alias = data_dataverseName['data']['items'][0]['identifier_of_dataverse']
+        dataverse_name = data_dataverse_name['data']['items'][0]['name_of_dataverse']
+        dataverse_alias = data_dataverse_name['data']['items'][0]['identifier_of_dataverse']
         dataverse_name_alias = '%s (%s)' % (dataverse_name, dataverse_alias)
 
         # Save dataset info
-        ds_title = data_getLatestVersion['data']['latestVersion']['metadataBlocks']['citation']['fields'][0]['value']
-        datasetPersistentId = data_getLatestVersion['data']['latestVersion']['datasetPersistentId']
-        versionState = data_getLatestVersion['data']['latestVersion']['versionState']
-        datasetinfo = '%s (%s) (%s)' % (ds_title, versionState, datasetPersistentId)
+        ds_title = data_get_latest_version['data']['latestVersion']['metadataBlocks']['citation']['fields'][0]['value']
+        dataset_persistent_id = data_get_latest_version['data']['latestVersion']['datasetPersistentId']
+        version_state = data_get_latest_version['data']['latestVersion']['versionState']
+        dataset_info = '%s (%s) (%s)' % (ds_title, version_state, dataset_persistent_id)
 
         # Get date of latest dataset version
-        lastUpdateTime = convert_to_local_tz(data_getLatestVersion['data']['latestVersion']['lastUpdateTime'])
+        last_update_time = convert_to_local_tz(data_get_latest_version['data']['latestVersion']['lastUpdateTime'])
 
         # If the dataset's latest version contains files, write dataset and file info (file name, file type, and size) to the CSV
-        if data_getLatestVersion['data']['latestVersion']['files']:
-            for datafile in data_getLatestVersion['data']['latestVersion']['files']:
-                datafilename = datafile['label']
-                datafilesize = format_bytes(datafile['dataFile']['filesize'])
-                filetype = datafile['dataFile']['contentType']
-                datafileinfo = '%s (%s)' % (datafilename, datafilesize)
+        if data_get_latest_version['data']['latestVersion']['files']:
+            for datafile in data_get_latest_version['data']['latestVersion']['files']:
+                datafile_name = datafile['label']
+                datafile_size = format_bytes(datafile['dataFile']['filesize'])
+                datafile_type = datafile['dataFile']['contentType']
+                datafile_info = '%s (%s)' % (datafile_name, datafile_size)
 
                 # Add fields to a new row in the CSV file
-                with open(csvfilepath, mode='a', encoding='utf-8') as opencsvfile:
+                with open(csv_file_path, mode='a', encoding='utf-8') as open_csv_file:
 
-                    opencsvfile = csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                    open_csv_file = csv.writer(open_csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                     # Create new row with dataset and file info
-                    opencsvfile.writerow([datasetinfo, datafileinfo, filetype, lastUpdateTime, dataverse_name_alias])
+                    open_csv_file.writerow([dataset_info, datafile_info, datafile_type, last_update_time, dataverse_name_alias])
 
                     # As a progress indicator, print a dot each time a row is written
                     sys.stdout.write('.')
@@ -212,24 +212,24 @@ for pid in unique_dataset_pids:
 
         # Otherwise print that the dataset has no files
         else:
-            with open(csvfilepath, mode='a') as opencsvfile:
+            with open(csv_file_path, mode='a') as open_csv_file:
 
-                opencsvfile = csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                open_csv_file = csv.writer(open_csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                 # Create new row with dataset and file info
-                opencsvfile.writerow([datasetinfo, '(no files found)', '(no files found)', lastUpdateTime, dataverse_name_alias])
+                open_csv_file.writerow([dataset_info, '(no files found)', '(no files found)', last_update_time, dataverse_name_alias])
 
                 # As a progress indicator, print a dot each time a row is written
                 sys.stdout.write('.')
                 sys.stdout.flush()
 
-print('\nFinished writing dataset and file info of %s dataset(s) to %s' % (len(unique_dataset_pids), csvfilepath))
+print('\nFinished writing dataset and file info of %s dataset(s) to %s' % (len(unique_dataset_pids), csv_file_path))
 
 # If info of any PIDs could not be retrieved, print list of those PIDs
-if piderrors:
+if pid_errors:
 
-    # Deduplicate list in piderrors variable
-    piderrors = set(piderrors)
+    # Deduplicate list in pid_errors variable
+    pid_errors = set(pid_errors)
 
     print('Info about the following PIDs could not be retrieved. To investigate, try running "Get JSON" endpoint or Search API on these datasets:')
-    print(*piderrors, sep='\n')
+    print(*pid_errors, sep='\n')

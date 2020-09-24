@@ -42,8 +42,8 @@ for repository_name in os.listdir(main_directory):
             metadatablock_name_version = metadatablock_file
 
             # Get only the metadatablock name from the name of each metadatablock JSON file
-            metadatablock_name = re.search(r'^([^()])+', metadatablock_name_version).group()
-            metadatablock_name = metadatablock_name.rstrip('_')
+            metadatablock_name = re.search(r'.*_.', metadatablock_name_version).group()
+            metadatablock_name = metadatablock_name.rstrip('_v')
 
             metadatablock_file_path = str(Path(metadatablock_folder_path + '/' + metadatablock_file))
 

@@ -131,7 +131,7 @@ for metadatablock_name in metadatablock_names:
     metadatablock_api = '%s/%s' % (metadatablocks_api, metadatablock_name)
     response = requests.get(metadatablock_api)
 
-    metadatablock_file = str(Path(metadatablockFileDirectoryPath)) + '/' '%s_%s.json' % (metadatablock_name, current_time)
+    metadatablock_file = str(Path(metadatablockFileDirectoryPath)) + '/' '%s_v%s.json' % (metadatablock_name, dataverse_version)
 
     with open(metadatablock_file, mode='w') as f:
         f.write(json.dumps(response.json(), indent=4))
