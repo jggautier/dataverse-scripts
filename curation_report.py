@@ -163,62 +163,65 @@ for pid in unique_dataset_pids:
     except Exception:
         piderrors.append(pid)
 
-    # Construct "Search API" url to get name of each dataset's dataverse
-    try:
-        url = '%s/api/search?q="%s"&type=dataset&key=%s' % (server, pid, apikey)
+    # Check for "latestVersion" key. Deaccessioned datasets have no "latestVersion" key.
+    if 'latestVersion' in data_getLatestVersion['data']:
 
-        # Store Search API result to "data_dataverseName" variable
-        response = requests.get(url)
-        data_dataverseName = response.json()
-    except Exception:
-        piderrors.append(pid)
+        # Construct "Search API" url to get name of each dataset's dataverse
+        try:
+            url = '%s/api/search?q="%s"&type=dataset&key=%s' % (server, pid, apikey)
 
-    # Save dataverse name and alias
-    dataverse_name = data_dataverseName['data']['items'][0]['name_of_dataverse']
-    dataverse_alias = data_dataverseName['data']['items'][0]['identifier_of_dataverse']
-    dataverse_name_alias = '%s (%s)' % (dataverse_name, dataverse_alias)
+            # Store Search API result to "data_dataverseName" variable
+            response = requests.get(url)
+            data_dataverseName = response.json()
+        except Exception:
+            piderrors.append(pid)
 
-    # Save dataset info
-    ds_title = data_getLatestVersion['data']['latestVersion']['metadataBlocks']['citation']['fields'][0]['value']
-    datasetPersistentId = data_getLatestVersion['data']['latestVersion']['datasetPersistentId']
-    versionState = data_getLatestVersion['data']['latestVersion']['versionState']
-    datasetinfo = '%s (%s) (%s)' % (ds_title, versionState, datasetPersistentId)
+        # Save dataverse name and alias
+        dataverse_name = data_dataverseName['data']['items'][0]['name_of_dataverse']
+        dataverse_alias = data_dataverseName['data']['items'][0]['identifier_of_dataverse']
+        dataverse_name_alias = '%s (%s)' % (dataverse_name, dataverse_alias)
 
-    # Get date of latest dataset version
-    lastUpdateTime = convert_to_local_tz(data_getLatestVersion['data']['latestVersion']['lastUpdateTime'])
+        # Save dataset info
+        ds_title = data_getLatestVersion['data']['latestVersion']['metadataBlocks']['citation']['fields'][0]['value']
+        datasetPersistentId = data_getLatestVersion['data']['latestVersion']['datasetPersistentId']
+        versionState = data_getLatestVersion['data']['latestVersion']['versionState']
+        datasetinfo = '%s (%s) (%s)' % (ds_title, versionState, datasetPersistentId)
 
-    # If the dataset's latest version contains files, write dataset and file info (file name, file type, and size) to the CSV
-    if data_getLatestVersion['data']['latestVersion']['files']:
-        for datafile in data_getLatestVersion['data']['latestVersion']['files']:
-            datafilename = datafile['label']
-            datafilesize = format_bytes(datafile['dataFile']['filesize'])
-            filetype = datafile['dataFile']['contentType']
-            datafileinfo = '%s (%s)' % (datafilename, datafilesize)
+        # Get date of latest dataset version
+        lastUpdateTime = convert_to_local_tz(data_getLatestVersion['data']['latestVersion']['lastUpdateTime'])
 
-            # Add fields to a new row in the CSV file
-            with open(csvfilepath, mode='a', encoding='utf-8') as opencsvfile:
+        # If the dataset's latest version contains files, write dataset and file info (file name, file type, and size) to the CSV
+        if data_getLatestVersion['data']['latestVersion']['files']:
+            for datafile in data_getLatestVersion['data']['latestVersion']['files']:
+                datafilename = datafile['label']
+                datafilesize = format_bytes(datafile['dataFile']['filesize'])
+                filetype = datafile['dataFile']['contentType']
+                datafileinfo = '%s (%s)' % (datafilename, datafilesize)
+
+                # Add fields to a new row in the CSV file
+                with open(csvfilepath, mode='a', encoding='utf-8') as opencsvfile:
+
+                    opencsvfile = csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+                    # Create new row with dataset and file info
+                    opencsvfile.writerow([datasetinfo, datafileinfo, filetype, lastUpdateTime, dataverse_name_alias])
+
+                    # As a progress indicator, print a dot each time a row is written
+                    sys.stdout.write('.')
+                    sys.stdout.flush()
+
+        # Otherwise print that the dataset has no files
+        else:
+            with open(csvfilepath, mode='a') as opencsvfile:
 
                 opencsvfile = csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                 # Create new row with dataset and file info
-                opencsvfile.writerow([datasetinfo, datafileinfo, filetype, lastUpdateTime, dataverse_name_alias])
+                opencsvfile.writerow([datasetinfo, '(no files found)', '(no files found)', lastUpdateTime, dataverse_name_alias])
 
                 # As a progress indicator, print a dot each time a row is written
                 sys.stdout.write('.')
                 sys.stdout.flush()
-
-    # Otherwise print that the dataset has no files
-    else:
-        with open(csvfilepath, mode='a') as opencsvfile:
-
-            opencsvfile = csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-
-            # Create new row with dataset and file info
-            opencsvfile.writerow([datasetinfo, '(no files found)', '(no files found)', lastUpdateTime, dataverse_name_alias])
-
-            # As a progress indicator, print a dot each time a row is written
-            sys.stdout.write('.')
-            sys.stdout.flush()
 
 print('\nFinished writing dataset and file info of %s dataset(s) to %s' % (len(unique_dataset_pids), csvfilepath))
 
