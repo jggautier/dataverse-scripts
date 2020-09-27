@@ -5,13 +5,12 @@ import csv
 import glob
 import json
 import os
+import requests
 import sys
 import time
 from tkinter import filedialog
 from tkinter import ttk
 from tkinter import *
-import urllib.request
-from urllib.request import urlopen
 from urllib.parse import urlparse
 
 ####################################################################################
@@ -134,7 +133,8 @@ except IndexError:
 
 # Get alias of the root dataverse
 url = '%s/api/dataverses/1' % (server)
-dataverse_data = json.load(urlopen(url))
+response = requests.get(url)
+dataverse_data = response.json()
 rootalias = dataverse_data['data']['alias']
 
 ####################################################################################
@@ -150,12 +150,14 @@ if not alias or alias == rootalias:
     # Report count of datasets
     if apikey:
         url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&start=0&sort=date&order=desc&key=%s' % (server, apikey)
-        data = json.load(urlopen(url))
+        response = requests.get(url)
+        data = response.json()
         total = data['data']['total_count']
         print('\nSaving %s dataset PIDs\n(Search API returns the draft and published version of a dataset. List will be de-duplicated at the end):' % (total))
     else:
         url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&start=0&sort=date&order=desc' % (server)
-        data = json.load(urlopen(url))
+        response = requests.get(url)
+        data = response.json()
         total = data['data']['total_count']
         print('\nSaving %s dataset PIDs:' % (total))
 
@@ -175,7 +177,9 @@ if not alias or alias == rootalias:
                     url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&key=%s' % (server, per_page, start, apikey)
                 else:
                     url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (server, per_page, start)
-                data = json.load(urlopen(url))
+
+                response = requests.get(url)
+                data = response.json()
 
                 # For each item object...
                 for i in data['data']['items']:
@@ -195,7 +199,9 @@ if not alias or alias == rootalias:
                         url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&key=%s' % (server, per_page, start, apikey)
                     else:
                         url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (server, per_page, start)
-                    data = json.load(urlopen(url))
+
+                    response = requests.get(url)
+                    data = response.json()
 
                     # For each item object...
                     for i in data['data']['items']:
@@ -232,7 +238,8 @@ else:
     else:
         url = '%s/api/dataverses/%s' % (server, alias)
 
-    data = json.load(urlopen(url))
+    response = requests.get(url)
+    data = response.json()
     parent_dataverse_id = data['data']['id']
 
     # Create list and add ID of given dataverse
@@ -252,7 +259,10 @@ else:
                 url = '%s/api/dataverses/%s/contents?key=%s' % (server, dataverse_id, apikey)
             else:
                 url = '%s/api/dataverses/%s/contents' % (server, dataverse_id)
-            data = json.load(urlopen(url))
+            
+            response = requests.get(url)
+            data = response.json()
+
             for i in data['data']:
                 if i['type'] == 'dataverse':
                     dataverse_id = i['id']
@@ -272,7 +282,9 @@ else:
                 url = '%s/api/dataverses/%s/contents?key=%s' % (server, dataverse_id, apikey)
             else:
                 url = '%s/api/dataverses/%s/contents' % (server, dataverse_id)
-            data = json.load(urlopen(url))
+            
+            response = requests.get(url)
+            data = response.json()
 
             for i in data['data']:
                 if i['type'] == 'dataset':
