@@ -149,7 +149,7 @@ if not alias or alias == root_alias:
     csv_file = 'dataset_pids_%s_%s.csv' % (installation_name.replace(' ', '_'), current_time)
     csv_file_path = os.path.join(directory, csv_file)
 
-    with open(csv_file_path, mode='w') as f:
+    with open(csv_file_path, mode='w', newline='') as f:
         f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         f.writerow(['persistent_id', 'persistentUrl', 'dataverse_name', 'dataverse_alias'])
 
@@ -193,7 +193,7 @@ if not alias or alias == root_alias:
                 dataverse_name = i['name_of_dataverse']
                 dataverse_alias = i['identifier_of_dataverse']
 
-                with open(csv_file_path, mode='a', encoding='utf-8') as open_csv_file:
+                with open(csv_file_path, mode='a', encoding='utf-8', newline='') as open_csv_file:
                     open_csv_file = csv.writer(open_csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                     # Create new row with dataset and file info
@@ -225,7 +225,7 @@ if not alias or alias == root_alias:
                     dataverse_name = i['name_of_dataverse']
                     dataverse_alias = i['identifier_of_dataverse']
 
-                    with open(csv_file_path, mode='a', encoding='utf-8') as open_csv_file:
+                    with open(csv_file_path, mode='a', encoding='utf-8', newline='') as open_csv_file:
                         open_csv_file = csv.writer(open_csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                         # Create new row with dataset and file info
@@ -258,7 +258,7 @@ else:
     csv_file = 'dataset_pids_%s_%s.csv' % (alias, current_time)
     csv_file_path = os.path.join(directory, csv_file)
 
-    with open(csv_file_path, mode='w') as f:
+    with open(csv_file_path, mode='w', newline='') as f:
         f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         f.writerow(['persistent_id', 'persistentUrl', 'dataverse_name', 'dataverse_alias'])
 
@@ -307,7 +307,7 @@ else:
 
     count = 0
 
-    with open(csv_file_path, mode='a', encoding='utf-8') as open_csv_file:
+    with open(csv_file_path, mode='a', encoding='utf-8', newline='') as open_csv_file:
         open_csv_file = csv.writer(open_csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
         for dataverse_id in dataverse_ids:
