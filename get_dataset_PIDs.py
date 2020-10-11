@@ -104,7 +104,7 @@ label_apikeyHelpText.grid(sticky='w', column=0, row=9)
 window.grid_rowconfigure(10, minsize=25)
 
 # Create label for Browse directory button
-label_browseDirectory = Label(window, text='Choose folder to store text file with list of dataset PIDs:', anchor='w')
+label_browseDirectory = Label(window, text='Choose folder to store CSV file with info of dataset PIDs:', anchor='w')
 label_browseDirectory.grid(sticky='w', column=0, row=11, pady=2)
 
 # Create Browse directory button
@@ -131,21 +131,27 @@ try:
 except IndexError:
     alias = ''
 
-# Get alias of the root dataverse
+# Get alias of the root dataverse (assumming the root dataverse's ID is 1, which isn't the case with UVA Dataverse)
 url = '%s/api/dataverses/1' % (server)
 response = requests.get(url)
 dataverse_data = response.json()
-rootalias = dataverse_data['data']['alias']
+root_alias = dataverse_data['data']['alias']
+installation_name = dataverse_data['data']['name']
 
 ####################################################################################
 
 # If user provides no alias or the alias is the repository's root alias,
 # use Search API to find PIDs of all datasets in repository
 
-if not alias or alias == rootalias:
-    installation_name = dataverse_data['data']['name']
-    txtfile = 'dataset_pids_%s_%s.txt' % (installation_name.replace(' ', '_'), current_time)
-    txtfilepath = os.path.join(directory, txtfile)
+if not alias or alias == root_alias:
+
+    # Create CSV file
+    csv_file = 'dataset_pids_%s_%s.csv' % (installation_name.replace(' ', '_'), current_time)
+    csv_file_path = os.path.join(directory, csv_file)
+
+    with open(csv_file_path, mode='w', newline='') as f:
+        f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        f.writerow(['persistent_id', 'persistentUrl', 'dataverse_name', 'dataverse_alias'])
 
     # Report count of datasets
     if apikey:
@@ -169,10 +175,41 @@ if not alias or alias == rootalias:
     # Create variable for storing count of misindexed datasets
     misindexed_datasets_count = 0
 
-    with open(txtfilepath, mode='w') as f:
-        while (condition):
+    while condition:
+        try:
+            per_page = 10
+            if apikey:
+                url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&key=%s' % (server, per_page, start, apikey)
+            else:
+                url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (server, per_page, start)
+
+            response = requests.get(url)
+            data = response.json()
+
+            # For each item object...
+            for i in data['data']['items']:
+                persistent_id = i['global_id']
+                persistent_url = i['url']
+                dataverse_name = i['name_of_dataverse']
+                dataverse_alias = i['identifier_of_dataverse']
+
+                with open(csv_file_path, mode='a', encoding='utf-8', newline='') as open_csv_file:
+                    open_csv_file = csv.writer(open_csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+                    # Create new row with dataset and file info
+                    open_csv_file.writerow([persistent_id, persistent_url, dataverse_name, dataverse_alias])
+
+                    # f.write('%s\n' % (persistent_id))
+                    count += 1
+                    print('%s of %s' % (count, total), end='\r', flush=True)
+
+            # Update variables to paginate through the search results
+            start = start + per_page
+
+        # Print error message if misindexed datasets break the Search API call, and try the next page. (See https://github.com/IQSS/dataverse/issues/4225)
+        except urllib.error.URLError:
             try:
-                per_page = 10
+                per_page = 1
                 if apikey:
                     url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&key=%s' % (server, per_page, start, apikey)
                 else:
@@ -183,43 +220,32 @@ if not alias or alias == rootalias:
 
                 # For each item object...
                 for i in data['data']['items']:
-                    global_id = i['global_id']
-                    f.write('%s\n' % (global_id))
-                    count += 1
-                    print('%s of %s' % (count, total), end='\r', flush=True)
+                    persistent_id = i['global_id']
+                    persistent_url = i['url']
+                    dataverse_name = i['name_of_dataverse']
+                    dataverse_alias = i['identifier_of_dataverse']
 
-                # Update variables to paginate through the search results
-                start = start + per_page
+                    with open(csv_file_path, mode='a', encoding='utf-8', newline='') as open_csv_file:
+                        open_csv_file = csv.writer(open_csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-            # Print error message if misindexed datasets break the Search API call, and try the next page. (See https://github.com/IQSS/dataverse/issues/4225)
-            except urllib.error.URLError:
-                try:
-                    per_page = 1
-                    if apikey:
-                        url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&key=%s' % (server, per_page, start, apikey)
-                    else:
-                        url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (server, per_page, start)
+                        # Create new row with dataset and file info
+                        open_csv_file.writerow([persistent_id, persistent_url, dataverse_name, dataverse_alias])
 
-                    response = requests.get(url)
-                    data = response.json()
 
-                    # For each item object...
-                    for i in data['data']['items']:
-                        global_id = i['global_id']
-                        f.write('%s\n' % (global_id))
+                    # f.write('%s\n' % (persistent_id))
                         print('%s of %s' % (count, total), end='\r', flush=True)
 
-                        # Update variables to paginate through the search results
-                        start = start + per_page
-
-                except urllib.error.URLError:
-                    misindexed_datasets_count += 1
+                    # Update variables to paginate through the search results
                     start = start + per_page
 
-            # Stop paginating when there are no more results
-            condition = start < total
+            except urllib.error.URLError:
+                misindexed_datasets_count += 1
+                start = start + per_page
 
-        print('\n%s dataset PIDs written to %s:' % (count, txtfilepath))
+        # Stop paginating when there are no more results
+        condition = start < total
+
+    print('\nDataset PIDs written to the CSV file: %s' % (count))
 
     if misindexed_datasets_count:
         print('\n\nUnretrievable dataset PIDs due to misindexing: %s\n' % (misindexed_datasets_count))
@@ -229,8 +255,12 @@ if not alias or alias == rootalias:
 # If user provides an alias, and it isn't the root dataverses's alias, use "Get content" endpoints instead of Search API
 
 else:
-    txtfile = 'dataset_pids_%s_%s.txt' % (alias, current_time)
-    txtfilepath = os.path.join(directory, txtfile)
+    csv_file = 'dataset_pids_%s_%s.csv' % (alias, current_time)
+    csv_file_path = os.path.join(directory, csv_file)
+
+    with open(csv_file_path, mode='w', newline='') as f:
+        f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        f.writerow(['persistent_id', 'persistentUrl', 'dataverse_name', 'dataverse_alias'])
 
     # Get ID of given dataverse alias
     if apikey:
@@ -252,14 +282,15 @@ else:
         print('\nGetting dataverse IDs in %s:' % (alias))
 
         for dataverse_id in dataverse_ids:
-            # As a progress indicator, print a dot each time a row is written
+
             sys.stdout.write('.')
             sys.stdout.flush()
+
             if apikey:
                 url = '%s/api/dataverses/%s/contents?key=%s' % (server, dataverse_id, apikey)
             else:
                 url = '%s/api/dataverses/%s/contents' % (server, dataverse_id)
-            
+
             response = requests.get(url)
             data = response.json()
 
@@ -272,17 +303,31 @@ else:
 
     # For each dataverse in the list, add the PIDs of all datasets to a text file - excludes linked and harvested datasets
 
-    print('\nWriting dataset IDs to %s:' % (txtfilepath))
+    print('\nWriting dataset IDs to %s:' % (csv_file_path))
 
     count = 0
 
-    with open(txtfilepath, mode='w') as opentxtfile:
+    with open(csv_file_path, mode='a', encoding='utf-8', newline='') as open_csv_file:
+        open_csv_file = csv.writer(open_csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
         for dataverse_id in dataverse_ids:
+
+            # Get name of dataverse
+            if apikey:
+                url = '%s/api/dataverses/%s?key=%s' % (server, dataverse_id, apikey)
+            else:
+                url = '%s/api/dataverses/%s' % (server, dataverse_id)
+            response = requests.get(url, timeout=10)
+            data = response.json()
+            dataverse_name = data['data']['name']
+            dataverse_alias = data['data']['alias']
+
+            # Get content of dataverse
             if apikey:
                 url = '%s/api/dataverses/%s/contents?key=%s' % (server, dataverse_id, apikey)
             else:
                 url = '%s/api/dataverses/%s/contents' % (server, dataverse_id)
-            
+
             response = requests.get(url)
             data = response.json()
 
@@ -291,15 +336,16 @@ else:
                     protocol = i['protocol']
                     authority = i['authority']
                     identifier = i['identifier']
-                    dataset_pid = '%s:%s/%s' % (protocol, authority, identifier)
+                    persistent_id = '%s:%s/%s' % (protocol, authority, identifier)
+                    persistent_url = i['persistentUrl']
 
                     count += 1
 
                     # Create new line with dataset PID
-                    opentxtfile.write('%s\n' % (dataset_pid))
+                    open_csv_file.writerow([persistent_id, persistent_url, dataverse_name, dataverse_alias])
 
                     # As a progress indicator, print a dot each time a row is written
                     sys.stdout.write('.')
                     sys.stdout.flush()
 
-    print('\n\nDataset PIDs written to the text file: %s' % (count))
+    print('\n\nDataset PIDs written to the CSV file: %s' % (count))
