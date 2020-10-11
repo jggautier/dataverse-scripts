@@ -1,5 +1,7 @@
 # Download dataset metadata of as many known Dataverse installations as possible
 
+import csv
+from csv import DictReader
 import json
 import os
 from pathlib import Path
@@ -118,7 +120,7 @@ for installation in mapdata['installations']:
 
     if get_json_api_status == 'OK':
 
-        # Save time and date when script started downloading from the installation to append it to the installation's directory and text files
+        # Save time and date when script started downloading from the installation to append it to the installation's directory and files
         current_time = time.strftime('%Y.%m.%d_%H.%M.%S')
 
         # Create directory for the installation
@@ -173,14 +175,18 @@ for installation in mapdata['installations']:
                 with open(metadatablock_file, mode='w') as f:
                     f.write(json.dumps(response.json(), indent=4))
 
-        # Use the Search API to get the installation's dataset PIDs and write them to a text file,
+        # Use the Search API to get the installation's dataset PIDs, name and alias of owning dataverse and write them to a CSV file,
         # and use the "Get dataset JSON" endpoint to get those datasets' metadata
 
-        # Create path and file name of text file for the dataset PIDs
-        file_path = installation_directory + '/' + 'dataset_pids_%s_%s.txt' % (installation_name, current_time)
+        # Create CSV file
+        dataset_pids_file = installation_directory + '/' + 'dataset_pids_%s_%s.csv' % (installation_name, current_time)
 
-        # Use Search API to get installation's dataset PIDs and write them to a text file
-        print('\tWriting %s dataset PIDs to text file:' % (dataset_count))
+        with open(dataset_pids_file, mode='w', newline='') as f1:
+            f1 = csv.writer(f1, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            f1.writerow(['persistent_id', 'persistentUrl', 'dataverse_name', 'dataverse_alias'])
+
+        # Use Search API to get installation's dataset info and write it to a CSV file
+        print('\tWriting %s dataset info to CSV file:' % (dataset_count))
 
         # Initialization for paginating through Search API results and showing progress
         start = 0
@@ -190,7 +196,9 @@ for installation in mapdata['installations']:
         # Create variable for storing count of misindexed datasets
         misindexed_datasets_count = 0
 
-        with open(file_path, mode='w') as f1:
+        with open(dataset_pids_file, mode='a', encoding='utf-8', newline='') as f1:
+            f1 = csv.writer(f1, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
             while (condition):
                 try:
                     per_page = 10
@@ -198,10 +206,16 @@ for installation in mapdata['installations']:
                     response = requests.get(url, headers=headers, verify=False)
                     data = response.json()
 
-                    # For each dataset, write the dataset PID to the text file
+                    # For each dataset, write the dataset info to the CSV file
                     for i in data['data']['items']:
-                        global_id = i['global_id']
-                        f1.write('%s\n' % (global_id))
+                        persistent_id = i['global_id']
+                        persistent_url = i['url']
+                        dataverse_name = i['name_of_dataverse']
+                        dataverse_alias = i['identifier_of_dataverse']
+
+                        # Create new row with dataset and file info
+                        f1.writerow([persistent_id, persistent_url, dataverse_name, dataverse_alias])
+
                         dataset_pid_count += 1
                         print('\t\t%s of %s' % (dataset_pid_count, dataset_count), end='\r', flush=True)
 
@@ -218,10 +232,16 @@ for installation in mapdata['installations']:
                         response = requests.get(url, headers=headers, timeout=20, verify=False)
                         data = response.json()
 
-                        # For each dataset, write the dataset PID to the text file
+                        # For each dataset, write the dataset info to the CSV file
                         for i in data['data']['items']:
-                            global_id = i['global_id']
-                            f1.write('%s\n' % (global_id))
+                            persistent_id = i['global_id']
+                            persistent_url = i['url']
+                            dataverse_name = i['name_of_dataverse']
+                            dataverse_alias = i['identifier_of_dataverse']
+
+                            # Create new row with dataset and file info
+                            f1.writerow([persistent_id, persistent_url, dataverse_name, dataverse_alias])
+
                             dataset_pid_count += 1
                             print('\t\t%s of %s' % (dataset_pid_count, dataset_count), end='\r', flush=True)
 
@@ -235,7 +255,7 @@ for installation in mapdata['installations']:
                 # Stop paginating when there are no more results
                 condition = start < dataset_count
 
-            print('\n\t%s dataset PIDs written to text file' % (dataset_count))
+            print('\n\t%s dataset PIDs written to CSV file' % (dataset_count))
 
         if misindexed_datasets_count:
             print('\n\n\tUnretrievable dataset PIDs due to misindexing: %s\n' % (misindexed_datasets_count))
@@ -244,62 +264,60 @@ for installation in mapdata['installations']:
         json_metadata_directory = installation_directory + '/' + 'JSON_metadata' + '_%s' % (current_time)
         os.mkdir(json_metadata_directory)
 
-        # For each dataset PID in text file, download dataset's JSON metadata
+        # For each dataset PID in CSV file, download dataset's JSON metadata
         print('\tDownloading JSON metadata to dataset_metadata folder:')
 
         # Initiate counts for progress indicator
         metadata_downloaded_count = 0
         metadata_not_downloaded = []
 
-        dataset_pids = open(file_path)
-
-        # For each dataset persistent identifier in the txt file, download the dataset's Dataverse JSON file into the metadata folder
-        for dataset_pid in dataset_pids:
-
-            # Remove any trailing spaces from pid
-            dataset_pid = dataset_pid.rstrip()
+        # For each dataset persistent identifier in the CSV file, download the dataset's Dataverse JSON file into the metadata folder
+        with open(dataset_pids_file, mode='r', encoding='utf-8') as f2:
+            csv_dict_reader = DictReader(f2, delimiter=',')
+            for row in csv_dict_reader:
+                dataset_pid = row['persistent_id'].rstrip()
 
             # Get the metadata of each version of the dataset
-            try:
-                latest_version_url = '%s/api/datasets/:persistentId?persistentId=%s' % (installationURL, dataset_pid)
-                response = requests.get(latest_version_url, headers=headers, timeout=20, verify=False)
-                latest_version_metadata = response.json()
-                if latest_version_metadata['status'] == 'OK':
-                    persistentUrl = latest_version_metadata['data']['persistentUrl']
-                    publisher = latest_version_metadata['data']['publisher']
-                    publicationDate = latest_version_metadata['data']['publicationDate']
+                try:
+                    latest_version_url = '%s/api/datasets/:persistentId?persistentId=%s' % (installationURL, dataset_pid)
+                    response = requests.get(latest_version_url, headers=headers, timeout=20, verify=False)
+                    latest_version_metadata = response.json()
+                    if latest_version_metadata['status'] == 'OK':
+                        persistentUrl = latest_version_metadata['data']['persistentUrl']
+                        publisher = latest_version_metadata['data']['publisher']
+                        publicationDate = latest_version_metadata['data']['publicationDate']
 
-                    all_version_url = '%s/api/datasets/:persistentId/versions?persistentId=%s' % (installationURL, dataset_pid)
-                    response = requests.get(all_version_url, headers=headers, timeout=20, verify=False)
-                    all_versions_metadata = response.json()
+                        all_version_url = '%s/api/datasets/:persistentId/versions?persistentId=%s' % (installationURL, dataset_pid)
+                        response = requests.get(all_version_url, headers=headers, timeout=20, verify=False)
+                        all_versions_metadata = response.json()
 
-                    for dataset_version in all_versions_metadata['data']:
-                        dataset_version = {
-                            'status': latest_version_metadata['status'],
-                            'data': {
-                                'persistentUrl': persistentUrl,
-                                'publisher': publisher,
-                                'publicationDate': publicationDate,
-                                'datasetVersion': dataset_version}}
+                        for dataset_version in all_versions_metadata['data']:
+                            dataset_version = {
+                                'status': latest_version_metadata['status'],
+                                'data': {
+                                    'persistentUrl': persistentUrl,
+                                    'publisher': publisher,
+                                    'publicationDate': publicationDate,
+                                    'datasetVersion': dataset_version}}
 
-                        majorversion = str(dataset_version['data']['datasetVersion']['versionNumber'])
-                        minorversion = str(dataset_version['data']['datasetVersion']['versionMinorNumber'])
-                        version_number = majorversion + '.' + minorversion
+                            majorversion = str(dataset_version['data']['datasetVersion']['versionNumber'])
+                            minorversion = str(dataset_version['data']['datasetVersion']['versionMinorNumber'])
+                            version_number = majorversion + '.' + minorversion
 
-                        metadata_file = json_metadata_directory + '/' + '%s_v%s.json' % (dataset_pid.replace(':', '_').replace('/', '_'), version_number)
+                            metadata_file = json_metadata_directory + '/' + '%s_v%s.json' % (dataset_pid.replace(':', '_').replace('/', '_'), version_number)
 
-                        # Write the JSON to the new file
-                        with open(metadata_file, mode='w') as f2:
-                            f2.write(json.dumps(dataset_version, indent=4))
+                            # Write the JSON to the new file
+                            with open(metadata_file, mode='w') as f3:
+                                f3.write(json.dumps(dataset_version, indent=4))
 
-                # Increase count variable to track progress
-                metadata_downloaded_count += 1
+                    # Increase count variable to track progress
+                    metadata_downloaded_count += 1
 
-                # Print progress
-                print('\t\tDownloaded %s of %s JSON files' % (metadata_downloaded_count, dataset_count), end='\r', flush=True)
+                    # Print progress
+                    print('\t\tDownloaded %s of %s JSON files' % (metadata_downloaded_count, dataset_count), end='\r', flush=True)
 
-            except Exception:
-                metadata_not_downloaded.append(dataset_pid)
+                except Exception:
+                    metadata_not_downloaded.append(dataset_pid)
 
         print('\t\tDownloaded %s of %s JSON files' % (metadata_downloaded_count, dataset_count))
 

@@ -211,9 +211,7 @@ else:
             total = len(f.readlines()) - 1
         with open(dataset_pids, mode='r', encoding='utf-8') as f:
             csv_dict_reader = DictReader(f, delimiter=',')
-            # total = 0
             for row in csv_dict_reader:
-                # total += 1
                 dataset_pid = row['persistent_id'].rstrip()
                 try:
                     latest_version_url = '%s/api/datasets/:persistentId?persistentId=%s' % (repositoryURL, dataset_pid)
