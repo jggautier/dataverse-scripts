@@ -199,7 +199,6 @@ if not alias or alias == root_alias:
                     # Create new row with dataset and file info
                     open_csv_file.writerow([persistent_id, persistent_url, dataverse_name, dataverse_alias])
 
-                    # f.write('%s\n' % (persistent_id))
                     count += 1
                     print('%s of %s' % (count, total), end='\r', flush=True)
 
@@ -231,8 +230,6 @@ if not alias or alias == root_alias:
                         # Create new row with dataset and file info
                         open_csv_file.writerow([persistent_id, persistent_url, dataverse_name, dataverse_alias])
 
-
-                    # f.write('%s\n' % (persistent_id))
                         print('%s of %s' % (count, total), end='\r', flush=True)
 
                     # Update variables to paginate through the search results
@@ -301,7 +298,7 @@ else:
 
         print('\n\nFound 1 dataverse and %s subdataverses' % (len(dataverse_ids) - 1))
 
-    # For each dataverse in the list, add the PIDs of all datasets to a text file - excludes linked and harvested datasets
+    # For each dataverse in the list, add the PIDs of all datasets to a CSV file - excludes linked and harvested datasets
 
     print('\nWriting dataset IDs to %s:' % (csv_file_path))
 
