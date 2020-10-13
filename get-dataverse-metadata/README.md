@@ -1,7 +1,7 @@
 # Get and convert metadata of datasets
 This is a collection of Python 3 scripts for getting the metadata of published datasets in a [Dataverse](https://dataverse.org/)-based repository, in the Dataverse JSON format, and writing the metadata to CSV files for analysis, reporting, and metadata improvement.
 
-If you're interested in getting the metadata of all datasets in many known Dataverse-based repositories, the metadata is already published in dataset in the Harvard Dataverse repository: https://doi.org/10.7910/DVN/DCDKZQ.
+If you're interested in getting the metadata of all datasets in most known Dataverse-based repositories, the metadata is already published in a dataset in the Harvard Dataverse repository: https://doi.org/10.7910/DVN/DCDKZQ.
 
 ## General
 The scripts can be grouped into three types of scripts:
@@ -31,10 +31,10 @@ Imagine you want to get and analyze the metadata of datasets in a Dataverse-base
  * Studying and reporting how certain types of data are described to recommend better ways of describing and using data
 
 ### Getting dataset PIDs
-To get a text file with a list of persistent identifiers of datasets in a dataverse, run [get_dataset_pids.py](https://github.com/jggautier/dataverse-scripts/blob/master/get_dataset_PIDs.py) in your terminal.
+To get a CSV file with information about datasets in a dataverse, including their persistent identifiers, run [get_dataset_pids.py](https://github.com/jggautier/dataverse-scripts/blob/master/get_dataset_PIDs.py) in your terminal.
 
 ### Getting dataset metadata
-Run get_dataset_json_metadata.py, which asks for the list of dataset PIDs.
+Run get_dataset_json_metadata.py, which asks for a list of dataset PIDs (either a txt file or a CSV file where one column has the PIDs).
 
 ```
 python3 get_dataset_json_metadata.py
@@ -53,7 +53,7 @@ Run any of the scripts that start with parse_, such as parse_basic_metadata.py
 python3 parse_basic_metadata.py
 ```
 
-Each script will generate a window that asks for certain files and directories on your computer, depending on the script.
+Each script will generate a UI that asks for certain files and directories on your computer, depending on the script.
 
  * Running parse_basic_metadata.py will create a CSV file where the values of basic metadata fields, that aren't part of any metadatablocks, are written, such as the repository's database ID for the dataset version, the dataset's publication date, and its major and minor version numbers.
  * Running parse_terms_metadata.py will create a CSV file where the values of the Terms of Use and Access metadata fields are written, such as Waiver, Terms of Use, and Terms of Access.
@@ -63,8 +63,8 @@ Each script will generate a window that asks for certain files and directories o
 To analyze the metadata, you can manipulate and analyze them using many methods, including MS Excel, Apple's Numbers, Google Sheets, OpenRefine, R, Python, and database applications like pgAdmin or DB Browser for SQLite. The combine_tables.py script is provided to quickly join all of the CSV files in a directory full of CSV files, joining on the datasetVersionId and persistentUrl columns.
 
 ## Further reading
-For more information about the metadata model that ships with the Dataverse software, including the database names of each field, see the [Appendix of Dataverse's User Guide](http://guides.dataverse.org/en/latest/user/appendix.html). Harvard Dataverse's metadata model is the same model that ships with the Dataverse software, but each Dataverse-based repository is able to change this model (e.g. they may have different fields and hierarchies) and learning about a repository's custom metadata model may take some investigation into the repository.
+For more information about the metadata model that ships with the Dataverse software, including the database names of each field, see the [Appendix of Dataverse's User Guide](http://guides.dataverse.org/en/latest/user/appendix.html). Harvard Dataverse's metadata model is the same model that ships with the Dataverse software, but each Dataverse-based repository is able to change this model (e.g. they may have different fields and hierarchies).
 
 ## FAQ
- * The "get_dataset_json_metadata.py" script won't work if the Dataverse repository requires an API key in order to use a few Dataverse Native API endpoints to download dataset metadata. If the script throws an error, this might be the reason.
+ * The "get_dataset_json_metadata.py" script won't work if the Dataverse repository requires an API key in order to use a few Dataverse Native API endpoints to download dataset metadata, such as the Search API endpoints. If the script throws an error, this might be the reason.
  * For Mac OS users, some scripts return a message that starts with "objc[1775]: Class FIFinderSyncExtensionHost". It's related to the use of a module called tkinter, which I use to create a UI to accept user input. The message should not stop the scripts from working. More information about a similar message is at the thread at https://stackoverflow.com/questions/46999695/class-fifindersyncextensionhost-is-implemented-in-both-warning-in-xcode-si, in which some people agree that it's a MacOS problem that can be safely ignored.
