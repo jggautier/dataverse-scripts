@@ -10,13 +10,13 @@ server = ''
 # API key of super user account
 apikey = ''
 
-# Text file containing PIDs of datasets to be destroyed, e.g. /Users/user/Desktop/dois.txt
+# Text or CSV file containing PIDs of datasets to be destroyed, e.g. /Users/user/Desktop/dois.txt
 file = ''
+
+file_name = os.path.basename(file)
 
 destroyed_datasets = []
 not_destroyed_datasets = []
-
-file_name = os.path.basename(file)
 
 print('Trying to destroy datasets...')
 
