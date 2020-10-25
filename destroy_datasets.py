@@ -1,30 +1,26 @@
 # Destroys a given list of datasets
 
 from csv import DictReader
-import os
 import urllib.request
 
 # Dataverse repository URL, e.g. https://demo.dataverse.org
 server = ''
 
-# API key of super user account
+# API key of superuser account
 apikey = ''
 
 # Text or CSV file containing PIDs of datasets to be destroyed, e.g. /Users/user/Desktop/dois.txt
 file = ''
-
-file_name = os.path.basename(file)
 
 destroyed_datasets = []
 not_destroyed_datasets = []
 
 print('Trying to destroy datasets...')
 
-if '.txt' in file_name:
+if '.txt' in file:
     dataset_pids = open(file)
     for dataset_pid in dataset_pids:
-        dataset_pid = dataset_pid.rstrip()
-        url = '%s/api/datasets/:persistentId/destroy/?persistentId=%s' % (server, dataset_pid)
+        url = '%s/api/datasets/:persistentId/destroy/?persistentId=%s' % (server, dataset_pid.rstrip())
 
         headers = {
             'X-Dataverse-key': apikey}
@@ -43,7 +39,7 @@ if '.txt' in file_name:
             not_destroyed_datasets.append(dataset_pid)
 
 else:
-    if '.csv' in file_name:
+    if '.csv' in file:
         with open(file, mode='r', encoding='utf-8') as f:
             csv_dict_reader = DictReader(f, delimiter=',')
             for row in csv_dict_reader:
