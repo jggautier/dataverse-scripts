@@ -49,7 +49,7 @@ def retrieve_csvdirectory():
     csvDirectory = filedialog.askdirectory()
 
     # Show user which directory she chose
-    label_showChosenDirectory = Label(window, text='You chose: ' + csvDirectory, anchor='w', foreground='green')
+    label_showChosenDirectory = Label(window, text='You chose: ' + csvDirectory, anchor='w', foreground='green', wraplength=500, justify='left')
     label_showChosenDirectory.grid(sticky='w', column=0, row=10)
 
 
