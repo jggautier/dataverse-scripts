@@ -9,9 +9,10 @@ server = ''  # Enter name of server url, which is home page URL of the Dataverse
 metadatafile = ''  # Path to json file that contains the replacement metadata
 datasetPIDs = ''  # File with list of dataset PIDs
 
-count = 0
 with open(datasetPIDs, mode='r', encoding='utf-8') as f:
     total = len(f.readlines()) - 1
+
+count = 0
 
 with open(datasetPIDs, mode='r', encoding='utf-8') as f:
     csv_dict_reader = DictReader(f, delimiter=',')
