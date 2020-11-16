@@ -15,7 +15,7 @@ from tkinter import ttk
 # Create GUI for getting user input
 window = Tk()
 window.title('Get dataset metadata')
-window.geometry('650x400')  # width x height
+window.geometry('650x500')  # width x height
 
 # Create label for Dataverse repository URL
 label_repositoryURL = Label(window, text='Enter Dataverse repository URL:', anchor='w')
@@ -33,28 +33,44 @@ label_dataverseUrlHelpText.grid(sticky='w', column=0, row=2)
 # Create empty row in grid to improve spacing between the two fields
 window.grid_rowconfigure(3, minsize=25)
 
-# Create label for Browse directory button
-label_browseForFile = Label(window, text='Choose txt file contain list of dataset PIDs:', anchor='w')
-label_browseForFile.grid(sticky='w', column=0, row=4, pady=2)
+# Create label for API key field
+label_apikey = Label(window, text='API key:', anchor='w')
+label_apikey.grid(sticky='w', column=0, row=4)
 
-# Create Browse directory button
-button_browseForFile = ttk.Button(window, text='Browse', command=lambda: retrieve_file())
-button_browseForFile.grid(sticky='w', column=0, row=5)
+# Create API key field
+apikey = str()
+entry_apikey = Entry(window, width=50, textvariable=apikey)
+entry_apikey.grid(sticky='w', column=0, row=5, pady=2)
+
+# Create help text for API key field
+label_apikeyHelpText = Label(window, text='If no API is entered, only published datasets will be found', foreground='grey', anchor='w')
+label_apikeyHelpText.grid(sticky='w', column=0, row=6)
 
 # Create empty row in grid to improve spacing between the two fields
 window.grid_rowconfigure(7, minsize=25)
 
 # Create label for Browse directory button
+label_browseForFile = Label(window, text='Choose txt file contain list of dataset PIDs:', anchor='w')
+label_browseForFile.grid(sticky='w', column=0, row=8, pady=2)
+
+# Create Browse directory button
+button_browseForFile = ttk.Button(window, text='Browse', command=lambda: retrieve_file())
+button_browseForFile.grid(sticky='w', column=0, row=9)
+
+# Create empty row in grid to improve spacing between the two fields
+window.grid_rowconfigure(11, minsize=25)
+
+# Create label for Browse directory button
 label_browseDirectory = Label(window, text='Choose folder to put the metadata files and metadatablock files folders into:', anchor='w')
-label_browseDirectory.grid(sticky='w', column=0, row=8, pady=2)
+label_browseDirectory.grid(sticky='w', column=0, row=12, pady=2)
 
 # Create Browse directory button
 button_browseDirectory = ttk.Button(window, text='Browse', command=lambda: retrieve_directory())
-button_browseDirectory.grid(sticky='w', column=0, row=9)
+button_browseDirectory.grid(sticky='w', column=0, row=13)
 
 # Create start button
 button_Submit = ttk.Button(window, text='Start', command=lambda: retrieve_input())
-button_Submit.grid(sticky='w', column=0, row=11, pady=40)
+button_Submit.grid(sticky='w', column=0, row=15, pady=40)
 
 
 # Function called when Browse button is pressed for choosing text file with dataset PIDs
@@ -66,7 +82,7 @@ def retrieve_file():
 
     # Show user which file she chose
     label_showChosenFile = Label(window, text='You chose: ' + dataset_pids, anchor='w', foreground='green', wraplength=500, justify='left')
-    label_showChosenFile.grid(sticky='w', column=0, row=6)
+    label_showChosenFile.grid(sticky='w', column=0, row=10)
 
 
 # Function called when Browse button is pressed
@@ -77,8 +93,13 @@ def retrieve_directory():
     metadataFileDirectory = filedialog.askdirectory()
 
     # Show user which directory she chose
-    label_showChosenDirectory = Label(window, text='You chose: ' + metadataFileDirectory, anchor='w', foreground='green', wraplength=500, justify='left')
-    label_showChosenDirectory.grid(sticky='w', column=0, row=10)
+    label_showChosenDirectory = Label(
+        window,
+        text='You chose: ' + metadataFileDirectory,
+        anchor='w', foreground='green',
+        wraplength=500, justify='left'
+    )
+    label_showChosenDirectory.grid(sticky='w', column=0, row=14)
 
 
 # Function called when Start button is pressed
