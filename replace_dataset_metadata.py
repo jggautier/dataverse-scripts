@@ -3,16 +3,38 @@
 from csv import DictReader
 import requests
 
-token = ''  # Enter API token of Dataverse account that has edit and publish privileges on the datasets.
 server = ''  # Enter name of server url, which is home page URL of the Dataverse installation, e.g. https://demo.dataverse.org
+token = ''  # Enter API token of Dataverse account that has edit privileges on the datasets
 
-metadatafile = ''  # Path to json file that contains the replacement metadata
-datasetPIDs = ''  # File with list of dataset PIDs
+metadatafile = ''  # Path to JSON file that contains the replacement metadata
+datasetPIDs = ''  # Path to CSV file with list of dataset PIDs
 
 with open(datasetPIDs, mode='r', encoding='utf-8') as f:
     total = len(f.readlines()) - 1
 
 count = 0
+
+metadataValues = {
+    "fields": [
+        {
+            "typeName": "author",
+            "value": [
+                {
+                    "authorName": {
+                        "typeName": "authorName",
+                        "value": "Poe, Edgar Allen"
+                    }
+                },
+                {
+                    "authorName": {
+                        "typeName": "authorName",
+                        "value": "Mulligan, Hercules"
+                    }
+                }
+            ]
+        }
+    ]
+}
 
 with open(datasetPIDs, mode='r', encoding='utf-8') as f:
     csv_dict_reader = DictReader(f, delimiter=',')
@@ -21,13 +43,15 @@ with open(datasetPIDs, mode='r', encoding='utf-8') as f:
         url = '%s/api/datasets/:persistentId/editMetadata' % (server)
         r = requests.put(
             url,
-            data=open(metadatafile, 'rb'),
+            # data=open(metadatafile, 'rb'),
+            json=metadataValues,
             params={
                 'persistentId': datasetPID,
                 'replace': 'true'
             },
             headers={
-                'X-Dataverse-key': token
+                'X-Dataverse-key': token,
+                'content-type': 'application/json'
             })
         count += 1
 
