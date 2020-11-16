@@ -17,7 +17,8 @@ count = 0
 with open(datasetPIDs, mode='r', encoding='utf-8') as f:
     csv_dict_reader = DictReader(f, delimiter=',')
     for row in csv_dict_reader:
-        title = 'dataset %s' % (str(count))
+        # title = 'dataset %s' % (str(count))
+        title = row['title'].rstrip()
         metadataValues = {
             "fields": [
                 {
