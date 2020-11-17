@@ -23,8 +23,8 @@ This script downloads dataset metadata of as many known Dataverse-based installa
 ### Misc
 - #### publish_multiple_datasets.command
   This script publishes the unpublished datasets or draft versions in a given dataverse.
-- #### replace_dataset_metadata_in_a_dataverse.command
-  This script replaces the metadata of datasets in a given dataverse with the metadata in a given JSON file.
+- #### replace_dataset_metadata.py
+  This script replaces the metadata of datasets.
 - #### destroy_all_datasets_in_a_dataverse.command
   This script destroys all datasets in a given dataverse.
 - #### split_table.py
