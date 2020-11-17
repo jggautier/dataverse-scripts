@@ -19,31 +19,31 @@ window.geometry('550x500')  # width x height
 
 # Function called when Browse button is pressed
 def retrieve_jsondirectory():
-	global jsonDirectory
+    global jsonDirectory
 
-	# Call the OS's file directory window and store selected object path as a global variable
-	jsonDirectory = filedialog.askdirectory()
+    # Call the OS's file directory window and store selected object path as a global variable
+    jsonDirectory = filedialog.askdirectory()
 
-	# Show user which directory she chose
-	label_showChosenDirectory = Label(window, text='You chose: ' + jsonDirectory, anchor='w', foreground='green', wraplength=500, justify='left')
-	label_showChosenDirectory.grid(sticky='w', column=0, row=2)
+    # Show user which directory she chose
+    label_showChosenDirectory = Label(window, text='You chose: ' + jsonDirectory, anchor='w', foreground='green', wraplength=500, justify='left')
+    label_showChosenDirectory.grid(sticky='w', column=0, row=2)
 
 
 # Function called when Browse button is pressed
 def retrieve_csvdirectory():
-	global csvDirectory
+    global csvDirectory
 
-	# Call the OS's file directory window and store selected object path as a global variable
-	csvDirectory = filedialog.askdirectory()
+    # Call the OS's file directory window and store selected object path as a global variable
+    csvDirectory = filedialog.askdirectory()
 
-	# Show user which directory she chose
-	label_showChosenDirectory = Label(window, text='You chose: ' + csvDirectory, anchor='w', foreground='green', wraplength=500, justify='left')
-	label_showChosenDirectory.grid(sticky='w', column=0, row=6)
+    # Show user which directory she chose
+    label_showChosenDirectory = Label(window, text='You chose: ' + csvDirectory, anchor='w', foreground='green', wraplength=500, justify='left')
+    label_showChosenDirectory.grid(sticky='w', column=0, row=6)
 
 
 # Function called when Browse button is pressed
 def start():
-	window.destroy()
+    window.destroy()
 
 
 # Create label for button to browse for directory containing JSON files
@@ -79,8 +79,8 @@ filename = os.path.join(csvDirectory, 'basic_metadata.csv')
 print('Creating CSV file')
 
 with open(filename, mode='w', newline='') as metadatafile:
-	metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-	metadatafile.writerow(['datasetVersionId', 'persistentUrl', 'publicationDate', 'versionState', 'majorVersionNumber', 'minorVersionNumber', 'versionReleaseTime', 'publisher'])  # Create header row
+    metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    metadatafile.writerow(['datasetVersionId', 'persistentUrl', 'publicationDate', 'versionState', 'majorVersionNumber', 'minorVersionNumber', 'versionReleaseTime', 'publisher'])  # Create header row
 
 print('Getting metadata:')
 error_files = []
@@ -88,43 +88,43 @@ error_files = []
 # For each JSON file in a folder
 for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 
-	# Open each file in read mode
-	with open(file, 'r') as f1:
-		# Copy content to dataset_metadata variable
-		dataset_metadata = f1.read()
-		# Load content in variable as a json object
-		dataset_metadata = json.loads(dataset_metadata)
+    # Open each file in read mode
+    with open(file, 'r') as f1:
+        # Copy content to dataset_metadata variable
+        dataset_metadata = f1.read()
+        # Load content in variable as a json object
+        dataset_metadata = json.loads(dataset_metadata)
 
-		# Check if JSON file has "data" key
-		if dataset_metadata['status'] == 'OK':
-			datasetVersionId = dataset_metadata['data']['datasetVersion']['id']
-			persistentUrl = dataset_metadata['data']['persistentUrl']
-			publicationDate = dataset_metadata['data']['publicationDate']
-			versionState = dataset_metadata['data']['datasetVersion']['versionState']
-			majorVersionNumber = dataset_metadata['data']['datasetVersion']['versionNumber']
-			minorVersionNumber = dataset_metadata['data']['datasetVersion']['versionMinorNumber']
-			versionReleaseTime = dataset_metadata['data']['datasetVersion']['releaseTime']
-			publisher = dataset_metadata['data']['publisher']
+        # Check if JSON file has "data" key
+        if dataset_metadata['status'] == 'OK':
+            datasetVersionId = dataset_metadata['data']['datasetVersion']['id']
+            persistentUrl = dataset_metadata['data']['persistentUrl']
+            publicationDate = dataset_metadata['data']['publicationDate']
+            versionState = dataset_metadata['data']['datasetVersion']['versionState']
+            majorVersionNumber = dataset_metadata['data']['datasetVersion']['versionNumber']
+            minorVersionNumber = dataset_metadata['data']['datasetVersion']['versionMinorNumber']
+            versionReleaseTime = dataset_metadata['data']['datasetVersion']['releaseTime']
+            publisher = dataset_metadata['data']['publisher']
 
-			# Write fields to the csv file
-			with open(filename, mode='a', newline='') as metadatafile:
+            # Write fields to the csv file
+            with open(filename, mode='a', newline='') as metadatafile:
 
-				# Convert all characters to utf-8
-				def to_utf8(lst):
-					return [unicode(elem).encode('utf-8') for elem in lst]
+                # Convert all characters to utf-8
+                def to_utf8(lst):
+                    return [unicode(elem).encode('utf-8') for elem in lst]
 
-				metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-				# Write new row
-				metadatafile.writerow([datasetVersionId, persistentUrl, publicationDate, versionState, majorVersionNumber, minorVersionNumber, versionReleaseTime, publisher])
+                # Write new row
+                metadatafile.writerow([datasetVersionId, persistentUrl, publicationDate, versionState, majorVersionNumber, minorVersionNumber, versionReleaseTime, publisher])
 
-			# As a progress indicator, print a dot each time a row is written
-			sys.stdout.write('.')
-			sys.stdout.flush()
+            # As a progress indicator, print a dot each time a row is written
+            sys.stdout.write('.')
+            sys.stdout.flush()
 
-		# If JSON file doens't have "data" key, add file to list of error_files
-		else:
-			error_files.append(Path(file).name)
+        # If JSON file doens't have "data" key, add file to list of error_files
+        else:
+            error_files.append(Path(file).name)
 
 if error_files:
-	print('\nThe following files may not have metadata:%s' % (error_files))
+    print('\nThe following files may not have metadata:%s' % (error_files))
