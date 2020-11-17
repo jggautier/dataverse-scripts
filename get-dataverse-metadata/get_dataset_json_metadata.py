@@ -50,7 +50,7 @@ label_apikeyHelpText.grid(sticky='w', column=0, row=6)
 window.grid_rowconfigure(7, minsize=25)
 
 # Create label for Browse directory button
-label_browseForFile = Label(window, text='Choose txt file contain list of dataset PIDs:', anchor='w')
+label_browseForFile = Label(window, text='Choose CSV or TXT file contain list of dataset PIDs:', anchor='w')
 label_browseForFile.grid(sticky='w', column=0, row=8, pady=2)
 
 # Create Browse directory button
@@ -75,13 +75,13 @@ button_Submit.grid(sticky='w', column=0, row=15, pady=40)
 
 # Function called when Browse button is pressed for choosing text file with dataset PIDs
 def retrieve_file():
-    global dataset_pids
+    global datasetPIDFile
 
     # Call the OS's file directory window and store selected object path as a global variable
-    dataset_pids = filedialog.askopenfilename(filetypes=[('Text files', '*.txt'), ('CSV files', '*.csv')])
+    datasetPIDFile = filedialog.askopenfilename(filetypes=[('Text files', '*.txt'), ('CSV files', '*.csv')])
 
     # Show user which file she chose
-    label_showChosenFile = Label(window, text='You chose: ' + dataset_pids, anchor='w', foreground='green', wraplength=500, justify='left')
+    label_showChosenFile = Label(window, text='You chose: ' + datasetPIDFile, anchor='w', foreground='green', wraplength=500, justify='left')
     label_showChosenFile.grid(sticky='w', column=0, row=10)
 
 
@@ -105,9 +105,13 @@ def retrieve_directory():
 # Function called when Start button is pressed
 def retrieve_input():
     global repositoryURL
+    global apikey
 
     # Store what's entered in dataverseUrl text box as a global variable
     repositoryURL = entry_repositoryURL.get()
+
+    # Store what entered in the api key text box as a global variable
+    apikey = entry_apikey.get()
 
     window.destroy()
 
@@ -169,109 +173,79 @@ print('\nDownloading JSON metadata of all published dataset versions to dataset_
 # Initiate count for terminal progress indicator
 count = 0
 
-# Figure out if given file with dataset_pids is a txt file or csv file
-file_name = os.path.basename(dataset_pids)
+# Figure out if given file with datasetPIDFile is a txt file or csv file
+# file_name = os.path.basename(datasetPIDFile)
 
-if '.txt' in file_name:
+datasetPIDs = []
+if '.csv' in datasetPIDFile:
+    with open(datasetPIDFile, mode='r', encoding='utf-8') as f:
+        total = len(f.readlines()) - 1
+    with open(datasetPIDFile, mode='r', encoding='utf-8') as f:
+        csv_dict_reader = DictReader(f, delimiter=',')
+        for row in csv_dict_reader:
+            datasetPIDs.append(row['persistent_id'].rstrip())
+elif '.txt' in datasetPIDFile:
 
-    # Save number of items in the dataset_pids txt file in "total" variable
-    total = len(open(dataset_pids).readlines())
+# if '.txt' in datasetPIDFile:
+    # Save number of items in the datasetPIDFile txt file in "total" variable
+    total = len(open(datasetPIDFile).readlines())
 
-    dataset_pids = open(dataset_pids)
+    datasetPIDFile = open(datasetPIDFile)
 
     # For each dataset persistent identifier in the txt file, download the dataset's Dataverse JSON file into the metadata folder
-    for dataset_pid in dataset_pids:
+    for datasetPID in datasetPIDFile:
 
-        # Remove any trailing spaces from dataset_pid
-        dataset_pid = dataset_pid.rstrip()
+        # Remove any trailing spaces from datasetPID
+        datasetPIDs.append(datasetPID.rstrip())
 
-        try:
-            latest_version_url = '%s/api/datasets/:persistentId?persistentId=%s' % (repositoryURL, dataset_pid)
-            response = requests.get(latest_version_url)
-            latest_version_metadata = response.json()
+for datasetPID in datasetPIDs:
+    try:
+        latest_version_url = '%s/api/datasets/:persistentId' % (repositoryURL)
+        params = {'persistentId': datasetPID}
+        if apikey is not None:
+            params['key'] = apikey
+        response = requests.get(
+            latest_version_url,
+            params=params)
+        latest_version_metadata = response.json()
+        if latest_version_metadata['status'] == 'OK':
+            persistentUrl = latest_version_metadata['data']['persistentUrl']
+            publisher = latest_version_metadata['data']['publisher']
+            # publicationDate = latest_version_metadata['data']['publicationDate']
 
-            if latest_version_metadata['status'] == 'OK':
-                persistentUrl = latest_version_metadata['data']['persistentUrl']
-                publisher = latest_version_metadata['data']['publisher']
-                publicationDate = latest_version_metadata['data']['publicationDate']
+            all_version_url = '%s/api/datasets/:persistentId/versions' % (repositoryURL)
+            params = {'persistentId': datasetPID}
+            if apikey is not None:
+                params['key'] = apikey
+            response = requests.get(
+                all_version_url,
+                params=params)
+            all_versions_metadata = response.json()
+            for dataset_version in all_versions_metadata['data']:
+                dataset_version = {
+                    'status': latest_version_metadata['status'],
+                    'data': {
+                        'persistentUrl': persistentUrl,
+                        'publisher': publisher
+                        # 'datasetVersion': dataset_version
+                        }}
 
-                all_version_url = '%s/api/datasets/:persistentId/versions?persistentId=%s' % (repositoryURL, dataset_pid)
-                response = requests.get(all_version_url)
-                all_versions_metadata = response.json()
+                # majorversion = str(dataset_version['data']['datasetVersion']['versionNumber'])
+                # minorversion = str(dataset_version['data']['datasetVersion']['versionMinorNumber'])
+                # version_number = majorversion + '.' + minorversion
 
-                for dataset_version in all_versions_metadata['data']:
-                    dataset_version = {
-                        'status': latest_version_metadata['status'],
-                        'data': {
-                            'persistentUrl': persistentUrl,
-                            'publisher': publisher,
-                            'publicationDate': publicationDate,
-                            'datasetVersion': dataset_version}}
+                metadata_file = '%s.json' % (datasetPID.replace(':', '_').replace('/', '_'))
+                # metadata_file = '%s_v%s.json' % (datasetPID.replace(':', '_').replace('/', '_'), version_number)
 
-                    majorversion = str(dataset_version['data']['datasetVersion']['versionNumber'])
-                    minorversion = str(dataset_version['data']['datasetVersion']['versionMinorNumber'])
-                    version_number = majorversion + '.' + minorversion
+                with open(os.path.join(metadataFileDirectoryPath, metadata_file), mode='w') as f:
+                    f.write(json.dumps(dataset_version, indent=4))
 
-                    metadata_file = '%s_v%s.json' % (dataset_pid.replace(':', '_').replace('/', '_'), version_number)
+        # Increase count variable to track progress
+        count += 1
 
-                    with open(os.path.join(metadataFileDirectoryPath, metadata_file), mode='w') as f:
-                        f.write(json.dumps(dataset_version, indent=4))
+        # Print progress
+        print('%s of %s datasets' % (count, total), end='\r', flush=True)
+        # print('%s' % (count), end='\r', flush=True)
 
-            # Increase count variable to track progress
-            count += 1
-
-            # Print progress
-            print('%s of %s datasets' % (count, total), end='\r', flush=True)
-
-        except Exception:
-            print('Could not download JSON metadata of %s' % (dataset_pid))
-
-else:
-    if '.csv' in file_name:
-        with open(dataset_pids, mode='r', encoding='utf-8') as f:
-            total = len(f.readlines()) - 1
-        with open(dataset_pids, mode='r', encoding='utf-8') as f:
-            csv_dict_reader = DictReader(f, delimiter=',')
-            for row in csv_dict_reader:
-                dataset_pid = row['persistent_id'].rstrip()
-                try:
-                    latest_version_url = '%s/api/datasets/:persistentId?persistentId=%s' % (repositoryURL, dataset_pid)
-                    response = requests.get(latest_version_url)
-                    latest_version_metadata = response.json()
-
-                    if latest_version_metadata['status'] == 'OK':
-                        persistentUrl = latest_version_metadata['data']['persistentUrl']
-                        publisher = latest_version_metadata['data']['publisher']
-                        publicationDate = latest_version_metadata['data']['publicationDate']
-
-                        all_version_url = '%s/api/datasets/:persistentId/versions?persistentId=%s' % (repositoryURL, dataset_pid)
-                        response = requests.get(all_version_url)
-                        all_versions_metadata = response.json()
-
-                        for dataset_version in all_versions_metadata['data']:
-                            dataset_version = {
-                                'status': latest_version_metadata['status'],
-                                'data': {
-                                    'persistentUrl': persistentUrl,
-                                    'publisher': publisher,
-                                    'publicationDate': publicationDate,
-                                    'datasetVersion': dataset_version}}
-
-                            majorversion = str(dataset_version['data']['datasetVersion']['versionNumber'])
-                            minorversion = str(dataset_version['data']['datasetVersion']['versionMinorNumber'])
-                            version_number = majorversion + '.' + minorversion
-
-                            metadata_file = '%s_v%s.json' % (dataset_pid.replace(':', '_').replace('/', '_'), version_number)
-
-                            with open(os.path.join(metadataFileDirectoryPath, metadata_file), mode='w') as f:
-                                f.write(json.dumps(dataset_version, indent=4))
-
-                    # Increase count variable to track progress
-                    count += 1
-
-                    # Print progress
-                    print('%s of %s datasets' % (count, total), end='\r', flush=True)
-                    # print('%s' % (count), end='\r', flush=True)
-
-                except Exception:
-                    print('Could not download JSON metadata of %s' % (dataset_pid))
+    except Exception:
+        print('Could not download JSON metadata of %s' % (datasetPID))
