@@ -143,40 +143,41 @@ dataverseVersion = str(dataverseVersion.lstrip('v'))
 metadataFileDirectoryPath = str(Path(metadataFileDirectory)) + '/' + 'JSON_metadata_%s' % (currentTime)
 
 # Create name for metadatablock files directory in main directory
-# metadatablockFileDirectoryPath = str(Path(metadataFileDirectory)) + '/' + 'metadatablocks_v%s' % (dataverseVersion)
+metadatablockFileDirectoryPath = str(Path(metadataFileDirectory)) + '/' + 'metadatablocks_v%s' % (dataverseVersion)
 
 # Create dataset metadata and metadatablock directories
 os.mkdir(metadataFileDirectoryPath)
-# os.mkdir(metadatablockFileDirectoryPath)
+os.mkdir(metadatablockFileDirectoryPath)
 
-# # Download metadatablock JSON files
-# # Get list of the repository's metadatablock names
-# metadatablocksApi = '%s/api/v1/metadatablocks' % (repositoryURL)
-# metadatablocksApi = metadatablocksApi.replace('//api', '/api')
+# Download metadatablock JSON files
 
-# response = requests.get(metadatablocksApi)
-# data = response.json()
+# Get list of the repository's metadatablock names
+metadatablocksApi = '%s/api/v1/metadatablocks' % (repositoryURL)
+metadatablocksApi = metadatablocksApi.replace('//api', '/api')
 
-# metadatablockNames = []
-# for i in data['data']:
-#     name = i['name']
-#     metadatablockNames.append(name)
+response = requests.get(metadatablocksApi)
+data = response.json()
 
-# print('Downloading %s metadatablock JSON file(s) into metadatablocks folder:' % ((len(metadatablockNames))))
+metadatablockNames = []
+for i in data['data']:
+    name = i['name']
+    metadatablockNames.append(name)
 
-# for metadatablockName in metadatablockNames:
-#     metadatablockApi = '%s/%s' % (metadatablocksApi, metadatablockName)
-#     response = requests.get(metadatablockApi)
+print('Downloading %s metadatablock JSON file(s) into metadatablocks folder:' % ((len(metadatablockNames))))
 
-#     metadatablockFile = str(Path(metadatablockFileDirectoryPath)) + '/' '%s_v%s.json' % (metadatablockName, dataverseVersion)
+for metadatablockName in metadatablockNames:
+    metadatablockApi = '%s/%s' % (metadatablocksApi, metadatablockName)
+    response = requests.get(metadatablockApi)
 
-#     with open(metadatablockFile, mode='w') as f:
-#         f.write(json.dumps(response.json(), indent=4))
+    metadatablockFile = str(Path(metadatablockFileDirectoryPath)) + '/' '%s_v%s.json' % (metadatablockName, dataverseVersion)
 
-#     sys.stdout.write('.')
-#     sys.stdout.flush()
+    with open(metadatablockFile, mode='w') as f:
+        f.write(json.dumps(response.json(), indent=4))
 
-# print('\nFinished downloading %s metadatablock JSON file(s)' % (len(metadatablockNames)))
+    sys.stdout.write('.')
+    sys.stdout.flush()
+
+print('\nFinished downloading %s metadatablock JSON file(s)' % (len(metadatablockNames)))
 
 # Download dataset JSON metadata
 print('\nDownloading JSON metadata of all published dataset versions to dataset_metadata folder:')
@@ -184,21 +185,17 @@ print('\nDownloading JSON metadata of all published dataset versions to dataset_
 # Initiate count for terminal progress indicator
 count = 0
 
-# Figure out if given file with datasetPIDFile is a txt file or csv file
-# file_name = os.path.basename(datasetPIDFile)
-
 datasetPIDs = []
 if '.csv' in datasetPIDFile:
     with open(datasetPIDFile, mode='r', encoding='utf-8') as f:
         total = len(f.readlines()) - 1
+
     with open(datasetPIDFile, mode='r', encoding='utf-8') as f:
         csvDictReader = DictReader(f, delimiter=',')
         for row in csvDictReader:
             datasetPIDs.append(row['persistent_id'].rstrip())
-elif '.txt' in datasetPIDFile:
 
-# if '.txt' in datasetPIDFile:
-    # Save number of items in the datasetPIDFile txt file in "total" variable
+elif '.txt' in datasetPIDFile:
     total = len(open(datasetPIDFile).readlines())
 
     datasetPIDFile = open(datasetPIDFile)
@@ -220,7 +217,6 @@ for datasetPID in datasetPIDs:
             params=params)
         latestVersionMetadata = response.json()
         if 'id' in latestVersionMetadata['data']:
-        # if latestVersionMetadata['status'] == 'OK':
             persistentUrl = latestVersionMetadata['data']['persistentUrl']
             publisher = latestVersionMetadata['data']['publisher']
 
@@ -241,15 +237,11 @@ for datasetPID in datasetPIDs:
                             'publisher': publisher,
                             'datasetVersion': datasetVersion}}
 
-                    # majorVersion = str(datasetVersion['data']['datasetVersion']['versionNumber'])
                     majorVersion = improved_get(datasetVersion, 'data.datasetVersion.versionNumber')
-                    # minorVersion = str(datasetVersion['data']['datasetVersion']['versionMinorNumber'])
                     minorVersion = improved_get(datasetVersion, 'data.datasetVersion.versionMinorNumber')
 
                     if (majorVersion is not None) and (minorVersion is not None):
                         versionNumber = majorVersion + '.' + minorVersion
-                        print('\t' + versionNumber)
-                    # metadataFile = '%s.json' % (datasetPID.replace(':', '_').replace('/', '_'))
                         metadataFile = '%s_v%s.json' % (datasetPID.replace(':', '_').replace('/', '_'), versionNumber)
                     else:
                         metadataFile = '%s_vDRAFT.json' % (datasetPID.replace(':', '_').replace('/', '_'))
@@ -262,7 +254,6 @@ for datasetPID in datasetPIDs:
 
         # Print progress
         print('%s of %s datasets' % (count, total), end='\r', flush=True)
-        # print('%s' % (count), end='\r', flush=True)
 
     except Exception:
         print('Could not download JSON metadata of %s' % (datasetPID))
