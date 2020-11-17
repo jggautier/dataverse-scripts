@@ -5,7 +5,7 @@ If you're interested in getting the metadata of all datasets in most known Datav
 
 ## General
 The scripts can be grouped into three types of scripts:
- * One script, get_dataset_json_metadata.py, takes a list of dataset PIDs and downloads the metadata of all published versions of those datasets (in the Dataverse JSON standard)
+ * One script, get_dataset_json_metadata.py, takes a list of dataset PIDs and downloads the metadata of all published versions of those datasets (in the Dataverse JSON standard). If a Dataverse account API key is included, the script also downloads the draft versions of any datasets accessible by the Dataverse account.
  * Several scripts, such as parse_basic_metadata.py and parse_metadatablock_metadata.py, parse the JSON files to extract metadata fields and write that metadata into CSV files.
 
 You can manipulate and analyze the metadata in the CSV files using many methods and tools, including MS Excel, Apple's Numbers, Google Sheets, OpenRefine, R, Python, and database applications like pgAdmin or DB Browser for SQLite.
@@ -40,11 +40,11 @@ Run get_dataset_json_metadata.py, which asks for a list of dataset PIDs (either 
 python3 get_dataset_json_metadata.py
 ```
 
-The script creates a UI for entering the URL of the dataverse repository, the location of the text file containing the dataset PIDs you're interested in, and where you want to save the metadata files and metadatablock JSON files of the repository. If you're using Mac OS, upon pressing "Start" in the UI, you may see a message in your terminal that starts with "Class FIFinderSyncExtensionHost", which can be ignored. ([See the FAQ](https://github.com/jggautier/get-dataverse-metadata/tree/tkinter-gui#faq) for more info.)
+The script creates a UI for entering the URL of the dataverse repository, an optional API key, the location of the CSV or text file containing the dataset PIDs you're interested in, and where you want to save the metadata files and metadatablock JSON files of the repository. If you're using Mac OS, when you press "Start" in the UI, you may see a message in your terminal that starts with "Class FIFinderSyncExtensionHost", which can be ignored. ([See the FAQ](https://github.com/jggautier/get-dataverse-metadata/tree/tkinter-gui#faq) for more info.)
 
 Within the directory that you specified, the script will create a folder, whose name will include a timestamp, to store the downloaded JSON metadata files.
 
-For each dataset PID in the provided text file, the script will save a JSON file containing the metadata of each published version of each dataset.
+For each dataset PID in the provided text file, the script will save a JSON file containing the metadata of each published version of each dataset. If a Dataverse account API key is included, the script will also download the draft versions of any datasets accessible by the Dataverse account.
 
 ### Writing metadata from JSON files to CSV files
 Run any of the scripts that start with parse_, such as parse_basic_metadata.py
@@ -55,7 +55,7 @@ python3 parse_basic_metadata.py
 
 Each script will generate a UI that asks for certain files and directories on your computer, depending on the script.
 
- * Running parse_basic_metadata.py will create a CSV file where the values of basic metadata fields, that aren't part of any metadatablocks, are written, such as the repository's database ID for the dataset version, the dataset's publication date, and its major and minor version numbers.
+ * Running parse_basic_metadata.py will create a CSV file where the values of basic metadata fields, that aren't part of any metadatablocks, are written, such as the repository's database ID for the dataset version, the dataset's creation time, its publication date, and any major and minor version numbers.
  * Running parse_terms_metadata.py will create a CSV file where the values of the Terms of Use and Access metadata fields are written, such as Waiver, Terms of Use, and Terms of Access.
  * Running parse_metadatablock_metadata.py will create multiple CSV files, one for each field in a given metadatablock JSON file. You'll be asked for a metadatablock JSON file that contains information about the fields you're interested in parsing into CSV files. (The get_dataset_json_metadata.py script also retrieves the Dataverse installation's metadatablock JSON files. Or you can use the Native API endpoints documented at http://guides.dataverse.org/en/latest/api/native-api.html#metadata-blocks to get the JSON files of metadatablocks whose fields you're interested in.)
 
@@ -63,7 +63,7 @@ Each script will generate a UI that asks for certain files and directories on yo
 To analyze the metadata, you can manipulate and analyze them using many methods, including MS Excel, Apple's Numbers, Google Sheets, OpenRefine, R, Python, and database applications like pgAdmin or DB Browser for SQLite. The combine_tables.py script is provided to quickly join all of the CSV files in a directory full of CSV files, joining on the datasetVersionId and persistentUrl columns.
 
 ## Further reading
-For more information about the metadata model that ships with the Dataverse software, including the database names of each field, see the [Appendix of Dataverse's User Guide](http://guides.dataverse.org/en/latest/user/appendix.html). Harvard Dataverse's metadata model is the same model that ships with the Dataverse software, but each Dataverse-based repository is able to change this model (e.g. they may have different fields and hierarchies).
+For more information about the metadata model that ships with the Dataverse software, including the database names of each field, see the [Appendix of Dataverse's User Guide](http://guides.dataverse.org/en/latest/user/appendix.html). Harvard Dataverse's metadata model is the same model that ships with the Dataverse software, but each Dataverse-based repository is able to change this model (for example, they may have different fields and different parent/child relationships between fields).
 
 ## FAQ
  * The "get_dataset_json_metadata.py" script won't work if the Dataverse repository requires an API key in order to use a few Dataverse Native API endpoints to download dataset metadata, such as the Search API endpoints. If the script throws an error, this might be the reason.
