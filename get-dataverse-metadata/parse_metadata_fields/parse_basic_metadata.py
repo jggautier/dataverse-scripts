@@ -89,7 +89,7 @@ print('Creating CSV file')
 
 with open(filename, mode='w', newline='') as metadatafile:
     metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    metadatafile.writerow(['datasetVersionId', 'persistentUrl', 'versionCreateTime', 'versionState', 'versionPublicationDate', 'majorVersionNumber', 'minorVersionNumber', 'publisher'])  # Create header row
+    metadatafile.writerow(['datasetVersionId', 'persistentUrl', 'datasetPublicationDate', 'versionCreateTime', 'versionState', 'majorVersionNumber', 'minorVersionNumber', 'publisher'])  # Create header row
 
 print('Getting metadata:')
 error_files = []
@@ -110,14 +110,9 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
             persistentUrl = dataset_metadata['data']['persistentUrl']
             versionCreateTime = dataset_metadata['data']['datasetVersion']['createTime']
             versionState = dataset_metadata['data']['datasetVersion']['versionState']
-            if versionState == 'DRAFT':
-                majorVersionNumber = ''
-                minorVersionNumber = ''
-                versionPublicationDate = ''
-            elif versionState == 'RELEASED':
-                versionPublicationDate = improved_get(dataset_metadata, 'data.datasetVersion.releaseTime')
-                majorVersionNumber = improved_get(dataset_metadata, 'data.datasetVersion.versionNumber')
-                minorVersionNumber = improved_get(dataset_metadata, 'data.datasetVersion.versionMinorNumber')
+            datasetPublicationDate = dataset_metadata['data']['publicationDate']
+            majorVersionNumber = improved_get(dataset_metadata, 'data.datasetVersion.versionNumber')
+            minorVersionNumber = improved_get(dataset_metadata, 'data.datasetVersion.versionMinorNumber')
             publisher = dataset_metadata['data']['publisher']
 
             # Write fields to the csv file
@@ -130,7 +125,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
                 metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                 # Write new row
-                metadatafile.writerow([datasetVersionId, persistentUrl, versionCreateTime, versionState, versionPublicationDate, majorVersionNumber, minorVersionNumber, publisher])
+                metadatafile.writerow([datasetVersionId, persistentUrl, datasetPublicationDate, versionCreateTime, versionState, majorVersionNumber, minorVersionNumber, publisher])
             # As a progress indicator, print a dot each time a row is written
             sys.stdout.write('.')
             sys.stdout.flush()
