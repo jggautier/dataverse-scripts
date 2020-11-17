@@ -44,7 +44,7 @@ def retrieve_input():
     get_subdataverses = get_subdataverses.get()
 
     # Store what entered in the api key text box as a global variable
-    apikey = entry_apikey.get()
+    apikey = entry_apikey.get().rstrip()
 
     # Store what's entered in dataverseUrl text box as a global variable
     dataverseUrl = entry_dataverseUrl.get()
@@ -151,7 +151,7 @@ if not alias or alias == root_alias:
 
     with open(csv_file_path, mode='w', newline='') as f:
         f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        f.writerow(['persistent_id', 'persistentUrl', 'dataverse_name', 'dataverse_alias'])
+        f.writerow(['persistent_id', 'persistentUrl', 'dataverse_name', 'dataverse_alias', 'publication_date'])
 
     # Report count of datasets
     if apikey:
@@ -192,12 +192,13 @@ if not alias or alias == root_alias:
                 persistent_url = i['url']
                 dataverse_name = i['name_of_dataverse']
                 dataverse_alias = i['identifier_of_dataverse']
+                publicationDate = i.get('published_at', 'unpublished')
 
                 with open(csv_file_path, mode='a', encoding='utf-8', newline='') as open_csv_file:
                     open_csv_file = csv.writer(open_csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                     # Create new row with dataset and file info
-                    open_csv_file.writerow([persistent_id, persistent_url, dataverse_name, dataverse_alias])
+                    open_csv_file.writerow([persistent_id, persistent_url, dataverse_name, dataverse_alias, publicationDate])
 
                     count += 1
                     print('%s of %s' % (count, total), end='\r', flush=True)
@@ -223,12 +224,13 @@ if not alias or alias == root_alias:
                     persistent_url = i['url']
                     dataverse_name = i['name_of_dataverse']
                     dataverse_alias = i['identifier_of_dataverse']
+                    publicationDate = i.get('published_at', 'unpublished')
 
                     with open(csv_file_path, mode='a', encoding='utf-8', newline='') as open_csv_file:
                         open_csv_file = csv.writer(open_csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                         # Create new row with dataset and file info
-                        open_csv_file.writerow([persistent_id, persistent_url, dataverse_name, dataverse_alias])
+                        open_csv_file.writerow([persistent_id, persistent_url, dataverse_name, dataverse_alias, publicationDate])
 
                         print('%s of %s' % (count, total), end='\r', flush=True)
 
@@ -257,7 +259,7 @@ else:
 
     with open(csv_file_path, mode='w', newline='') as f:
         f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        f.writerow(['persistent_id', 'persistentUrl', 'dataverse_name', 'dataverse_alias'])
+        f.writerow(['persistent_id', 'persistentUrl', 'dataverse_name', 'dataverse_alias', 'publication_date'])
 
     # Get ID of given dataverse alias
     if apikey:
@@ -335,11 +337,12 @@ else:
                     identifier = i['identifier']
                     persistent_id = '%s:%s/%s' % (protocol, authority, identifier)
                     persistent_url = i['persistentUrl']
+                    publicationDate = i.get('publicationDate', 'unpublished')
 
                     count += 1
 
                     # Create new line with dataset PID
-                    open_csv_file.writerow([persistent_id, persistent_url, dataverse_name, dataverse_alias])
+                    open_csv_file.writerow([persistent_id, persistent_url, dataverse_name, dataverse_alias, publicationDate])
 
                     # As a progress indicator, print a dot each time a row is written
                     sys.stdout.write('.')
