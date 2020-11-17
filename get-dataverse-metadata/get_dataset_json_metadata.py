@@ -139,43 +139,44 @@ getInstallationVersionApiData = response.json()
 dataverseVersion = getInstallationVersionApiData['data']['version']
 dataverseVersion = str(dataverseVersion.lstrip('v'))
 
-# Save directory with dataverse alias and current time
+# Create main directory name with current time
 metadataFileDirectoryPath = str(Path(metadataFileDirectory)) + '/' + 'JSON_metadata_%s' % (currentTime)
 
-metadatablockFileDirectoryPath = str(Path(metadataFileDirectory)) + '/' + 'metadatablocks_v%s' % (dataverseVersion)
+# Create name for metadatablock files directory in main directory
+# metadatablockFileDirectoryPath = str(Path(metadataFileDirectory)) + '/' + 'metadatablocks_v%s' % (dataverseVersion)
 
 # Create dataset metadata and metadatablock directories
 os.mkdir(metadataFileDirectoryPath)
-os.mkdir(metadatablockFileDirectoryPath)
+# os.mkdir(metadatablockFileDirectoryPath)
 
-# Download metadatablock JSON files
-# Get list of the repository's metadatablock names
-metadatablocksApi = '%s/api/v1/metadatablocks' % (repositoryURL)
-metadatablocksApi = metadatablocksApi.replace('//api', '/api')
+# # Download metadatablock JSON files
+# # Get list of the repository's metadatablock names
+# metadatablocksApi = '%s/api/v1/metadatablocks' % (repositoryURL)
+# metadatablocksApi = metadatablocksApi.replace('//api', '/api')
 
-response = requests.get(metadatablocksApi)
-data = response.json()
+# response = requests.get(metadatablocksApi)
+# data = response.json()
 
-metadatablockNames = []
-for i in data['data']:
-    name = i['name']
-    metadatablockNames.append(name)
+# metadatablockNames = []
+# for i in data['data']:
+#     name = i['name']
+#     metadatablockNames.append(name)
 
-print('Downloading %s metadatablock JSON file(s) into metadatablocks folder:' % ((len(metadatablockNames))))
+# print('Downloading %s metadatablock JSON file(s) into metadatablocks folder:' % ((len(metadatablockNames))))
 
-for metadatablockName in metadatablockNames:
-    metadatablockApi = '%s/%s' % (metadatablocksApi, metadatablockName)
-    response = requests.get(metadatablockApi)
+# for metadatablockName in metadatablockNames:
+#     metadatablockApi = '%s/%s' % (metadatablocksApi, metadatablockName)
+#     response = requests.get(metadatablockApi)
 
-    metadatablockFile = str(Path(metadatablockFileDirectoryPath)) + '/' '%s_v%s.json' % (metadatablockName, dataverseVersion)
+#     metadatablockFile = str(Path(metadatablockFileDirectoryPath)) + '/' '%s_v%s.json' % (metadatablockName, dataverseVersion)
 
-    with open(metadatablockFile, mode='w') as f:
-        f.write(json.dumps(response.json(), indent=4))
+#     with open(metadatablockFile, mode='w') as f:
+#         f.write(json.dumps(response.json(), indent=4))
 
-    sys.stdout.write('.')
-    sys.stdout.flush()
+#     sys.stdout.write('.')
+#     sys.stdout.flush()
 
-print('\nFinished downloading %s metadatablock JSON file(s)' % (len(metadatablockNames)))
+# print('\nFinished downloading %s metadatablock JSON file(s)' % (len(metadatablockNames)))
 
 # Download dataset JSON metadata
 print('\nDownloading JSON metadata of all published dataset versions to dataset_metadata folder:')
@@ -212,47 +213,49 @@ for datasetPID in datasetPIDs:
     try:
         latestVersionUrl = '%s/api/datasets/:persistentId' % (repositoryURL)
         params = {'persistentId': datasetPID}
-        if apikey is not None:
+        if apikey:
             params['key'] = apikey
         response = requests.get(
             latestVersionUrl,
             params=params)
         latestVersionMetadata = response.json()
-        if latestVersionMetadata['status'] == 'OK':
+        if 'id' in latestVersionMetadata['data']:
+        # if latestVersionMetadata['status'] == 'OK':
             persistentUrl = latestVersionMetadata['data']['persistentUrl']
             publisher = latestVersionMetadata['data']['publisher']
 
             allVersionUrl = '%s/api/datasets/:persistentId/versions' % (repositoryURL)
             params = {'persistentId': datasetPID}
-            if apikey is not None:
+            if apikey:
                 params['key'] = apikey
             response = requests.get(
                 allVersionUrl,
                 params=params)
             allVersionsMetadata = response.json()
-            for datasetVersion in allVersionsMetadata['data']:
-                datasetVersion = {
-                    'status': latestVersionMetadata['status'],
-                    'data': {
-                        'persistentUrl': persistentUrl,
-                        'publisher': publisher,
-                        'datasetVersion': datasetVersion}}
+            if 'id' in allVersionsMetadata['data'][0]:
+                for datasetVersion in allVersionsMetadata['data']:
+                    datasetVersion = {
+                        'status': latestVersionMetadata['status'],
+                        'data': {
+                            'persistentUrl': persistentUrl,
+                            'publisher': publisher,
+                            'datasetVersion': datasetVersion}}
 
-                # majorVersion = str(datasetVersion['data']['datasetVersion']['versionNumber'])
-                majorVersion = improved_get(datasetVersion, 'data.datasetVersion.versionNumber')
-                # minorVersion = str(datasetVersion['data']['datasetVersion']['versionMinorNumber'])
-                minorVersion = improved_get(datasetVersion, 'data.datasetVersion.versionMinorNumber')
+                    # majorVersion = str(datasetVersion['data']['datasetVersion']['versionNumber'])
+                    majorVersion = improved_get(datasetVersion, 'data.datasetVersion.versionNumber')
+                    # minorVersion = str(datasetVersion['data']['datasetVersion']['versionMinorNumber'])
+                    minorVersion = improved_get(datasetVersion, 'data.datasetVersion.versionMinorNumber')
 
-                if (majorVersion is not None) and (minorVersion is not None):
-                    versionNumber = majorVersion + '.' + minorVersion
-                    print('\t' + versionNumber)
-                # metadataFile = '%s.json' % (datasetPID.replace(':', '_').replace('/', '_'))
-                    metadataFile = '%s_v%s.json' % (datasetPID.replace(':', '_').replace('/', '_'), versionNumber)
-                else:
-                    metadataFile = '%s_vDRAFT.json' % (datasetPID.replace(':', '_').replace('/', '_'))
+                    if (majorVersion is not None) and (minorVersion is not None):
+                        versionNumber = majorVersion + '.' + minorVersion
+                        print('\t' + versionNumber)
+                    # metadataFile = '%s.json' % (datasetPID.replace(':', '_').replace('/', '_'))
+                        metadataFile = '%s_v%s.json' % (datasetPID.replace(':', '_').replace('/', '_'), versionNumber)
+                    else:
+                        metadataFile = '%s_vDRAFT.json' % (datasetPID.replace(':', '_').replace('/', '_'))
 
-                with open(os.path.join(metadataFileDirectoryPath, metadataFile), mode='w') as f:
-                    f.write(json.dumps(datasetVersion, indent=4))
+                    with open(os.path.join(metadataFileDirectoryPath, metadataFile), mode='w') as f:
+                        f.write(json.dumps(datasetVersion, indent=4))
 
         # Increase count variable to track progress
         count += 1
