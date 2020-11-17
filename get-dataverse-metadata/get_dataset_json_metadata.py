@@ -111,7 +111,7 @@ def retrieve_input():
     repositoryURL = entryRepositoryURL.get()
 
     # Store what's entered in the API key text box as a global variable
-    apikey = entryApikey.get()
+    apikey = entryApikey.get().rstrip()
 
     window.destroy()
 
