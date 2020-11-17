@@ -219,6 +219,7 @@ for datasetPID in datasetPIDs:
         if 'id' in latestVersionMetadata['data']:
             persistentUrl = latestVersionMetadata['data']['persistentUrl']
             publisher = latestVersionMetadata['data']['publisher']
+            publicationDate = improved_get(latestVersionMetadata, 'data.publicationDate')
 
             allVersionUrl = '%s/api/datasets/:persistentId/versions' % (repositoryURL)
             params = {'persistentId': datasetPID}
@@ -235,6 +236,7 @@ for datasetPID in datasetPIDs:
                         'data': {
                             'persistentUrl': persistentUrl,
                             'publisher': publisher,
+                            'publicationDate': publicationDate,
                             'datasetVersion': datasetVersion}}
 
                     majorVersion = improved_get(datasetVersion, 'data.datasetVersion.versionNumber')
