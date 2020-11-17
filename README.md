@@ -24,8 +24,6 @@ This script downloads dataset metadata of as many known Dataverse-based installa
 ### Misc
 - #### publish_multiple_datasets.command
   This script publishes the unpublished datasets or draft versions in a given dataverse.
-- #### destroy_all_datasets_in_a_dataverse.command
-  This script destroys all datasets in a given dataverse.
 - #### split_table.py
   This script splits a given CSV file into many csv files based on the unique values in a given column. It's like the opposite of a JOIN.
 - #### combine_tables.py
