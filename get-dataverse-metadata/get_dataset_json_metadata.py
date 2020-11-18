@@ -11,6 +11,7 @@ import time
 from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
+import sys
 
 # Create GUI for getting user input
 window = Tk()
