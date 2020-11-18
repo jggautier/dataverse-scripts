@@ -89,7 +89,7 @@ print('Creating CSV file')
 
 with open(filename, mode='w', newline='') as metadatafile:
     metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    metadatafile.writerow(['datasetVersionId', 'persistentUrl', 'datasetPublicationDate', 'versionCreateTime', 'versionState', 'majorVersionNumber', 'minorVersionNumber', 'publisher'])  # Create header row
+    metadatafile.writerow(['datasetVersionId', 'persistentUrl', 'persistent_id', 'datasetPublicationDate', 'versionCreateTime', 'versionState', 'majorVersionNumber', 'minorVersionNumber', 'publisher'])  # Create header row
 
 print('Getting metadata:')
 error_files = []
@@ -108,6 +108,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
         if dataset_metadata['status'] == 'OK':
             datasetVersionId = dataset_metadata['data']['datasetVersion']['id']
             persistentUrl = dataset_metadata['data']['persistentUrl']
+            datasetPersistentId = dataset_metadata['data']['datasetPersistentId']
             versionCreateTime = dataset_metadata['data']['datasetVersion']['createTime']
             versionState = dataset_metadata['data']['datasetVersion']['versionState']
             datasetPublicationDate = dataset_metadata['data']['publicationDate']
@@ -125,7 +126,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
                 metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                 # Write new row
-                metadatafile.writerow([datasetVersionId, persistentUrl, datasetPublicationDate, versionCreateTime, versionState, majorVersionNumber, minorVersionNumber, publisher])
+                metadatafile.writerow([datasetVersionId, persistentUrl, datasetPersistentId, datasetPublicationDate, versionCreateTime, versionState, majorVersionNumber, minorVersionNumber, publisher])
             # As a progress indicator, print a dot each time a row is written
             sys.stdout.write('.')
             sys.stdout.flush()

@@ -166,7 +166,7 @@ for parent_compound_field in compound_field_dictionary:
     print('\nCreating CSV file for %s metadata' % (parent_compound_field))
 
     # Create column names for the header row
-    ids = ['datasetVersionId', 'persistentUrl']
+    ids = ['datasetVersionId', 'persistentUrl', 'persistent_id']
     header_row = ids + subfields
 
     with open(compound_field_csv_filepath, mode='w', newline='') as metadatafile:
@@ -208,15 +208,16 @@ for parent_compound_field in compound_field_dictionary:
                         # Save the id of the dataset's version
                         datasetVersionId = str(dataset_metadata['data']['datasetVersion']['id'])
 
-                        # Save the persistent URL of each dataset
+                        # Save the persistent URL and persistent ID of each dataset
                         persistentUrl = dataset_metadata['data']['persistentUrl']
+                        datasetPersistentId = dataset_metadata['data']['datasetPersistentId']
 
                         # Save subfield values to variables
                         for subfield in subfields:
                             globals()[subfield] = getsubfields(parent_compound_field, subfield)
 
                         # Create list of variables
-                        row_variables = [datasetVersionId, persistentUrl]
+                        row_variables = [datasetVersionId, persistentUrl, datasetPersistentId]
                         for subfield in subfields:
                             row_variables.append(globals()[subfield])
 
@@ -265,7 +266,7 @@ for primitive_field in primitive_fields:
         metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
         # Create header row
-        metadatafile.writerow(['datasetVersionId', 'persistentUrl', primitive_field])
+        metadatafile.writerow(['datasetVersionId', 'persistentUrl', 'persistent_id' primitive_field])
 
     print('\nGetting %s metadata:' % (primitive_field))
 
@@ -286,6 +287,7 @@ for primitive_field in primitive_fields:
                 # Save the dataset id of each dataset
                 datasetVersionId = str(dataset_metadata['data']['datasetVersion']['id'])
                 persistentUrl = dataset_metadata['data']['persistentUrl']
+                datasetPersistentId = dataset_metadata['data']['datasetPersistentId']
 
                 # Couple each field value with the dataset version ID and write as a row to subjects.csv
                 for fields in dataset_metadata['data']['datasetVersion']['metadataBlocks'][metadatablock_name]['fields']:
@@ -303,7 +305,7 @@ for primitive_field in primitive_fields:
                                 metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                                 # Write new row
-                                metadatafile.writerow([datasetVersionId, persistentUrl, value])
+                                metadatafile.writerow([datasetVersionId, persistentUrl, datasetPersistentId, value])
 
                                 # As a progress indicator, print a dot each time a row is written
                                 sys.stdout.write('.')
@@ -322,7 +324,7 @@ for primitive_field in primitive_fields:
                                     metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                                     # Write new row
-                                    metadatafile.writerow([datasetVersionId, persistentUrl, value])
+                                    metadatafile.writerow([datasetVersionId, persistentUrl, datasetPersistentId, value])
 
                                     # As a progress indicator, print a dot each time a row is written
                                     sys.stdout.write('.')

@@ -81,7 +81,7 @@ with open(filename, mode='w', newline='') as metadatafile:
     metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     # Create header row
     metadatafile.writerow([
-        'datasetVersionId', 'persistentUrl', 'license', 'termsOfUse', 'confidentialityDeclaration',
+        'datasetVersionId', 'persistentUrl', 'persistent_id', 'license', 'termsOfUse', 'confidentialityDeclaration',
         'specialPermissions', 'restrictions', 'citationRequirements', 'depositorRequirements',
         'conditions', 'disclaimer', 'termsOfAccess', 'dataaccessPlace', 'originalArchive',
         'availabilityStatus', 'contactForAccess', 'sizeOfCollection', 'studyCompletion'])
@@ -113,6 +113,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
         # Save the metadata values in variables
         datasetVersionId = improved_get(dataset_metadata, 'data.datasetVersion.id')
         persistentUrl = dataset_metadata['data']['persistentUrl']
+        datasetPersistentId = dataset_metadata['data']['datasetPersistentId']
         license = improved_get(dataset_metadata, 'data.datasetVersion.license')
         termsOfUse = improved_get(dataset_metadata, 'data.datasetVersion.termsOfUse')
         confidentialityDeclaration = improved_get(dataset_metadata, 'data.datasetVersion.confidentialityDeclaration')
@@ -141,7 +142,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
 
             # Write new row
             metadatafile.writerow([
-                datasetVersionId, persistentUrl, license, termsOfUse, confidentialityDeclaration,
+                datasetVersionId, persistentUrl, datasetPersistentId, license, termsOfUse, confidentialityDeclaration,
                 specialPermissions, restrictions, citationRequirements, depositorRequirements,
                 conditions, disclaimer, termsOfAccess, dataaccessPlace, originalArchive,
                 availabilityStatus, contactForAccess, sizeOfCollection, studyCompletion])
