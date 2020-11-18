@@ -30,14 +30,12 @@ with open(datasetPIDs, mode='r', encoding='utf-8') as f:
 
         datasetPID = row['persistent_id'].rstrip()
         url = '%s/api/datasets/:persistentId/editMetadata' % (server)
+        params = {'persistentId': datasetPID, 'replace': 'true'}
         r = requests.put(
             url,
             # data=open(metadatafile, 'rb'),
             json=metadataValues,
-            params={
-                'persistentId': datasetPID,
-                'replace': 'true'
-            },
+            params=params,
             headers={
                 'X-Dataverse-key': token,
                 'content-type': 'application/json'
