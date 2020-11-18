@@ -200,9 +200,7 @@ elif '.txt' in datasetPIDFile:
 
     datasetPIDFile = open(datasetPIDFile)
 
-    # For each dataset persistent identifier in the txt file, download the dataset's Dataverse JSON file into the metadata folder
     for datasetPID in datasetPIDFile:
-
         # Remove any trailing spaces from datasetPID
         datasetPIDs.append(datasetPID.rstrip())
 
