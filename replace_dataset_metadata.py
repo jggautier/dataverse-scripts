@@ -4,7 +4,7 @@ from csv import DictReader
 import requests
 
 server = 'https://demo.dataverse.org/'  # Enter name of server url, which is home page URL of the Dataverse installation, e.g. https://demo.dataverse.org
-token = ''  # Enter API token of Dataverse account that has edit privileges on the datasets
+apikey = ''  # Enter API token of Dataverse account that has edit privileges on the datasets
 
 metadatafile = ''  # Path to JSON file that contains the replacement metadata
 datasetPIDs = ''  # Path to CSV file with list of dataset PIDs
@@ -37,7 +37,7 @@ with open(datasetPIDs, mode='r', encoding='utf-8') as f:
             json=metadataValues,
             params=params,
             headers={
-                'X-Dataverse-key': token,
+                'X-Dataverse-key': apikey,
                 'content-type': 'application/json'
             })
         count += 1
