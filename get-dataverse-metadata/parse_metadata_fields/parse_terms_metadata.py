@@ -113,7 +113,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
         # Save the metadata values in variables
         datasetVersionId = improved_get(dataset_metadata, 'data.datasetVersion.id')
         persistentUrl = dataset_metadata['data']['persistentUrl']
-        datasetPersistentId = dataset_metadata['data']['datasetPersistentId']
+        datasetPersistentId = dataset_metadata['data']['datasetVersion']['datasetPersistentId']
         license = improved_get(dataset_metadata, 'data.datasetVersion.license')
         termsOfUse = improved_get(dataset_metadata, 'data.datasetVersion.termsOfUse')
         confidentialityDeclaration = improved_get(dataset_metadata, 'data.datasetVersion.confidentialityDeclaration')

@@ -108,7 +108,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
         if dataset_metadata['status'] == 'OK':
             datasetVersionId = dataset_metadata['data']['datasetVersion']['id']
             persistentUrl = dataset_metadata['data']['persistentUrl']
-            datasetPersistentId = dataset_metadata['data']['datasetPersistentId']
+            datasetPersistentId = dataset_metadata['data']['datasetVersion']['datasetPersistentId']
             versionCreateTime = dataset_metadata['data']['datasetVersion']['createTime']
             versionState = dataset_metadata['data']['datasetVersion']['versionState']
             datasetPublicationDate = dataset_metadata['data']['publicationDate']

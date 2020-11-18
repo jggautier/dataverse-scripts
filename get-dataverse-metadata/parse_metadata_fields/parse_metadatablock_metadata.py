@@ -210,7 +210,7 @@ for parent_compound_field in compound_field_dictionary:
 
                         # Save the persistent URL and persistent ID of each dataset
                         persistentUrl = dataset_metadata['data']['persistentUrl']
-                        datasetPersistentId = dataset_metadata['data']['datasetPersistentId']
+                        datasetPersistentId = dataset_metadata['data']['datasetVersion']['datasetPersistentId']
 
                         # Save subfield values to variables
                         for subfield in subfields:
@@ -266,7 +266,7 @@ for primitive_field in primitive_fields:
         metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
         # Create header row
-        metadatafile.writerow(['datasetVersionId', 'persistentUrl', 'persistent_id' primitive_field])
+        metadatafile.writerow(['datasetVersionId', 'persistentUrl', 'persistent_id', primitive_field])
 
     print('\nGetting %s metadata:' % (primitive_field))
 
@@ -287,7 +287,7 @@ for primitive_field in primitive_fields:
                 # Save the dataset id of each dataset
                 datasetVersionId = str(dataset_metadata['data']['datasetVersion']['id'])
                 persistentUrl = dataset_metadata['data']['persistentUrl']
-                datasetPersistentId = dataset_metadata['data']['datasetPersistentId']
+                datasetPersistentId = dataset_metadata['data']['datasetVersion']['datasetPersistentId']
 
                 # Couple each field value with the dataset version ID and write as a row to subjects.csv
                 for fields in dataset_metadata['data']['datasetVersion']['metadataBlocks'][metadatablock_name]['fields']:
