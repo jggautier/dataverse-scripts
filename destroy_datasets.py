@@ -4,7 +4,7 @@ from csv import DictReader
 import urllib.request
 
 # Dataverse repository URL, e.g. https://demo.dataverse.org
-server = ''
+server = 'https://demo.dataverse.org'
 
 # API key of superuser account
 apikey = ''
