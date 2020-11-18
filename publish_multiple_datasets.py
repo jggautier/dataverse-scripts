@@ -6,6 +6,7 @@ import requests
 repositoryURL = 'https://demo.dataverse.org'
 apikey = ''
 datasetPIDFile = ''
+type = ''
 
 datasetPIDs = []
 if '.csv' in datasetPIDFile:
@@ -30,7 +31,7 @@ elif '.txt' in datasetPIDFile:
 count = 0
 for datasetPID in datasetPIDs:
     url = '%s/api/datasets/:persistentId/actions/:publish' % (repositoryURL)
-    params = {'persistentId': datasetPID, 'type': 'minor'}
+    params = {'persistentId': datasetPID, 'type': type}
     r = requests.post(
         url,
         params=params,
