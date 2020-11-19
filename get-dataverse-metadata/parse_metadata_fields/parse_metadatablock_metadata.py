@@ -352,5 +352,5 @@ for file in glob.glob(str(Path(csvDirectory)) + '/' + '*.csv'):
             f.close()
             os.remove(file)
 if deletedfiles:
-    print('\n%s files have no metadata and were deleted:' % (len(deletedfiles)))
+    print('Number of files deleted because they had no metadata: %s' % (len(deletedfiles)))
     print(deletedfiles)
