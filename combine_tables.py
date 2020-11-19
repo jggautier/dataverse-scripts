@@ -86,7 +86,7 @@ dataframes = [pd.read_csv(table, sep=',') for table in all_tables]
 
 # For each dataframe, set the indexes (or the common columns across the dataframes to join on)
 for dataframe in dataframes:
-    dataframe.set_index(['datasetVersionId', 'persistentUrl'], inplace=True)
+    dataframe.set_index(['datasetVersionId', 'persistentUrl', 'persistent_id'], inplace=True)
 
 print('Joining dataframes into one dataframe...')
 
