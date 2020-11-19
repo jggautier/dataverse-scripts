@@ -17,13 +17,48 @@ count = 0
 with open(datasetPIDs, mode='r', encoding='utf-8') as f:
     csv_dict_reader = DictReader(f, delimiter=',')
     for row in csv_dict_reader:
-        # title = 'dataset %s' % (str(count))
-        title = row['title'].rstrip()
+        title = 'Yet another %s' % (row['title'].rstrip())
+        description = '%s 0123456789' % (row['dsDescriptionValue'].rstrip())
         metadataValues = {
             "fields": [
                 {
                     "typeName": "title",
                     "value": title
+                },
+                {
+                    "typeName": "author",
+                    "value": [
+                        {
+                            "authorName": {
+                                "typeName": "authorName",
+                                "value": "First Author"
+                            }
+                        },
+                        {
+                            "authorName": {
+                                "typeName": "authorName",
+                                "value": "Second Author"
+                            }
+                        },
+                        {
+                            "authorName": {
+                                "typeName": "authorName",
+                                "value": "Third Author"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "typeName": "dsDescription",
+                    "value": [
+                        {
+                            "dsDescriptionValue": {
+                                "typeName": "dsDescriptionValue",
+                                "value": description
+                            }
+                        }
+
+                    ]
                 }
             ]
         }
@@ -43,6 +78,6 @@ with open(datasetPIDs, mode='r', encoding='utf-8') as f:
         count += 1
 
         if r.status_code == 200:
-            print('Success: %s! %s of %s' % (datasetPID, count, total))
+            print('Success! %s - %s of %s' % (datasetPID, count, total))
         else:
-            print('Failed: %s! %s of %s' % (datasetPID, count, total))
+            print('Failed (%s): %s! %s of %s' % (r.status_code, datasetPID, count, total))
