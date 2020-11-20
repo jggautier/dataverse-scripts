@@ -1,24 +1,23 @@
 # Replace dataset metadata in given datasets
-
+import csv
 from csv import DictReader
 import requests
 
-server = 'https://demo.dataverse.org/'  # Enter name of server url, which is home page URL of the Dataverse installation, e.g. https://demo.dataverse.org
+server = 'https://demo.dataverse.org'  # Enter name of server url, which is home page URL of the Dataverse installation, e.g. https://demo.dataverse.org
 apikey = ''  # Enter API token of Dataverse account that has edit privileges on the datasets
 
-metadatafile = ''  # Path to JSON file that contains the replacement metadata
+# metadatafile = ''  # Path to JSON file that contains the replacement metadata
 datasetPIDs = ''  # Path to CSV file with list of dataset PIDs
 
-with open(datasetPIDs, mode='r', encoding='utf-8') as f:
-    total = len(f.readlines()) - 1
+reader = csv.reader(open(datasetPIDs))
+total = len(list(reader)) - 1
 
 count = 0
-
 with open(datasetPIDs, mode='r', encoding='utf-8') as f:
     csv_dict_reader = DictReader(f, delimiter=',')
     for row in csv_dict_reader:
-        title = 'Yet another %s' % (row['title'].rstrip())
-        description = '%s 0123456789' % (row['dsDescriptionValue'].rstrip())
+        title = 'Executives Agreements Database, %s' % (row['title'].rstrip())
+        description = '%s\n\ncover memo' % (row['dsDescriptionValue'].rstrip())
         metadataValues = {
             "fields": [
                 {
@@ -31,21 +30,33 @@ with open(datasetPIDs, mode='r', encoding='utf-8') as f:
                         {
                             "authorName": {
                                 "typeName": "authorName",
-                                "value": "First Author"
+                                "value": "Oona A. Hathaway"
+                            },
+                            "authorAffiliation": {
+                                "typeName": "authorAffiliation",
+                                "value": "Yale Law School"
                             }
                         },
                         {
                             "authorName": {
                                 "typeName": "authorName",
-                                "value": "Second Author"
+                                "value": "Curtis A. Bradley"
+                            },
+                            "authorAffiliation": {
+                                "typeName": "authorAffiliation",
+                                "value": "Duke Law School"
                             }
                         },
                         {
                             "authorName": {
                                 "typeName": "authorName",
-                                "value": "Third Author"
+                                "value": "Jack Goldsmith"
+                            },
+                            "authorAffiliation": {
+                                "typeName": "authorAffiliation",
+                                "value": "Harvard Law School"
                             }
-                        }
+                        },
                     ]
                 },
                 {
