@@ -1,7 +1,8 @@
 # Remove dataset locks
 
-import requests
+import csv
 from csv import DictReader
+import requests
 
 repositoryURL = 'https://demo.dataverse.org'
 apikey = ''
@@ -9,8 +10,8 @@ datasetPIDFile = ''
 
 datasetPIDs = []
 if '.csv' in datasetPIDFile:
-    with open(datasetPIDFile, mode='r', encoding='utf-8') as f:
-        total = len(f.readlines()) - 1
+    reader = csv.reader(open(datasetPIDs))
+    total = len(list(reader)) - 1
 
     with open(datasetPIDFile, mode='r', encoding='utf-8') as f:
         csvDictReader = DictReader(f, delimiter=',')
