@@ -109,7 +109,7 @@ if misindexed_datasets_count:
     print('\n\nDatasets misindexed: %s\n' % (misindexed_datasets_count))
 
 # If there are duplicate PIDs, report the number of unique PIDs and explain: 
-# or published datasets with a draft version, the Search API lists the PID twice,
+# Where there are published datasets with a draft version, the Search API lists the PID twice,
 # once for published versions and once for draft versions.
 if len(dataset_pids) != len(set(dataset_pids)):
     unique_dataset_pids = set(dataset_pids)
