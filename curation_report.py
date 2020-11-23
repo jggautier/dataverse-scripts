@@ -1,6 +1,6 @@
 '''
-Provide a date range and optional API key and this script will get info for datasets and files created 
-within that date range. Useful when curating deposited data, especially spotting problem datasets 
+Provide a date range and optional API key and this script will get info for datasets and files created
+within that date range. Useful when curating deposited data, especially spotting problem datasets
 (e.g. datasets with no data).
 
 This script first uses the Search API to find PIDs of datasets.
@@ -29,19 +29,28 @@ end_date = ''  # yyyy-mm-dd
 api_key = ''  # for getting unpublished datasets accessible to Dataverse account
 directory = ''  # directory for CSV file containing dataset and file info, e.g. '/Users/username/Desktop/'
 
-# Initialization for paginating through results of Search API calls
-start = 0
-condition = True
-
 # List for storing indexed dataset PIDs and variable for counting misindexed datasets
 dataset_pids = []
 misindexed_datasets_count = 0
 
+start = 0
+
 # Get total count of datasets
-url = '%s/api/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&\
-per_page=1&start=%s&sort=date&order=desc\
-&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' % (server, start, start_date, end_date, api_key)
-response = requests.get(url)
+url = '%s/api/search' % (server)
+dateSort = 'dateSort:[%sT00:00:00Z TO %sT23:59:59Z]' % (start_date, end_date)
+per_page = 1
+params = {
+    'q': '*',
+    'fq': {'-metadataSource:"Harvested"', dateSort},
+    'type': 'dataset',
+    'per_page': per_page,
+    'start': start
+}
+response = requests.get(
+    url,
+    params=params,
+    headers={'X-Dataverse-key': api_key}
+)
 data = response.json()
 
 # If Search API is working, get total
@@ -54,14 +63,18 @@ elif data['status'] == 'ERROR':
     print(error_message)
     exit()
 
+# Initialization for paginating through results of Search API calls
+condition = True
+
 print('Searching for dataset PIDs:')
 while condition:
     try:
-        per_page = 10
-        url = '%s/api/search?q=*&fq=-metadataSource:"Harvested"\
-&type=dataset&per_page=%s&start=%s&sort=date&order=desc\
-&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' % (server, per_page, start, start_date, end_date, api_key)
-        response = requests.get(url)
+        params['per_page'] = 10
+        response = requests.get(
+            url,
+            params=params,
+            headers={'X-Dataverse-key': api_key}
+        )
         data = response.json()
 
         # For each dataset...
@@ -74,18 +87,19 @@ while condition:
         print('Dataset PIDs found: %s of %s' % (len(dataset_pids), total), end='\r', flush=True)
 
         # Update variables to paginate through the search results
-        start = start + per_page
+        params['start'] = params['start'] + params['per_page']
 
-    # If misindexed datasets break the Search API call where per_page=10, 
+    # If misindexed datasets break the Search API call where per_page=10,
     # try calls where per_page=1 until the call causing the failure is found,
     # then continue with per_page=10 (See https://github.com/IQSS/dataverse/issues/4225)
     except Exception:
         try:
-            per_page = 1
-            url = '%s/api/search?q=*&fq=-metadataSource:"Harvested"\
-&type=dataset&per_page=%s&start=%s&sort=date&order=desc\
-&fq=dateSort:[%sT00:00:00Z+TO+%sT23:59:59Z]&key=%s' % (server, per_page, start, start_date, end_date, api_key)
-            response = requests.get(url)
+            params['per_page'] = 1
+            response = requests.get(
+                url,
+                params=params,
+                headers={'X-Dataverse-key': api_key}
+            )
             data = response.json()
 
             # Get dataset PID and save to dataset_pids list
@@ -95,20 +109,20 @@ while condition:
             print('Dataset PIDs found: %s of %s' % (len(dataset_pids), total), end='\r', flush=True)
 
             # Update variables to paginate through the search results
-            start = start + per_page
+            params['start'] = params['start'] + params['per_page']
 
         # If page fails to load, count a misindexed dataset and continue to the next page
         except Exception:
             misindexed_datasets_count += 1
-            start = start + per_page
+            params['start'] = params['start'] + params['per_page']
 
     # Stop paginating when there are no more results
-    condition = start < total
+    condition = params['start'] < total
 
 if misindexed_datasets_count:
     print('\n\nDatasets misindexed: %s\n' % (misindexed_datasets_count))
 
-# If there are duplicate PIDs, report the number of unique PIDs and explain: 
+# If there are duplicate PIDs, report the number of unique PIDs and explain:
 # Where there are published datasets with a draft version, the Search API lists the PID twice,
 # once for published versions and once for draft versions.
 if len(dataset_pids) != len(set(dataset_pids)):
@@ -143,10 +157,11 @@ with open(csv_file_path, mode='w') as open_csv_file:
     open_csv_file = csv.writer(open_csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
     # Create header row
-    open_csv_file.writerow(['datasetTitle (versionState) (DOI)', 'fileName (fileSize)',
+    open_csv_file.writerow([
+        'datasetTitle (versionState) (DOI)', 'fileName (fileSize)',
         'fileType', 'lastUpdateTime', 'dataverseName (alias)'])
 
-# For each data file in each dataset, add to the CSV file the dataset's URL and 
+# For each data file in each dataset, add to the CSV file the dataset's URL and
 # publication state, dataset title, data file name and data file contentType
 
 print('\nWriting dataset and file info to %s:' % (csv_file_path))
@@ -230,10 +245,14 @@ for pid in unique_dataset_pids:
         else:
             with open(csv_file_path, mode='a') as open_csv_file:
 
-                open_csv_file = csv.writer(open_csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                open_csv_file = csv.writer(
+                    open_csv_file, delimiter=',', quotechar='"',
+                    quoting=csv.QUOTE_MINIMAL)
 
                 # Create new row with dataset and file info
-                open_csv_file.writerow([dataset_info, '(no files found)', '(no files found)', last_update_time, dataverse_name_alias])
+                open_csv_file.writerow([
+                    dataset_info, '(no files found)', '(no files found)',
+                    last_update_time, dataverse_name_alias])
 
                 # As a progress indicator, print a dot each time a row is written
                 sys.stdout.write('.')
