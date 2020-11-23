@@ -90,8 +90,8 @@ while condition:
         params['start'] = params['start'] + params['per_page']
 
     # If misindexed datasets break the Search API call where per_page=10,
-    # try calls where per_page=1 until the call causing the failure is found,
-    # then continue with per_page=10 (See https://github.com/IQSS/dataverse/issues/4225)
+    # try calls where per_page=1 then per_page=10 again
+    # (See https://github.com/IQSS/dataverse/issues/4225)
     except Exception:
         try:
             params['per_page'] = 1
@@ -241,7 +241,7 @@ for pid in unique_dataset_pids:
                     sys.stdout.write('.')
                     sys.stdout.flush()
 
-        # Otherwise print that the dataset has no files
+        # Otherwise write to the CSV that the dataset has no files
         else:
             with open(csv_file_path, mode='a') as open_csv_file:
 
