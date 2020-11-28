@@ -36,7 +36,7 @@ misindexed_datasets_count = 0
 start = 0
 
 # Get total count of datasets
-url = '%s/api/search' % (server)
+search_api_url = '%s/api/search' % (server)
 dateSort = 'dateSort:[%sT00:00:00Z TO %sT23:59:59Z]' % (start_date, end_date)
 per_page = 1
 params = {
@@ -47,7 +47,7 @@ params = {
     'start': start
 }
 response = requests.get(
-    url,
+    search_api_url,
     params=params,
     headers={'X-Dataverse-key': api_key}
 )
@@ -71,7 +71,7 @@ while condition:
     try:
         params['per_page'] = 10
         response = requests.get(
-            url,
+            search_api_url,
             params=params,
             headers={'X-Dataverse-key': api_key}
         )
@@ -96,7 +96,7 @@ while condition:
         try:
             params['per_page'] = 1
             response = requests.get(
-                url,
+                search_api_url,
                 params=params,
                 headers={'X-Dataverse-key': api_key}
             )
@@ -185,11 +185,16 @@ for pid in unique_dataset_pids:
 
     # Construct "Get JSON" API endpoint url and get data about each dataset's latest version
     try:
-        url = '%s/api/datasets/:persistentId/?persistentId=%s&key=%s' % (server, pid, api_key)
+        data_get_latest_version_url = '%s/api/datasets/:persistentId' % (server)
+        response = requests.get(
+            data_get_latest_version_url,
+            params={'persistentId': pid},
+            headers={'X-Dataverse-key': api_key}
+        )
 
         # Store dataset and file info from API call to "data_get_latest_version" variable
-        response = requests.get(url)
         data_get_latest_version = response.json()
+
     except Exception:
         pid_errors.append(pid)
 
@@ -198,10 +203,13 @@ for pid in unique_dataset_pids:
 
         # Construct "Search API" url to get name of each dataset's dataverse
         try:
-            url = '%s/api/search?q="%s"&type=dataset&key=%s' % (server, pid, api_key)
+            q = '"%s"' % (pid)
+            response = requests.get(
+                search_api_url,
+                params={'q': q, 'type': 'dataset'},
+                headers={'X-Dataverse-key': api_key}
+            )
 
-            # Store Search API result to "data_dataverse_name" variable
-            response = requests.get(url)
             data_dataverse_name = response.json()
         except Exception:
             pid_errors.append(pid)
