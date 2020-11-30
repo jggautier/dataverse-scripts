@@ -20,7 +20,8 @@ print('Trying to destroy datasets...')
 if '.txt' in file:
     dataset_pids = open(file)
     for dataset_pid in dataset_pids:
-        url = '%s/api/datasets/:persistentId/destroy/?persistentId=%s' % (server, dataset_pid.rstrip())
+        dataset_pid = dataset_pid.rstrip()
+        url = '%s/api/datasets/:persistentId/destroy/?persistentId=%s' % (server, dataset_pid)
 
         headers = {
             'X-Dataverse-key': apikey}
