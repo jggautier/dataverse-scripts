@@ -10,9 +10,10 @@ apikey = ''  # Superuser API key
 dataverseAliases = []
 
 if '.txt' in file:
+    total = len(open(file).readlines())
     dataverseInfo = open(file)
-    total = len(dataverseInfo)
     for dataverseAlias in dataverseInfo:
+        dataverseAlias = dataverseAlias.rstrip()
         dataverseAliases.append(dataverseAlias)
 
 if '.csv' in file:
