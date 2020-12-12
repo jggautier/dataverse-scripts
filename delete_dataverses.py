@@ -11,13 +11,18 @@ server = ''  # Base URL of repository hosting the dataverses to be deleted
 apikey = ''  # Superuser API key
 
 # Read lines in .txt file or column named 'dataverse_alias' in .csv file
+# and save aliases to dataverseAliases list
 dataverseAliases = []
 
 if '.txt' in file:
     total = len(open(file).readlines())
     dataverseInfo = open(file)
     for dataverseAlias in dataverseInfo:
+
+        # Strip new line character so it doesn't mess with report printed in terminal
         dataverseAlias = dataverseAlias.rstrip()
+
+        # Save alias to dataverseAlias list
         dataverseAliases.append(dataverseAlias)
 
 if '.csv' in file:
@@ -27,10 +32,14 @@ if '.csv' in file:
     with open(file, mode='r', encoding='utf-8') as f:
         dataverseInfo = DictReader(f, delimiter=',')
         for dataverse in dataverseInfo:
+
+            # Get dataverse alias from dataverse_alias column
             dataverseAlias = dataverse['dataverse_alias']
+
+            # Save alias to dataverseAlias list
             dataverseAliases.append(dataverseAlias)
 
-# Create variables for the script's progress
+# Create variables for reporting script's progress
 deletedDataverses = []
 notDeletedDataverses = []
 count = 0
@@ -39,6 +48,7 @@ count = 0
 for dataverseAlias in dataverseAliases:
     count += 1
 
+    # Create URL for using delete dataverse endpoint
     url = '%s/api/dataverses/%s' % (server, dataverseAlias)
 
     headers = {'X-Dataverse-key': apikey}
@@ -48,13 +58,13 @@ for dataverseAlias in dataverseAliases:
         headers=headers,
         method='DELETE')
 
-    # Try to delete the dataverse
+    # Try to delete the dataverse and report
     try:
         response = urllib.request.urlopen(req)
         print('%s of %s: Deleted - %s' % (count, total, dataverseAlias))
         deletedDataverses.append(dataverseAlias)
 
-    # Or save alias of dataverse that failes to delete
+    # If that fails, save dataverse alias to notDeletedDataverses list and report
     except Exception:
         print('%s of %s: Could not be deleted - %s' % (count, total, dataverseAlias))
         notDeletedDataverses.append(dataverseAlias)
