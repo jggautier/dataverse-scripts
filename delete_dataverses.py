@@ -15,7 +15,6 @@ apikey = ''  # Superuser API key
 dataverseAliases = []
 
 if '.txt' in file:
-    total = len(open(file).readlines())
     dataverseInfo = open(file)
     for dataverseAlias in dataverseInfo:
 
@@ -27,9 +26,6 @@ if '.txt' in file:
 
 if '.csv' in file:
     with open(file, mode='r', encoding='utf-8') as f:
-        total = len(f.readlines()) - 1
-
-    with open(file, mode='r', encoding='utf-8') as f:
         dataverseInfo = DictReader(f, delimiter=',')
         for dataverse in dataverseInfo:
 
@@ -40,6 +36,7 @@ if '.csv' in file:
             dataverseAliases.append(dataverseAlias)
 
 # Create variables for reporting script's progress
+total = len(dataverseAliases)
 deletedDataverses = []
 notDeletedDataverses = []
 count = 0
