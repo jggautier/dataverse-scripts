@@ -1,6 +1,6 @@
 '''
 Delete the dataverses in a given .txt file or CSV file that includes
-a list or column of dataverse aliases
+a list or column of dataverse IDs
 '''
 
 from csv import DictReader
@@ -10,19 +10,19 @@ file = ''  # Path to file with aliases of dataverses to be deleted
 server = ''  # Base URL of repository hosting the dataverses to be deleted
 apikey = ''  # Superuser API key
 
-# Read lines in .txt file or column named 'dataverse_alias' in .csv file
-# and save aliases to dataverseAliases list
-dataverseAliases = []
+# Read lines in .txt file or column named 'id' in .csv file
+# and save IDs to dataverseIds list
+dataverseIds = []
 
 if '.txt' in file:
     dataverseInfo = open(file)
-    for dataverseAlias in dataverseInfo:
+    for dataverseId in dataverseInfo:
 
         # Strip new line character so it doesn't mess with report printed in terminal
-        dataverseAlias = dataverseAlias.rstrip()
+        dataverseId = dataverseId.rstrip()
 
-        # Save alias to dataverseAlias list
-        dataverseAliases.append(dataverseAlias)
+        # Save alias to dataverseId list
+        dataverseIds.append(dataverseId)
 
 if '.csv' in file:
     with open(file, mode='r', encoding='utf-8') as f:
@@ -30,23 +30,26 @@ if '.csv' in file:
         for dataverse in dataverseInfo:
 
             # Get dataverse alias from dataverse_alias column
-            dataverseAlias = dataverse['dataverse_alias']
+            dataverseId = dataverse['id']
 
-            # Save alias to dataverseAlias list
-            dataverseAliases.append(dataverseAlias)
+            # Save alias to dataverseId list
+            dataverseIds.append(dataverseId)
+
+# Deduplicate list of dataverseIds
+dataverseIds = set(dataverseIds)
 
 # Create variables for reporting script's progress
-total = len(dataverseAliases)
+total = len(dataverseIds)
 deletedDataverses = []
 notDeletedDataverses = []
 count = 0
 
 # For each dataverseAlias in dataverseAliases list...
-for dataverseAlias in dataverseAliases:
+for dataverseId in dataverseIds:
     count += 1
 
     # Create URL for using delete dataverse endpoint
-    url = '%s/api/dataverses/%s' % (server, dataverseAlias)
+    url = '%s/api/dataverses/%s' % (server, dataverseId)
 
     headers = {'X-Dataverse-key': apikey}
 
@@ -58,13 +61,13 @@ for dataverseAlias in dataverseAliases:
     # Try to delete the dataverse and report
     try:
         response = urllib.request.urlopen(req)
-        print('%s of %s: Deleted - %s' % (count, total, dataverseAlias))
-        deletedDataverses.append(dataverseAlias)
+        print('%s of %s: Deleted - %s' % (count, total, dataverseId))
+        deletedDataverses.append(dataverseId)
 
     # If that fails, save dataverse alias to notDeletedDataverses list and report
     except Exception:
-        print('%s of %s: Could not be deleted - %s' % (count, total, dataverseAlias))
-        notDeletedDataverses.append(dataverseAlias)
+        print('%s of %s: Could not be deleted - %s' % (count, total, dataverseId))
+        notDeletedDataverses.append(dataverseId)
 
 # Print results
 print('Dataverses deleted: %s' % (len(deletedDataverses)))
