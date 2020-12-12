@@ -1,12 +1,12 @@
 '''
 Delete the dataverses in a given .txt file or CSV file that includes
-a list or column of dataverse IDs
+a list or column of database IDs of dataverses
 '''
 
 from csv import DictReader
 import urllib.request
 
-file = ''  # Path to file with aliases of dataverses to be deleted
+file = ''  # Path to file with database IDs of dataverses to be deleted
 server = ''  # Base URL of repository hosting the dataverses to be deleted
 apikey = ''  # Superuser API key
 
@@ -21,7 +21,7 @@ if '.txt' in file:
         # Strip new line character so it doesn't mess with report printed in terminal
         dataverseId = dataverseId.rstrip()
 
-        # Save alias to dataverseId list
+        # Save ID to dataverseId list
         dataverseIds.append(dataverseId)
 
 if '.csv' in file:
@@ -29,10 +29,10 @@ if '.csv' in file:
         dataverseInfo = DictReader(f, delimiter=',')
         for dataverse in dataverseInfo:
 
-            # Get dataverse alias from dataverse_alias column
+            # Get dataverse ID from id column
             dataverseId = dataverse['id']
 
-            # Save alias to dataverseId list
+            # Save ID to dataverseId list
             dataverseIds.append(dataverseId)
 
 # Deduplicate list of dataverseIds
@@ -64,7 +64,7 @@ for dataverseId in dataverseIds:
         print('%s of %s: Deleted - %s' % (count, total, dataverseId))
         deletedDataverses.append(dataverseId)
 
-    # If that fails, save dataverse alias to notDeletedDataverses list and report
+    # If that fails, save dataverse ID to notDeletedDataverses list and report
     except Exception:
         print('%s of %s: Could not be deleted - %s' % (count, total, dataverseId))
         notDeletedDataverses.append(dataverseId)
