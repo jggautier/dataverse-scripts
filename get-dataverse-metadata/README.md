@@ -5,7 +5,7 @@ If you're interested in getting the metadata of all datasets in most known Datav
 
 ## General
 The scripts can be grouped into three types of scripts:
- * One script, get_dataset_json_metadata.py, takes a list of dataset PIDs and downloads the metadata of all published versions of those datasets (in the Dataverse JSON standard). If a Dataverse account API key is included, the script also downloads the draft versions of any datasets accessible by the Dataverse account.
+ * One script, get_dataset_json_metadata.py, takes a list of dataset PIDs and downloads the metadata of either the latest published version or all published versions of those datasets (in the Dataverse JSON standard). If a Dataverse account API key is included, the script will download draft and deaccessioned versions of any datasets accessible by the Dataverse account.
  * Several scripts, such as parse_basic_metadata.py and parse_metadatablock_metadata.py, parse the JSON files to extract metadata fields and write that metadata into CSV files.
 
 You can manipulate and analyze the metadata in the CSV files using many methods and tools, including MS Excel, Apple's Numbers, Google Sheets, OpenRefine, R, Python, and database applications like pgAdmin or DB Browser for SQLite.
@@ -28,7 +28,7 @@ pip3 install pandas pyDataverse
 Imagine you want to get and analyze the metadata of datasets in a Dataverse-based repository, such as [demo.dataverse.org](https://demo.dataverse.org/), or in a dataverse in that repository, for any number of reasons, including:
  * Improving the metadata of datasets in your dataverse
  * Reporting to research funders the quality of metadata in your dataverse
- * Studying and reporting how certain types of data are described to recommend better ways of describing and using data
+ * Studying and reporting data is described to recommend better ways of describing and using data
 
 ### Getting dataset PIDs
 To get a CSV file with information about datasets in a dataverse, including their persistent identifiers, run [get_dataset_pids.py](https://github.com/jggautier/dataverse-scripts/blob/master/get_dataset_PIDs.py) in your terminal.
@@ -40,11 +40,11 @@ Run get_dataset_json_metadata.py, which asks for a list of dataset PIDs (either 
 python3 get_dataset_json_metadata.py
 ```
 
-The script creates a UI for entering the URL of the dataverse repository, an optional API key, the location of the CSV or text file containing the dataset PIDs you're interested in, and where you want to save the metadata files and metadatablock JSON files of the repository. If you're using Mac OS, when you press "Start" in the UI, you may see a message in your terminal that starts with "Class FIFinderSyncExtensionHost", which can be ignored. ([See the FAQ](https://github.com/jggautier/get-dataverse-metadata/tree/tkinter-gui#faq) for more info.)
+The script creates a UI where you must enter the URL of the dataverse repository, enter an optional API key, indicate if you want the metadata of all dataset versions or just the latest version, and indicate the location of the CSV or text file containing the dataset PIDs you're interested in and where you want to save the metadata files and metadatablock JSON files of the repository. If you're using Mac OS, when you press "Start" in the UI, you may see a message in your terminal that starts with "Class FIFinderSyncExtensionHost", which can be ignored. ([See the FAQ](https://github.com/jggautier/get-dataverse-metadata/tree/tkinter-gui#faq) for more info.)
 
 Within the directory that you specified, the script will create a folder, whose name will include a timestamp, to store the downloaded JSON metadata files.
 
-For each dataset PID in the provided text file, the script will save a JSON file containing the metadata of each published version of each dataset. If a Dataverse account API key is included, the script will also download the draft versions of any datasets accessible by the Dataverse account.
+For each dataset PID in the provided text file, the script will save a JSON file containing the metadata of the latest version of each dataset (unless you indicated that you'd like the metadata of each dataset version). If a Dataverse account API key is included, the script will also download the draft and deaccessioned versions of any datasets accessible by the Dataverse account.
 
 ### Writing metadata from JSON files to CSV files
 Run any of the scripts that start with parse_, such as parse_basic_metadata.py
