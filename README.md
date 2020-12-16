@@ -16,8 +16,8 @@ Gets the persistent identifiers of any datasets in a given Dataverse installatio
 - #### replace_dataset_metadata.py
 - #### unlock_datasets.py
 
-### curation-report.py
-This script creates an overview of datasets created in a Dataverse installation in a given time frame, which can be useful for regular curation.
+### curation_report.py
+This script creates an overview of datasets created in a Dataverse installation in a given time frame, which can be useful for regular dataset curation.
 
 ### get_dataset_metadata_of_all_installations.py
 This script downloads dataset metadata of as many known Dataverse installations as possible. Used to create the dataset at https://doi.org/10.7910/DVN/DCDKZQ.
