@@ -19,9 +19,9 @@ You can manipulate and analyze the metadata in the CSV files using many methods 
 git clone https://github.com/jggautier/get-dataverse-metadata.git
 ```
 
- * Install the Python modules [pandas](https://pandas.pydata.org/about.html) and [pyDataverse](https://pydataverse.readthedocs.io/en/latest/index.html):
+ * Install the Python modules [requests](https://pypi.org/project/requests/), [pandas](https://pandas.pydata.org/docs/getting_started/install.html), [pyDataverse](https://pydataverse.readthedocs.io/en/latest/index.html):
 ```
-pip3 install pandas pyDataverse
+pip3 install requests pandas pyDataverse
 ```
 
 ## Using the scripts
