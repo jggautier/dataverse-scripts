@@ -23,9 +23,7 @@ This script creates an overview of datasets created in a Dataverse installation 
 This script downloads dataset metadata of as many known Dataverse installations as possible. Used to create the dataset at https://doi.org/10.7910/DVN/DCDKZQ.
 
 ### Misc
-- #### publish_multiple_datasets.command
-  This script publishes the unpublished datasets or draft versions in a given Dataverse collection.
-- #### split_table.py
-  This script splits a given CSV file into many csv files based on the unique values in a given column. It's like the opposite of a JOIN.
 - #### combine_tables.py
   This script does a join on CSV files in a given directory.
+- #### split_table.py
+  This script splits a given CSV file into many csv files based on the unique values in a given column. It's like the opposite of a JOIN.
