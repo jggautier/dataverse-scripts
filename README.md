@@ -5,7 +5,7 @@ Scripts for automating things in a Dataverse repository/installation, plus some 
 ### get_dataset_PIDs.py
 Gets the persistent identifiers of any datasets in a given Dataverse installation or a given Dataverse collection within that installation (and optionally all of the Dataverse collections within that Dataverse collection)
 
-### These scripts do things with a given list of dataset PIDs or Dataverse collection aliases:
+### These scripts do things with a given list of dataset PIDs or Dataverse collection IDs or aliases:
 
 - #### change_citation_dates.py
 - #### delete_dataverses.py
