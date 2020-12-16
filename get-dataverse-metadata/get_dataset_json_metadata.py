@@ -16,7 +16,7 @@ import sys
 # Create GUI for getting user input
 window = Tk()
 window.title('Get dataset metadata')
-window.geometry('650x500')  # width x height
+window.geometry('650x600')  # width x height
 
 # Create label for Dataverse repository URL
 labelRepositoryURL = Label(window, text='Enter Dataverse repository URL:', anchor='w')
@@ -44,34 +44,44 @@ entryApikey = Entry(window, width=50, textvariable=apikey)
 entryApikey.grid(sticky='w', column=0, row=5, pady=2)
 
 # Create help text for API key field
-labelApikeyHelpText = Label(window, text='If no API is entered, only published datasets will be found', foreground='grey', anchor='w')
+labelApikeyHelpText = Label(window, text='If no API is entered, only published metadata will be downloaded', foreground='grey', anchor='w')
 labelApikeyHelpText.grid(sticky='w', column=0, row=6)
 
 # Create empty row in grid to improve spacing between the two fields
 window.grid_rowconfigure(7, minsize=25)
 
+getAllVersionMetadata = IntVar()
+c = Checkbutton(window, text="Get metadata of all dataset versions", variable=getAllVersionMetadata).grid(sticky='w', column=0, row=8)
+
+# Create help text for all versions checkbox
+labelAllVersionMetadataHelpText = Label(window, text='If unchecked, only metadata of latest dataset version will be downloaded', foreground='grey', anchor='w')
+labelAllVersionMetadataHelpText.grid(sticky='w', column=0, row=9)
+
+# Create empty row in grid to improve spacing between the two fields
+window.grid_rowconfigure(10, minsize=25)
+
 # Create label for Browse directory button
-labelBrowseForFile = Label(window, text='Choose CSV or TXT file contain list of dataset PIDs:', anchor='w')
-labelBrowseForFile.grid(sticky='w', column=0, row=8, pady=2)
+labelBrowseForFile = Label(window, text='Choose CSV or TXT file containing list of dataset PIDs:', anchor='w')
+labelBrowseForFile.grid(sticky='w', column=0, row=11, pady=2)
 
 # Create Browse directory button
 buttonBrowseForFile = ttk.Button(window, text='Browse', command=lambda: retrieve_file())
-buttonBrowseForFile.grid(sticky='w', column=0, row=9)
+buttonBrowseForFile.grid(sticky='w', column=0, row=12)
 
 # Create empty row in grid to improve spacing between the two fields
-window.grid_rowconfigure(11, minsize=25)
+window.grid_rowconfigure(14, minsize=25)
 
 # Create label for Browse directory button
 labelBrowseDirectory = Label(window, text='Choose folder to put the metadata files and metadatablock files folders into:', anchor='w')
-labelBrowseDirectory.grid(sticky='w', column=0, row=12, pady=2)
+labelBrowseDirectory.grid(sticky='w', column=0, row=15, pady=2)
 
 # Create Browse directory button
 buttonBrowseDirectory = ttk.Button(window, text='Browse', command=lambda: retrieve_directory())
-buttonBrowseDirectory.grid(sticky='w', column=0, row=13)
+buttonBrowseDirectory.grid(sticky='w', column=0, row=16)
 
 # Create start button
 buttonSubmit = ttk.Button(window, text='Start', command=lambda: retrieve_input())
-buttonSubmit.grid(sticky='w', column=0, row=15, pady=40)
+buttonSubmit.grid(sticky='w', column=0, row=18, pady=40)
 
 
 # Function called when Browse button is pressed for choosing text file with dataset PIDs
@@ -83,7 +93,7 @@ def retrieve_file():
 
     # Show user which file she chose
     labelShowChosenFile = Label(window, text='You chose: ' + datasetPIDFile, anchor='w', foreground='green', wraplength=500, justify='left')
-    labelShowChosenFile.grid(sticky='w', column=0, row=10)
+    labelShowChosenFile.grid(sticky='w', column=0, row=13)
 
 
 # Function called when Browse button is pressed
@@ -100,13 +110,17 @@ def retrieve_directory():
         anchor='w', foreground='green',
         wraplength=500, justify='left'
     )
-    labelShowChosenDirectory.grid(sticky='w', column=0, row=14)
+    labelShowChosenDirectory.grid(sticky='w', column=0, row=17)
 
 
 # Function called when Start button is pressed
 def retrieve_input():
     global repositoryURL
     global apikey
+    global getAllVersionMetadata
+
+    # Record if user wants to search in subdataverses
+    getAllVersionMetadata = getAllVersionMetadata.get()
 
     # Store what's entered in dataverseUrl text box as a global variable
     repositoryURL = entryRepositoryURL.get()
@@ -205,6 +219,8 @@ elif '.txt' in datasetPIDFile:
         # Remove any trailing spaces from datasetPID
         datasetPIDs.append(datasetPID.rstrip())
 
+# exportLatestVersion = 1
+
 for datasetPID in datasetPIDs:
     try:
         latestVersionUrl = '%s/api/datasets/:persistentId' % (repositoryURL)
@@ -215,6 +231,7 @@ for datasetPID in datasetPIDs:
             latestVersionUrl,
             params=params)
         latestVersionMetadata = response.json()
+
         if 'id' in latestVersionMetadata['data']:
             persistentUrl = latestVersionMetadata['data']['persistentUrl']
             publisher = latestVersionMetadata['data']['publisher']
@@ -228,33 +245,47 @@ for datasetPID in datasetPIDs:
                 allVersionUrl,
                 params=params)
             allVersionsMetadata = response.json()
+
             if 'id' in allVersionsMetadata['data'][0]:
-                for datasetVersion in allVersionsMetadata['data']:
+                if getAllVersionMetadata != 1:
                     datasetVersion = {
                         'status': latestVersionMetadata['status'],
                         'data': {
                             'persistentUrl': persistentUrl,
                             'publisher': publisher,
                             'publicationDate': publicationDate,
-                            'datasetVersion': datasetVersion}}
+                            'datasetVersion': allVersionsMetadata['data'][0]}}
 
-                    majorVersion = improved_get(datasetVersion, 'data.datasetVersion.versionNumber')
-                    minorVersion = improved_get(datasetVersion, 'data.datasetVersion.versionMinorNumber')
-
-                    if (majorVersion is not None) and (minorVersion is not None):
-                        versionNumber = majorVersion + '.' + minorVersion
-                        metadataFile = '%s_v%s.json' % (datasetPID.replace(':', '_').replace('/', '_'), versionNumber)
-                    else:
-                        metadataFile = '%s_vDRAFT.json' % (datasetPID.replace(':', '_').replace('/', '_'))
-
+                    metadataFile = '%s.json' % (datasetPID.replace(':', '_').replace('/', '_'))
                     with open(os.path.join(metadataFileDirectoryPath, metadataFile), mode='w') as f:
                         f.write(json.dumps(datasetVersion, indent=4))
+                else:
+                    for datasetVersion in allVersionsMetadata['data']:
+                        datasetVersion = {
+                            'status': latestVersionMetadata['status'],
+                            'data': {
+                                'persistentUrl': persistentUrl,
+                                'publisher': publisher,
+                                'publicationDate': publicationDate,
+                                'datasetVersion': datasetVersion}}
 
-        # Increase count variable to track progress
-        count += 1
+                        majorVersion = improved_get(datasetVersion, 'data.datasetVersion.versionNumber')
+                        minorVersion = improved_get(datasetVersion, 'data.datasetVersion.versionMinorNumber')
 
-        # Print progress
-        print('%s of %s datasets' % (count, total), end='\r', flush=True)
+                        if (majorVersion is not None) and (minorVersion is not None):
+                            versionNumber = majorVersion + '.' + minorVersion
+                            metadataFile = '%s_v%s.json' % (datasetPID.replace(':', '_').replace('/', '_'), versionNumber)
+                        else:
+                            metadataFile = '%s_vDRAFT.json' % (datasetPID.replace(':', '_').replace('/', '_'))
+
+                        with open(os.path.join(metadataFileDirectoryPath, metadataFile), mode='w') as f:
+                            f.write(json.dumps(datasetVersion, indent=4))
+
+                # Increase count variable to track progress
+                count += 1
+
+                # Print progress
+                print('%s of %s datasets' % (count, total), end='\r', flush=True)
 
     except Exception:
         print('Could not download JSON metadata of %s' % (datasetPID))
