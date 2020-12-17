@@ -2,7 +2,6 @@
 # For more info, see http://guides.dataverse.org/en/5.0/admin/troubleshooting.html?highlight=dataset%20locks#id3
 
 from csv import DictReader
-import os
 import urllib.request
 
 # Dataverse repository URL, e.g. https://demo.dataverse.org
@@ -14,12 +13,10 @@ apikey = ''
 # Text or CSV file containing PIDs of datasets to be unlocked, e.g. /Users/user/Desktop/dois.txt
 file = ''
 
-file_name = os.path.basename(file)
-
 print('Trying to unlock datasets...')
 
 count = 0
-if '.txt' in file_name:
+if '.txt' in file:
     dataset_pids = open(file)
     for dataset_pid in dataset_pids:
         dataset_pid = dataset_pid.rstrip()
@@ -40,7 +37,7 @@ if '.txt' in file_name:
             print('Could not unlock %s' % (dataset_pid))
 
 else:
-    if '.csv' in file_name:
+    if '.csv' in file:
         with open(file, mode='r', encoding='utf-8') as f:
             csv_dict_reader = DictReader(f, delimiter=',')
             for row in csv_dict_reader:
