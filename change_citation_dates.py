@@ -5,7 +5,6 @@ metadata field, e.g. distributionDate
 '''
 
 from csv import DictReader
-import os
 import urllib.request
 
 server = ''  # Dataverse repository URL, e.g. https://demo.dataverse.org
@@ -14,13 +13,12 @@ data = b'distributionDate'  # Provide database name of date metadata field to us
 
 file = ''  # Text file containing PIDs of datasets whose citation dates should be changed
 
-file_name = os.path.basename(file)
 citation_dates_changed = []
 citation_dates_not_changed = []
 
 print('Trying to change citation dates...')
 
-if '.txt' in file_name:
+if '.txt' in file:
     dataset_pids = open(file)
     count = 0
     for dataset_pid in dataset_pids:
@@ -45,7 +43,7 @@ if '.txt' in file_name:
             citation_dates_not_changed.append(dataset_pid)
 
 else:
-    if '.csv' in file_name:
+    if '.csv' in file:
         with open(file, mode='r', encoding='utf-8') as f:
             csv_dict_reader = DictReader(f, delimiter=',')
             for row in csv_dict_reader:
