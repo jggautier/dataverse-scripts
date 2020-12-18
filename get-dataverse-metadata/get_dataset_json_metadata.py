@@ -35,7 +35,7 @@ labelDataverseUrlHelpText.grid(sticky='w', column=0, row=2)
 window.grid_rowconfigure(3, minsize=25)
 
 # Create label for API key field
-labelApikey = Label(window, text='API key:', anchor='w')
+labelApikey = Label(window, text='API token/key:', anchor='w')
 labelApikey.grid(sticky='w', column=0, row=4)
 
 # Create API key field
@@ -44,7 +44,7 @@ entryApikey = Entry(window, width=50, textvariable=apikey)
 entryApikey.grid(sticky='w', column=0, row=5, pady=2)
 
 # Create help text for API key field
-labelApikeyHelpText = Label(window, text='If no API is entered, only published metadata will be downloaded', foreground='grey', anchor='w')
+labelApikeyHelpText = Label(window, text='If no API token/key is entered, only published metadata will be downloaded', foreground='grey', anchor='w')
 labelApikeyHelpText.grid(sticky='w', column=0, row=6)
 
 # Create empty row in grid to improve spacing between the two fields
