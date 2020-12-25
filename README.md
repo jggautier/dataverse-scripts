@@ -12,7 +12,6 @@ Gets the persistent identifiers of any datasets in a given Dataverse installatio
 - #### destroy_datasets.py
 - #### [Get and convert metadata of datasets](https://github.com/jggautier/dataverse-scripts/tree/master/get-dataverse-metadata):
   A collection of scripts for getting JSON metadata of given datasets and parsing metadata into csv files for metadata analysis, reporting and improving.
-- #### link_datasets.py
 - #### publish_multiple_datasets.py
 - #### replace_dataset_metadata.py
 - #### unlock_datasets.py
