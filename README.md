@@ -8,13 +8,13 @@ Gets the persistent identifiers of any datasets in a given Dataverse installatio
 ### These scripts do things with a given list of dataset PIDs or Dataverse collection IDs or aliases:
 
 - #### change_citation_dates.py
+- #### delete_dataset_locks.py
 - #### delete_dataverses.py
 - #### destroy_datasets.py
 - #### [Get and convert metadata of datasets](https://github.com/jggautier/dataverse-scripts/tree/master/get-dataverse-metadata):
   A collection of scripts for getting JSON metadata of given datasets and parsing metadata into csv files for metadata analysis, reporting and improving.
 - #### publish_multiple_datasets.py
 - #### replace_dataset_metadata.py
-- #### unlock_datasets.py
 
 ### curation_report.py
 This script creates an overview of datasets created in a Dataverse installation in a given time frame, which can be useful for regular dataset curation.
