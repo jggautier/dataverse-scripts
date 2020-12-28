@@ -1,67 +1,51 @@
 # Destroys a given list of datasets
 
 from csv import DictReader
-import urllib.request
+import requests
 
-# Dataverse repository URL, e.g. https://demo.dataverse.org
-server = 'https://demo.dataverse.org'
+server = 'https://demo.dataverse.org'  # Dataverse repository URL, e.g. https://demo.dataverse.org
+apikey = ''  # API key of superuser account
+file = ''  # Text or CSV file containing PIDs of datasets to be destroyed, e.g. /Users/user/Desktop/dois.txt
 
-# API key of superuser account
-apikey = ''
+datasetPIDs = []
+if '.csv' in file:
+    with open(file, mode='r', encoding='utf-8') as f:
+        csvDictReader = DictReader(f, delimiter=',')
+        for row in csvDictReader:
+            datasetPIDs.append(row['persistent_id'].rstrip())
 
-# Text or CSV file containing PIDs of datasets to be destroyed, e.g. /Users/user/Desktop/dois.txt
-file = ''
+elif '.txt' in file:
+    file = open(file)
+    for datasetPID in file:
+
+        # Remove any trailing spaces from datasetPID
+        datasetPIDs.append(datasetPID.rstrip())
+
+total = len(datasetPIDs)
 
 destroyed_datasets = []
 not_destroyed_datasets = []
 
 print('Trying to destroy datasets...')
 
-if '.txt' in file:
-    dataset_pids = open(file)
-    for dataset_pid in dataset_pids:
-        dataset_pid = dataset_pid.rstrip()
-        url = '%s/api/datasets/:persistentId/destroy/?persistentId=%s' % (server, dataset_pid)
-
+for datasetPID in datasetPIDs:
+    try:
+        url = '%s/api/datasets/:persistentId/destroy/?persistentId=%s' % (server, datasetPID)
         headers = {
             'X-Dataverse-key': apikey}
 
-        req = urllib.request.Request(
-            url=url,
-            headers=headers,
-            method='DELETE')
+        req = requests.delete(
+            url,
+            headers={
+                'X-Dataverse-key': apikey
+            })
 
-        try:
-            response = urllib.request.urlopen(req)
-            print('%s destroyed' % (dataset_pid))
-            destroyed_datasets.append(dataset_pid)
-        except Exception:
-            print('Could not destroy %s' % (dataset_pid))
-            not_destroyed_datasets.append(dataset_pid)
+        print('%s destroyed' % (datasetPID))
+        destroyed_datasets.append(datasetPID)
 
-else:
-    if '.csv' in file:
-        with open(file, mode='r', encoding='utf-8') as f:
-            csv_dict_reader = DictReader(f, delimiter=',')
-            for row in csv_dict_reader:
-                dataset_pid = row['persistent_id'].rstrip()
-                url = '%s/api/datasets/:persistentId/destroy/?persistentId=%s' % (server, dataset_pid)
-
-                headers = {
-                    'X-Dataverse-key': apikey}
-
-                req = urllib.request.Request(
-                    url=url,
-                    headers=headers,
-                    method='DELETE')
-
-                try:
-                    response = urllib.request.urlopen(req)
-                    print('%s destroyed' % (dataset_pid))
-                    destroyed_datasets.append(dataset_pid)
-                except Exception:
-                    print('Could not destroy %s' % (dataset_pid))
-                    not_destroyed_datasets.append(dataset_pid)
+    except Exception:
+        print('Could not destroy %s' % (datasetPID))
+        not_destroyed_datasets.append(datasetPID)
 
 print('\nDatasets destroyed: %s' % (len(destroyed_datasets)))
 if destroyed_datasets:

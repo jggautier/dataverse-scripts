@@ -5,72 +5,54 @@ metadata field, e.g. distributionDate
 '''
 
 from csv import DictReader
-import urllib.request
+import requests
 
 server = ''  # Dataverse repository URL, e.g. https://demo.dataverse.org
 apikey = ''  # API key of super user account
+file = ''  # Text file containing PIDs of datasets whose citation dates should be changed
 data = b'distributionDate'  # Provide database name of date metadata field to use for citation date
 
-file = ''  # Text file containing PIDs of datasets whose citation dates should be changed
+datasetPIDs = []
+if '.csv' in file:
+    with open(file, mode='r', encoding='utf-8') as f:
+        csvDictReader = DictReader(f, delimiter=',')
+        for row in csvDictReader:
+            datasetPIDs.append(row['persistent_id'].rstrip())
+
+elif '.txt' in file:
+    file = open(file)
+    for datasetPID in file:
+        # Remove any trailing spaces from datasetPID
+        datasetPIDs.append(datasetPID.rstrip())
 
 citation_dates_changed = []
 citation_dates_not_changed = []
 
 print('Trying to change citation dates...')
 
-if '.txt' in file:
-    dataset_pids = open(file)
-    count = 0
-    for dataset_pid in dataset_pids:
-        dataset_pid = dataset_pid.rstrip()
-        url = '%s/api/datasets/:persistentId/citationdate?persistentId=%s' % (server, dataset_pid)
+for datasetPID in datasetPIDs:
+    datasetPID = datasetPID.rstrip()
+    url = '%s/api/datasets/:persistentId/citationdate?persistentId=%s' % (server, datasetPID)
 
-        headers = {
-            'X-Dataverse-key': apikey}
-
-        req = urllib.request.Request(
-            url=url,
+    try:
+        req = requests.put(
+            url,
             data=data,
-            headers=headers,
-            method='PUT')
+            headers={
+                'X-Dataverse-key': apikey
+            })
 
-        try:
-            response = urllib.request.urlopen(req)
-            print('%s destroyed' % (dataset_pid))
-            citation_dates_changed.append(dataset_pid)
-        except Exception:
-            print('Could not destroy %s' % (dataset_pid))
-            citation_dates_not_changed.append(dataset_pid)
+        print('%s: citation date changed' % (datasetPID))
+        citation_dates_changed.append(datasetPID)
 
-else:
-    if '.csv' in file:
-        with open(file, mode='r', encoding='utf-8') as f:
-            csv_dict_reader = DictReader(f, delimiter=',')
-            for row in csv_dict_reader:
-                dataset_pid = row['persistent_id'].rstrip()
-                url = '%s/api/datasets/:persistentId/citationdate?persistentId=%s' % (server, dataset_pid)
+    except Exception:
+        print('%s: Could not change citation date' % (datasetPID))
+        citation_dates_not_changed.append(datasetPID)
 
-                headers = {
-                    'X-Dataverse-key': apikey}
-
-                req = urllib.request.Request(
-                    url=url,
-                    data=data,
-                    headers=headers,
-                    method='PUT')
-
-                try:
-                    response = urllib.request.urlopen(req)
-                    print('%s destroyed' % (dataset_pid))
-                    citation_dates_changed.append(dataset_pid)
-                except Exception:
-                    print('Could not destroy %s' % (dataset_pid))
-                    citation_dates_not_changed.append(dataset_pid)
-
-print('\nDatasets destroyed: %s' % (len(citation_dates_changed)))
+print('\nDataset citation dates changed: %s' % (len(citation_dates_changed)))
 if citation_dates_changed:
     print(citation_dates_changed)
 
-print('Datasets not destroyed: %s' % (len(citation_dates_not_changed)))
 if citation_dates_not_changed:
+    print('\nDataset citation dates not changed: %s' % (len(citation_dates_not_changed)))
     print(citation_dates_not_changed)

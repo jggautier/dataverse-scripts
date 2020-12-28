@@ -201,23 +201,20 @@ print('\nDownloading JSON metadata of all published dataset versions to dataset_
 count = 0
 
 datasetPIDs = []
-if '.csv' in datasetPIDFile:
-    with open(datasetPIDFile, mode='r', encoding='utf-8') as f:
-        total = len(f.readlines()) - 1
-
-    with open(datasetPIDFile, mode='r', encoding='utf-8') as f:
+if '.csv' in file:
+    with open(file, mode='r', encoding='utf-8') as f:
         csvDictReader = DictReader(f, delimiter=',')
         for row in csvDictReader:
             datasetPIDs.append(row['persistent_id'].rstrip())
 
-elif '.txt' in datasetPIDFile:
-    total = len(open(datasetPIDFile).readlines())
+elif '.txt' in file:
+    file = open(file)
+    for datasetPID in file:
 
-    datasetPIDFile = open(datasetPIDFile)
-
-    for datasetPID in datasetPIDFile:
         # Remove any trailing spaces from datasetPID
         datasetPIDs.append(datasetPID.rstrip())
+
+total = len(datasetPIDs)
 
 # exportLatestVersion = 1
 

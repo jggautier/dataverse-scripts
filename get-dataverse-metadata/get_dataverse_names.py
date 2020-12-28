@@ -58,36 +58,36 @@ button_Submit.grid(sticky='w', column=0, row=11, pady=40)
 
 # Function called when Browse button is pressed for choosing text file with dataset PIDs
 def retrieve_file():
-	global dataset_pids
+    global dataset_pids
 
-	# Call the OS's file directory window and store selected object path as a global variable
-	dataset_pids = filedialog.askopenfilename(filetypes=[('Text files', '*.txt')])
+    # Call the OS's file directory window and store selected object path as a global variable
+    dataset_pids = filedialog.askopenfilename(filetypes=[('Text files', '*.txt')])
 
-	# Show user which file she chose
-	label_showChosenFile = Label(window, text='You chose: ' + dataset_pids, anchor='w', foreground='green', wraplength=500, justify='left')
-	label_showChosenFile.grid(sticky='w', column=0, row=6)
+    # Show user which file she chose
+    label_showChosenFile = Label(window, text='You chose: ' + dataset_pids, anchor='w', foreground='green', wraplength=500, justify='left')
+    label_showChosenFile.grid(sticky='w', column=0, row=6)
 
 
 # Function called when Browse button is pressed
 def retrieve_directory():
-	global csvDirectory
+    global csvDirectory
 
-	# Call the OS's file directory window and store selected object path as a global variable
-	csvDirectory = filedialog.askdirectory()
+    # Call the OS's file directory window and store selected object path as a global variable
+    csvDirectory = filedialog.askdirectory()
 
-	# Show user which directory she chose
-	label_showChosenDirectory = Label(window, text='You chose: ' + csvDirectory, anchor='w', foreground='green', wraplength=500, justify='left')
-	label_showChosenDirectory.grid(sticky='w', column=0, row=10)
+    # Show user which directory she chose
+    label_showChosenDirectory = Label(window, text='You chose: ' + csvDirectory, anchor='w', foreground='green', wraplength=500, justify='left')
+    label_showChosenDirectory.grid(sticky='w', column=0, row=10)
 
 
 # Function called when Start button is pressed
 def retrieve_input():
-	global repositoryURL
+    global repositoryURL
 
-	# Store what's entered in dataverseUrl text box as a global variable
-	repositoryURL = entry_repositoryURL.get()
+    # Store what's entered in dataverseUrl text box as a global variable
+    repositoryURL = entry_repositoryURL.get()
 
-	window.destroy()
+    window.destroy()
 
 
 # Keep window open until it's closed
@@ -98,41 +98,41 @@ filename = os.path.join(csvDirectory, 'dataversenames.csv')
 
 # Create CSV file
 with open(filename, mode='w') as opencsvfile:
-	opencsvfile = csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    opencsvfile = csv.writer(opencsvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-	# Create header row
-	opencsvfile.writerow(['dataset_id', 'datasetUrl', 'dataverseAlias', 'dataverseName'])
+    # Create header row
+    opencsvfile.writerow(['dataset_id', 'datasetUrl', 'dataverseAlias', 'dataverseName'])
 
 dataset_pids = open(dataset_pids)
 
 piderrors = []
 apikey = ''
 for pid in dataset_pids:
-	# Construct "Get Versions" API endpoint url
-	try:
-		if apikey:
-			url = '%s/api/search?q="%s"&type=dataset&show_entity_ids=true&key=%s' % (repositoryURL, pid, apikey)
-		else:
-			url = '%s/api/search?q="%s"&type=dataset&show_entity_ids=true' % (repositoryURL, pid)
-		# Store dataset and file info from API call to "data" variable
-		data = json.load(urlopen(url))
-	except urllib.error.URLError:
-		piderrors.append(pid)
+    # Construct "Get Versions" API endpoint url
+    try:
+        if apikey:
+            url = '%s/api/search?q="%s"&type=dataset&show_entity_ids=true&key=%s' % (repositoryURL, pid, apikey)
+        else:
+            url = '%s/api/search?q="%s"&type=dataset&show_entity_ids=true' % (repositoryURL, pid)
+        # Store dataset and file info from API call to "data" variable
+        data = json.load(urlopen(url))
+    except urllib.error.URLError:
+        piderrors.append(pid)
 
-	# Save dataset PID and dataverse name
-	dataset_id = data['data']['items'][0]['entity_id']
-	persistentUrl = data['data']['items'][0]['url']
-	dataverseName = data['data']['items'][0]['name_of_dataverse']
-	dataverseAlias = data['data']['items'][0]['identifier_of_dataverse']
+    # Save dataset PID and dataverse name
+    dataset_id = data['data']['items'][0]['entity_id']
+    persistentUrl = data['data']['items'][0]['url']
+    dataverseName = data['data']['items'][0]['name_of_dataverse']
+    dataverseAlias = data['data']['items'][0]['identifier_of_dataverse']
 
-	# Write values of the three variables to a new row in the CSV
-	with open(filename, mode='a') as datasets:
+    # Write values of the three variables to a new row in the CSV
+    with open(filename, mode='a') as datasets:
 
-		# Convert all characters to utf-8
-		def to_utf8(lst):
-			return [unicode(elem).encode('utf-8') for elem in lst]
+        # Convert all characters to utf-8
+        def to_utf8(lst):
+            return [unicode(elem).encode('utf-8') for elem in lst]
 
-		datasets = csv.writer(datasets, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-		datasets.writerow([dataset_id, persistentUrl, dataverseAlias, dataverseName])
+        datasets = csv.writer(datasets, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        datasets.writerow([dataset_id, persistentUrl, dataverseAlias, dataverseName])
 
 print('Copied PIDs:', total, 'of total:', total)

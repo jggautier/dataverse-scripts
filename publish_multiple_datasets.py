@@ -1,6 +1,5 @@
 # Publish a given list of draft datasets
 
-import csv
 from csv import DictReader
 import requests
 
@@ -12,30 +11,26 @@ versionType = ''  # Enter "major" or "minor".
 # see https://guides.dataverse.org/en/latest/user/dataset-management.html#dataset-versions
 
 datasetPIDs = []
-if '.csv' in datasetPIDFile:
-    reader = csv.reader(open(datasetPIDs))
-    total = len(list(reader)) - 1
-
-    with open(datasetPIDFile, mode='r', encoding='utf-8') as f:
+if '.csv' in file:
+    with open(file, mode='r', encoding='utf-8') as f:
         csvDictReader = DictReader(f, delimiter=',')
         for row in csvDictReader:
             datasetPIDs.append(row['persistent_id'].rstrip())
 
-elif '.txt' in datasetPIDFile:
-    total = len(open(datasetPIDFile).readlines())
-
-    datasetPIDFile = open(datasetPIDFile)
-
-    for datasetPID in datasetPIDFile:
+elif '.txt' in file:
+    file = open(file)
+    for datasetPID in file:
 
         # Remove any trailing spaces from datasetPID
         datasetPIDs.append(datasetPID.rstrip())
 
+total = len(datasetPIDs)
 count = 0
+
 for datasetPID in datasetPIDs:
     url = '%s/api/datasets/:persistentId/actions/:publish' % (repositoryURL)
     params = {'persistentId': datasetPID, 'type': versionType}
-    r = requests.post(
+    req = requests.post(
         url,
         params=params,
         headers={
@@ -43,7 +38,7 @@ for datasetPID in datasetPIDs:
         })
     count += 1
 
-    if r.status_code == 200:
+    if req.status_code == 200:
         print('Success: %s! %s of %s' % (datasetPID, count, total))
     else:
-        print('Failed: %s! %s of %s' % (datasetPID, count, total))
+        print('Failure: %s! %s of %s' % (datasetPID, count, total))

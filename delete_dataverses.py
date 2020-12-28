@@ -4,11 +4,11 @@ a list or column (named "id") of dataverse database IDs
 '''
 
 from csv import DictReader
-import urllib.request
+import requests
 
-file = ''  # Path to .txt or .csv file with database IDs of dataverses to be deleted
 server = ''  # Base URL of repository hosting the dataverses to be deleted
 apikey = ''  # Superuser API key
+file = ''  # Path to .txt or .csv file with database IDs of dataverses to be deleted
 
 # Read lines in .txt file or column named 'id' in .csv file
 # and save IDs to dataverseIds list
@@ -48,19 +48,15 @@ count = 0
 for dataverseId in dataverseIds:
     count += 1
 
-    # Create URL for using delete dataverse endpoint
-    url = '%s/api/dataverses/%s' % (server, dataverseId)
-
-    headers = {'X-Dataverse-key': apikey}
-
-    req = urllib.request.Request(
-        url=url,
-        headers=headers,
-        method='DELETE')
-
     # Try to delete the dataverse and report
+    url = '%s/api/dataverses/%s' % (server, dataverseId)
     try:
-        response = urllib.request.urlopen(req)
+        req = requests.delete(
+            url,
+            headers={
+                'X-Dataverse-key': apikey
+            })
+
         print('%s of %s: Deleted - %s' % (count, total, dataverseId))
         deletedDataverses.append(dataverseId)
 
