@@ -51,7 +51,7 @@ labelApikeyHelpText.grid(sticky='w', column=0, row=6)
 window.grid_rowconfigure(7, minsize=25)
 
 getAllVersionMetadata = IntVar()
-c = Checkbutton(window, text="Get metadata of all dataset versions", variable=getAllVersionMetadata).grid(sticky='w', column=0, row=8)
+Checkbutton(window, text="Get metadata of all dataset versions", variable=getAllVersionMetadata).grid(sticky='w', column=0, row=8)
 
 # Create help text for all versions checkbox
 labelAllVersionMetadataHelpText = Label(window, text='If unchecked, only metadata of latest dataset version will be downloaded', foreground='grey', anchor='w')
@@ -201,15 +201,15 @@ print('\nDownloading JSON metadata of all published dataset versions to dataset_
 count = 0
 
 datasetPIDs = []
-if '.csv' in file:
-    with open(file, mode='r', encoding='utf-8') as f:
+if '.csv' in datasetPIDFile:
+    with open(datasetPIDFile, mode='r', encoding='utf-8') as f:
         csvDictReader = DictReader(f, delimiter=',')
         for row in csvDictReader:
             datasetPIDs.append(row['persistent_id'].rstrip())
 
-elif '.txt' in file:
-    file = open(file)
-    for datasetPID in file:
+elif '.txt' in datasetPIDFile:
+    datasetPIDFile = open(datasetPIDFile)
+    for datasetPID in datasetPIDFile:
 
         # Remove any trailing spaces from datasetPID
         datasetPIDs.append(datasetPID.rstrip())
