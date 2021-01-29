@@ -127,7 +127,7 @@ if misindexedDatasetsCount:
 # once for published versions and once for draft versions.
 if len(datasetPids) != len(set(datasetPids)):
     uniqueDatasetPids = set(datasetPids)
-    print('Unique datasets: %s (The Search API lists both the draft and most \
+    print('Unique datasets: %s (The Search API returns both the draft and most \
 recently published versions of datasets)' % (len(uniqueDatasetPids)))
 
 # Otherwise, copy datasetPids to uniqueDatasetPids variable
@@ -181,8 +181,10 @@ def format_bytes(size):
     return '%s %s' % (round(size, 2), powerLabels[n])
 
 
+count = 0
 for pid in uniqueDatasetPids:
-
+    count += 1
+    print('Getting metadata for %s: %s of %s' % (pid, count, len(uniqueDatasetPids)))
     # Construct "Get JSON" API endpoint url and get data about each dataset's latest version
     try:
         dataGetLatestVersionUrl = '%s/api/datasets/:persistentId' % (server)
@@ -246,8 +248,8 @@ for pid in uniqueDatasetPids:
                     openCsvFile.writerow([datasetInfo, datafileInfo, datafileType, lastUpdateTime, dataverseNameAlias])
 
                     # As a progress indicator, print a dot each time a row is written
-                    sys.stdout.write('.')
-                    sys.stdout.flush()
+                    # sys.stdout.write('.')
+                    # sys.stdout.flush()
 
         # Otherwise write to the CSV that the dataset has no files
         else:
@@ -263,8 +265,8 @@ for pid in uniqueDatasetPids:
                     lastUpdateTime, dataverseNameAlias])
 
                 # As a progress indicator, print a dot each time a row is written
-                sys.stdout.write('.')
-                sys.stdout.flush()
+                # sys.stdout.write('.')
+                # sys.stdout.flush()
 
 print('\nFinished writing dataset and file info of %s dataset(s) to %s' % (len(uniqueDatasetPids), csvFilePath))
 
