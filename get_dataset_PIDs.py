@@ -81,39 +81,47 @@ label_dataverseUrlHelpText.grid(sticky='w', column=0, row=2)
 # Create empty row in grid to improve spacing between the two fields
 window.grid_rowconfigure(4, minsize=25)
 
+# Create "Include subdataverses" checkbox
 get_subdataverses = IntVar()
 c = Checkbutton(window, text="Include subdataverses", variable=get_subdataverses).grid(sticky='w', column=0, row=5)
 
+# Create help text for "Include subdataverses" checkbox
+label_apikeyHelpText = Label(
+    window,
+    text='If the URL of the "Root" Dataverse collection is entered, all datasets in the repository (in all subdataverses) will be found',
+    foreground='grey', anchor='w', wraplength=500, justify='left')
+label_apikeyHelpText.grid(sticky='w', column=0, row=6)
+
 # Create empty row in grid to improve spacing between the two fields
-window.grid_rowconfigure(6, minsize=25)
+window.grid_rowconfigure(7, minsize=25)
 
 # Create label for API key field
 label_apikey = Label(window, text='API key:', anchor='w')
-label_apikey.grid(sticky='w', column=0, row=7)
+label_apikey.grid(sticky='w', column=0, row=8)
 
 # Create API key field
 apikey = str()
 entry_apikey = Entry(window, width=50, textvariable=apikey)
-entry_apikey.grid(sticky='w', column=0, row=8, pady=2)
+entry_apikey.grid(sticky='w', column=0, row=9, pady=2)
 
 # Create help text for API key field
 label_apikeyHelpText = Label(window, text='If no API is entered, only published datasets will be found', foreground='grey', anchor='w')
-label_apikeyHelpText.grid(sticky='w', column=0, row=9)
+label_apikeyHelpText.grid(sticky='w', column=0, row=10)
 
 # Create empty row in grid to improve spacing between the two fields
-window.grid_rowconfigure(10, minsize=25)
+window.grid_rowconfigure(11, minsize=25)
 
 # Create label for Browse directory button
 label_browseDirectory = Label(window, text='Choose folder to store CSV file with info of dataset PIDs:', anchor='w')
-label_browseDirectory.grid(sticky='w', column=0, row=11, pady=2)
+label_browseDirectory.grid(sticky='w', column=0, row=12, pady=2)
 
 # Create Browse directory button
 button_browseDirectory = ttk.Button(window, text='Browse', command=lambda: retrieve_directory())
-button_browseDirectory.grid(sticky='w', column=0, row=12)
+button_browseDirectory.grid(sticky='w', column=0, row=13)
 
 # Create start button
 button_Submit = ttk.Button(window, text='Start', command=lambda: retrieve_input())
-button_Submit.grid(sticky='w', column=0, row=14, pady=40)
+button_Submit.grid(sticky='w', column=0, row=15, pady=40)
 
 # Keep window open until it's closed
 mainloop()
