@@ -224,7 +224,10 @@ for pid in uniqueDatasetPids:
         # Save dataset info
         dsTitle = dataGetLatestVersion['data']['latestVersion']['metadataBlocks']['citation']['fields'][0]['value']
         datasetPersistentId = dataGetLatestVersion['data']['latestVersion']['datasetPersistentId']
-        versionState = dataGetLatestVersion['data']['latestVersion']['versionState']
+        if 'publicationDate' not in dataGetLatestVersion['data']:
+            versionState = 'UNPUBLISHED'
+        else:
+            versionState = 'PUBLISHED' + '/' + dataGetLatestVersion['data']['latestVersion']['versionState']
         datasetInfo = '%s (%s) (%s)' % (dsTitle, versionState, datasetPersistentId)
 
         # Get date of latest dataset version
