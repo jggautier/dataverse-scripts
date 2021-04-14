@@ -14,7 +14,7 @@ from tkinter import *
 # Create, title and size the window
 window = Tk()
 window.title('Get metadata from a metadatablock')
-window.geometry('600x400')  # width x height
+window.geometry('600x600')  # width x height
 
 
 # Function called when user presses the browse button to choose the metadatablock file
@@ -94,6 +94,15 @@ button_Start.grid(sticky='w', column=0, row=11, pady=40)
 
 # Keep window open until it's closed
 mainloop()
+
+
+def improved_get(_dict, path, default=None):
+    for key in path.split('.'):
+        try:
+            _dict = _dict[key]
+        except KeyError:
+            return default
+    return str(_dict)
 
 
 # Read metadatablock file
@@ -210,7 +219,7 @@ for parent_compound_field in compound_field_dictionary:
 
                         # Save the persistent URL and persistent ID of each dataset
                         persistentUrl = dataset_metadata['data']['persistentUrl']
-                        datasetPersistentId = dataset_metadata['data']['datasetVersion']['datasetPersistentId']
+                        datasetPersistentId = improved_get(dataset_metadata, 'data.datasetVersion.datasetPersistentId')
 
                         # Save subfield values to variables
                         for subfield in subfields:
@@ -287,7 +296,7 @@ for primitive_field in primitive_fields:
                 # Save the dataset id of each dataset
                 datasetVersionId = str(dataset_metadata['data']['datasetVersion']['id'])
                 persistentUrl = dataset_metadata['data']['persistentUrl']
-                datasetPersistentId = dataset_metadata['data']['datasetVersion']['datasetPersistentId']
+                datasetPersistentId = improved_get(dataset_metadata, 'data.datasetVersion.datasetPersistentId')
 
                 # Couple each field value with the dataset version ID and write as a row to subjects.csv
                 for fields in dataset_metadata['data']['datasetVersion']['metadataBlocks'][metadatablock_name]['fields']:
