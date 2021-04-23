@@ -250,10 +250,6 @@ for pid in uniqueDatasetPids:
                     # Create new row with dataset and file info
                     openCsvFile.writerow([datasetInfo, datafileInfo, datafileType, lastUpdateTime, dataverseNameAlias])
 
-                    # As a progress indicator, print a dot each time a row is written
-                    # sys.stdout.write('.')
-                    # sys.stdout.flush()
-
         # Otherwise write to the CSV that the dataset has no files
         else:
             with open(csvFilePath, mode='a') as openCsvFile:
@@ -266,10 +262,6 @@ for pid in uniqueDatasetPids:
                 openCsvFile.writerow([
                     datasetInfo, '(no files found)', '(no files found)',
                     lastUpdateTime, dataverseNameAlias])
-
-                # As a progress indicator, print a dot each time a row is written
-                # sys.stdout.write('.')
-                # sys.stdout.flush()
 
 print('\nFinished writing dataset and file info of %s dataset(s) to %s' % (len(uniqueDatasetPids), csvFilePath))
 
