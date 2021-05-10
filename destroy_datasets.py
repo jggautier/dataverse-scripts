@@ -3,7 +3,7 @@
 from csv import DictReader
 import requests
 
-server = 'https://demo.dataverse.org'  # Dataverse repository URL, e.g. https://demo.dataverse.org
+server = ''  # Dataverse repository URL, e.g. https://demo.dataverse.org
 apikey = ''  # API key of superuser account
 file = ''  # Text or CSV file containing PIDs of datasets to be destroyed, e.g. /Users/user/Desktop/dois.txt
 
@@ -31,8 +31,6 @@ print('Trying to destroy datasets...')
 for datasetPID in datasetPIDs:
     try:
         url = '%s/api/datasets/:persistentId/destroy/?persistentId=%s' % (server, datasetPID)
-        headers = {
-            'X-Dataverse-key': apikey}
 
         req = requests.delete(
             url,
