@@ -128,7 +128,7 @@ if misindexedDatasetsCount:
 if len(datasetPids) != len(set(datasetPids)):
     uniqueDatasetPids = set(datasetPids)
     print('Unique datasets: %s (The Search API returns both the draft and most \
-recently published versions of datasets)' % (len(uniqueDatasetPids)))
+recently published versions of datasets.)' % (len(uniqueDatasetPids)))
 
 # Otherwise, copy datasetPids to uniqueDatasetPids variable
 else:
