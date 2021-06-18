@@ -131,23 +131,18 @@ with open(filename, mode='w') as opencsvfile:
     # Create header row
     opencsvfile.writerow(['persistentUrl', 'dataverseAlias', 'dataverseName'])
 
-
-apikey = 'ba0ff942-6623-4f46-ae4d-42b42998327f'
-
 datasetPIDErrors = []
 count = 0
 for datasetPID in datasetPIDs:
-    # Construct "Get Versions" API endpoint url
     try:
         if apikey:
             url = '%s/api/search?q="%s"&type=dataset&show_entity_ids=true&key=%s' % (repositoryURL, datasetPID, apikey)
         else:
             url = '%s/api/search?q="%s"&type=dataset&show_entity_ids=true' % (repositoryURL, datasetPID)
-        # Store dataset and file info from API call to "data" variable
         response = requests.get(url)
         data = response.json()
 
-        # Save dataset PID and dataverse name
+        # Save dataset PID, Dataverse name and Dataverse alias
         persistentUrl = data['data']['items'][0]['url']
         dataverseName = data['data']['items'][0]['name_of_dataverse']
         dataverseAlias = data['data']['items'][0]['identifier_of_dataverse']
