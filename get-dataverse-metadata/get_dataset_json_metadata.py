@@ -119,7 +119,7 @@ def retrieve_input():
     global apikey
     global getAllVersionMetadata
 
-    # Record if user wants to search in subdataverses
+    # Record if user wants metadata from all dataset versions
     getAllVersionMetadata = getAllVersionMetadata.get()
 
     # Store what's entered in dataverseUrl text box as a global variable
@@ -194,8 +194,10 @@ for metadatablockName in metadatablockNames:
 
 print('\nFinished downloading %s metadatablock JSON file(s)' % (len(metadatablockNames)))
 
-# Download dataset JSON metadata
-print('\nDownloading JSON metadata of all published dataset versions to dataset_metadata folder:')
+if getAllVersionMetadata != 1:
+    print('\nDownloading JSON metadata of all published dataset versions to dataset_metadata folder:')
+elif getAllVersionMetadata == 1:
+    print('\nDownloading JSON metadata of latest published dataset versions to dataset_metadata folder:')
 
 # Initiate count for terminal progress indicator
 count = 0
