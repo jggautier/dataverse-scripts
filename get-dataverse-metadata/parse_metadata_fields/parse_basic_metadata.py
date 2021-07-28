@@ -58,7 +58,7 @@ button_getJSONFiles.grid(sticky='w', column=0, row=1)
 window.grid_rowconfigure(3, minsize=25)
 
 # Create label for button to browse for directory to add csv files in
-label_tablesDirectory = Label(window, text='Choose folder to store the csv files:', anchor='w')
+label_tablesDirectory = Label(window, text='Choose folder to store the csv file:', anchor='w')
 label_tablesDirectory.grid(sticky='w', column=0, row=4, pady=2)
 
 # Create button to browse for directory containing JSON files
