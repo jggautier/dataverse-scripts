@@ -7,7 +7,16 @@ import csv
 import json
 import os
 from pathlib import Path
-import re
+
+
+# Function for getting list of non-hidden directories inside of a given directory
+def listdir_nohidden(path):
+    directories = []
+    for f in os.listdir(path):
+        if not f.startswith('.'):
+            directories.append(f)
+    return directories
+
 
 # Enter path to directory that contains the folders and files created by the get_dataset_metadata_of_all_installations.py script
 main_directory = ''
@@ -23,15 +32,22 @@ with open(csvfile, mode='w') as data:
     # Create header row
     data.writerow(['installation_name_(Dataverse_version)', 'metadatablock_name', 'parentfield_name', 'subfield_name'])
 
-for repository_name in os.listdir(main_directory):
+count = 0
+total = len(listdir_nohidden(main_directory))
+
+# for repository_file_name in os.listdir(main_directory):
+for repository_file_name in listdir_nohidden(main_directory):
+
+    count += 1
 
     # Get the repository name
-    repository_name = repository_name
+    size = len(repository_file_name)
+    repository_name = repository_file_name[:size - 20]
+    print('Parsing metadatablocks: %s of %s: %s' % (count, total, repository_name))
 
     # Open each installation folder
-    repository_folder_path = str(Path(main_directory + '/' + repository_name))
+    repository_folder_path = str(Path(main_directory + '/' + repository_file_name))
     if os.path.isdir(repository_folder_path):
-        # real_repository_folder_path = repository_folder_path
 
         for sub_folder in os.listdir(repository_folder_path):
             if 'metadatablocks' in sub_folder:
@@ -39,11 +55,13 @@ for repository_name in os.listdir(main_directory):
 
         # Open each .json file
         for metadatablock_file in os.listdir(metadatablock_folder_path):
-            metadatablock_name_version = metadatablock_file
 
             # Get only the metadatablock name from the name of each metadatablock JSON file
-            metadatablock_name = re.search(r'.*_.', metadatablock_name_version).group()
-            metadatablock_name = metadatablock_name.rstrip('_v')
+            metadatablock_name = metadatablock_file.split('_', 1)[0]
+            version = metadatablock_file.split('_v', 1)[1].rstrip('.json')
+
+            # Get repository name and combine with version
+            repository_name_version = '%s_(%s)' % (repository_name, version)
 
             metadatablock_file_path = str(Path(metadatablock_folder_path + '/' + metadatablock_file))
 
@@ -74,7 +92,7 @@ for repository_name in os.listdir(main_directory):
                                 data = csv.writer(data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                                 # Write new row
-                                data.writerow([repository_name, metadatablock_name, parentfield, subfield])
+                                data.writerow([repository_name_version, metadatablock_name, parentfield, subfield])
 
                 # Get the names of all fields
                 all_fields = []
@@ -98,4 +116,4 @@ for repository_name in os.listdir(main_directory):
                         data = csv.writer(data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                         # Write new row
-                        data.writerow([repository_name, metadatablock_name, primitive_field, subfield])
+                        data.writerow([repository_name_version, metadatablock_name, primitive_field, subfield])
