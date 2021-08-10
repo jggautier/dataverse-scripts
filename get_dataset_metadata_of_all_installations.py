@@ -5,29 +5,27 @@ from csv import DictReader
 import json
 import os
 from pathlib import Path
+import pandas as pd
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import time
 from urllib.parse import urlparse
 
-# Enter directory path for installation directories (if on a Windows machine, use forward slashes, which will be converted to back slashes)
-base_directory = ''  # e.g. /Users/Owner/Desktop
+# Enter directory path for installation directories and where the CSV of API keys is located
+# (if on a Windows machine, use forward slashes, which will be converted to back slashes)
+base_directory = '/Users/juliangautier/Desktop'  # e.g. /Users/Owner/Desktop
 
 # Enter a user agent and your email address. Some Dataverse installations block requests from scripts.
 # See https://www.whatismybrowser.com/detect/what-is-my-user-agent to get your user agent
 user_agent = ''
 email_address = ''
 
+# Enter name of CSV file containing list of API keys for installations that require one to use certain API endpoints
+api_keys_file = ''
+
 headers = {
     'User-Agent': user_agent,
     'From': email_address}
-
-# Save current time for folder and file timestamps
-current_time = time.strftime('%Y.%m.%d_%H.%M.%S')
-
-# Create the main directory that will store a directory for each installation
-all_installations_metadata_directory = str(Path(base_directory + '/' + 'all_installation_metadata_%s' % (current_time)))
-os.mkdir(all_installations_metadata_directory)
 
 
 def checkapiendpoint(url):
@@ -41,6 +39,18 @@ def checkapiendpoint(url):
         status = 'NA'
     return status
 
+
+# Save current time for folder and file timestamps
+current_time = time.strftime('%Y.%m.%d_%H.%M.%S')
+
+# Create the main directory that will store a directory for each installation
+all_installations_metadata_directory = str(Path(base_directory + '/' + 'all_installation_metadata_%s' % (current_time)))
+os.mkdir(all_installations_metadata_directory)
+
+# Read CSV file containing apikeys into a dataframe and turn convert into list to compare each installation name
+api_keys_file_path = base_directory + '/' + api_keys_file
+api_keys_df = pd.read_csv(api_keys_file_path).set_index('hostname')
+hostnameslist = api_keys_df.index.tolist()
 
 # The requests module isn't able to verify the SSL cert of some installations,
 # so all requests calls in this script are set to not verify certs (verify=False)
@@ -76,12 +86,33 @@ for installation in mapdata['installations']:
 
         if (response.status_code == 200 or response.status_code == 301 or response.status_code == 302):
             installation_status = str(response.status_code)
+
+        else:
+            installation_url = 'https://%s' % (hostname)
+            try:
+                response = requests.get(installation_url, headers=headers, timeout=10, verify=False)
+                if (response.status_code == 200 or response.status_code == 301 or response.status_code == 302):
+                    installation_status = str(response.status_code)
+            except Exception:
+                installation_status = 'NA'
+
     except Exception:
         installation_status = 'NA'
-    print('\tInstallation status: %s' % (installation_status))
+    print('\tInstallation_status: ' + installation_status)
 
     # If there's a good response from the installation, check if Search API works by searching for installation's non-harvested datasets
     if installation_status != 'NA':
+
+        # If the installation is in the dataframe of API keys, API key to header dictionary
+        # to use installation's endpoints that require an API key
+        if hostname in hostnameslist:
+            api_key_df = api_keys_df[api_keys_df.index == hostname]
+            api_key = api_key_df.iloc[0]['apikey']
+            headers['X-Dataverse-key'] = apikey
+        # Otherwise remove any API key from the header dictionary
+        else:
+            headers.pop('X-Dataverse-key', None)
+
         search_api_url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&sort=date&order=desc' % (installationURL)
         search_api_url = search_api_url.replace('//api', '/api')
         search_api_status = checkapiendpoint(search_api_url)
@@ -210,8 +241,8 @@ for installation in mapdata['installations']:
                     for i in data['data']['items']:
                         persistent_id = i['global_id']
                         persistent_url = i['url']
-                        dataverse_name = i['name_of_dataverse']
-                        dataverse_alias = i['identifier_of_dataverse']
+                        dataverse_name = i.get('name_of_dataverse', 'NA')
+                        dataverse_alias = i.get('identifier_of_dataverse', 'NA')
 
                         # Create new row with dataset and file info
                         f1.writerow([persistent_id, persistent_url, dataverse_name, dataverse_alias])
@@ -236,8 +267,8 @@ for installation in mapdata['installations']:
                         for i in data['data']['items']:
                             persistent_id = i['global_id']
                             persistent_url = i['url']
-                            dataverse_name = i['name_of_dataverse']
-                            dataverse_alias = i['identifier_of_dataverse']
+                            dataverse_name = i.get('name_of_dataverse', 'NA')
+                            dataverse_alias = i.get('identifier_of_dataverse', 'NA')
 
                             # Create new row with dataset and file info
                             f1.writerow([persistent_id, persistent_url, dataverse_name, dataverse_alias])
@@ -314,12 +345,12 @@ for installation in mapdata['installations']:
                     metadata_downloaded_count += 1
 
                     # Print progress
-                    print('\t\tDownloaded %s of %s JSON files' % (metadata_downloaded_count, dataset_count), end='\r', flush=True)
+                    print('\t\tDownloaded Dataverse JSON metadata of %s of %s datasets' % (metadata_downloaded_count, dataset_count), end='\r', flush=True)
 
                 except Exception:
                     metadata_not_downloaded.append(dataset_pid)
 
-        print('\t\tDownloaded %s of %s JSON files' % (metadata_downloaded_count, dataset_count))
+        print('\t\tDownloaded Dataverse JSON metadata of %s of %s datasets' % (metadata_downloaded_count, dataset_count))
 
         if metadata_not_downloaded:
             print('The metadata of the following %s dataset(s) could not be downloaded:' % (len(metadata_not_downloaded)))
