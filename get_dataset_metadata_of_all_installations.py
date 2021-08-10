@@ -13,7 +13,7 @@ from urllib.parse import urlparse
 
 # Enter directory path for installation directories and where the CSV of API keys is located
 # (if on a Windows machine, use forward slashes, which will be converted to back slashes)
-base_directory = '/Users/juliangautier/Desktop'  # e.g. /Users/Owner/Desktop
+base_directory = ''  # e.g. /Users/Owner/Desktop
 
 # Enter a user agent and your email address. Some Dataverse installations block requests from scripts.
 # See https://www.whatismybrowser.com/detect/what-is-my-user-agent to get your user agent
