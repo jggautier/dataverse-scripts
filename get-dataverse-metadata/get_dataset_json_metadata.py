@@ -195,9 +195,9 @@ for metadatablockName in metadatablockNames:
 print('\nFinished downloading %s metadatablock JSON file(s)' % (len(metadatablockNames)))
 
 if getAllVersionMetadata != 1:
-    print('\nDownloading JSON metadata of all published dataset versions to dataset_metadata folder:')
-elif getAllVersionMetadata == 1:
     print('\nDownloading JSON metadata of latest published dataset versions to dataset_metadata folder:')
+elif getAllVersionMetadata == 1:
+    print('\nDownloading JSON metadata of all published dataset versions to dataset_metadata folder:')
 
 # Initiate count for terminal progress indicator
 count = 0
@@ -231,21 +231,13 @@ for datasetPID in datasetPIDs:
             params=params)
         latestVersionMetadata = response.json()
 
-        if 'id' in latestVersionMetadata['data']:
+        # If the dataset has a database ID and fewer than 50 versions
+        if 'id' in latestVersionMetadata['data'] and latestVersionMetadata['data']['latestVersion']['versionNumber'] < 20:
             persistentUrl = latestVersionMetadata['data']['persistentUrl']
             publisher = latestVersionMetadata['data']['publisher']
             publicationDate = improved_get(latestVersionMetadata, 'data.publicationDate')
 
-            allVersionUrl = '%s/api/datasets/:persistentId/versions' % (repositoryURL)
-            params = {'persistentId': datasetPID}
-            if apikey:
-                params['key'] = apikey
-            response = requests.get(
-                allVersionUrl,
-                params=params)
-            allVersionsMetadata = response.json()
-
-            if 'id' in allVersionsMetadata['data'][0]:
+            if 'id' in latestVersionMetadata['data']:
                 if getAllVersionMetadata != 1:
                     datasetVersion = {
                         'status': latestVersionMetadata['status'],
@@ -253,12 +245,21 @@ for datasetPID in datasetPIDs:
                             'persistentUrl': persistentUrl,
                             'publisher': publisher,
                             'publicationDate': publicationDate,
-                            'datasetVersion': allVersionsMetadata['data'][0]}}
+                            'datasetVersion': latestVersionMetadata['data']['latestVersion']}}
 
                     metadataFile = '%s.json' % (datasetPID.replace(':', '_').replace('/', '_'))
                     with open(os.path.join(metadataFileDirectoryPath, metadataFile), mode='w') as f:
                         f.write(json.dumps(datasetVersion, indent=4))
                 else:
+                    allVersionUrl = '%s/api/datasets/:persistentId/versions' % (repositoryURL)
+                    params = {'persistentId': datasetPID}
+                    if apikey:
+                        params['key'] = apikey
+                    response = requests.get(
+                        allVersionUrl,
+                        params=params)
+                    allVersionsMetadata = response.json()
+
                     for datasetVersion in allVersionsMetadata['data']:
                         datasetVersion = {
                             'status': latestVersionMetadata['status'],
