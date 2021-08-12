@@ -218,8 +218,6 @@ elif '.txt' in datasetPIDFile:
 
 total = len(datasetPIDs)
 
-# exportLatestVersion = 1
-
 for datasetPID in datasetPIDs:
     try:
         latestVersionUrl = '%s/api/datasets/:persistentId' % (repositoryURL)
@@ -231,8 +229,8 @@ for datasetPID in datasetPIDs:
             params=params)
         latestVersionMetadata = response.json()
 
-        # If the dataset has a database ID and fewer than 50 versions
-        if 'id' in latestVersionMetadata['data'] and latestVersionMetadata['data']['latestVersion']['versionNumber'] < 20:
+        # If the dataset has a database ID
+        if 'id' in latestVersionMetadata['data']:
             persistentUrl = latestVersionMetadata['data']['persistentUrl']
             publisher = latestVersionMetadata['data']['publisher']
             publicationDate = improved_get(latestVersionMetadata, 'data.publicationDate')
