@@ -28,10 +28,7 @@ startDate = ''  # yyyy-mm-dd
 endDate = ''  # yyyy-mm-dd
 apiKey = ''  # for getting unpublished datasets accessible to Dataverse account
 directory = ''  # directory for CSV file containing dataset and file info, e.g. '/Users/username/Desktop/'
-
-# List for storing indexed dataset PIDs and variable for counting misindexed datasets
-datasetPids = []
-misindexedDatasetsCount = 0
+ignoreCollections = []  # alias of collections whose datasets should be ignored
 
 start = 0
 
@@ -63,6 +60,30 @@ elif data['status'] == 'ERROR':
     print(errorMessage)
     exit()
 
+# If user enters any collections in ignoreCollections, get count of those datasets within the time range
+
+if ignoreCollections:
+    ignoreTotal = 0
+    dataverseAliases = []
+
+    # Get database IDs of collections entered and any collections within them
+    for collection in ignoreCollections:
+        params['subtree'] = collection
+        response = requests.get(
+            searchApiUrl,
+            params=params,
+            headers={'X-Dataverse-key': apiKey}
+        )
+        data = response.json()
+        ignoreTotal = data['data']['total_count'] + ignoreTotal
+
+    total = total - ignoreTotal
+    params.pop('subtree', None)
+
+# List for storing indexed dataset PIDs and variable for counting misindexed datasets
+datasetPids = []
+misindexedDatasetsCount = 0
+
 # Initialization for paginating through results of Search API calls
 condition = True
 
@@ -79,10 +100,11 @@ while condition:
 
         # For each dataset...
         for i in data['data']['items']:
+            if i['identifier_of_dataverse'] not in ignoreCollections:
 
-            # Get the dataset PID and add it to the datasetPids list
-            globalId = i['global_id']
-            datasetPids.append(globalId)
+                # Get the dataset PID and add it to the datasetPids list
+                globalId = i['global_id']
+                datasetPids.append(globalId)
 
         print('Dataset PIDs found: %s of %s' % (len(datasetPids), total), end='\r', flush=True)
 
