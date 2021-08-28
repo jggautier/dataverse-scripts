@@ -16,19 +16,44 @@ results, like the datasetPersistentId key (data/latestVersion/datasetPersistentI
 import csv
 from datetime import datetime
 from dateutil import tz
+from functools import reduce
 import json
 import os
+import pandas as pd
 import requests
 from requests.exceptions import HTTPError
 import sys
 
 # Get required info from user
-server = ''  # Base URL of the Dataverse repository, e.g. https://demo.dataverse.org
-startDate = ''  # yyyy-mm-dd
-endDate = ''  # yyyy-mm-dd
-apiKey = ''  # for getting unpublished datasets accessible to Dataverse account
-directory = ''  # directory for CSV file containing dataset and file info, e.g. '/Users/username/Desktop/'
-ignoreCollections = []  # alias of collections whose datasets should be ignored
+server = 'https://dataverse.harvard.edu'  # Base URL of the Dataverse repository, e.g. https://demo.dataverse.org
+startDate = '2021-08-28'  # yyyy-mm-dd
+endDate = '2021-08-28'  # yyyy-mm-dd
+apiKey = '9ea400f1-1b9e-43b9-913e-d8cd4cd69fb1'  # for getting unpublished datasets accessible to Dataverse account
+directory = '/Users/juliangautier/Desktop/'  # directory for CSV file containing dataset and file info, e.g. '/Users/username/Desktop/'
+ignoreCollections = ['ceqmicrodata']  # alias of collections whose datasets should be ignored
+
+
+# Function for converting given timestamp string with UTC timezone into datetime object with local timezone
+def convert_to_local_tz(timestamp):
+    # Save local timezone to localTimezone variable
+    localTimezone = tz.tzlocal()
+    # Convert string to datetime object
+    timestamp = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S%z')
+    # Convert from UTC to local timezone
+    timestamp = timestamp.astimezone(localTimezone)
+    return timestamp
+
+
+# Function for converting bytes to more human-readable KB, MB, etc
+def format_bytes(size):
+    power = 2**10
+    n = 0
+    powerLabels = {0: 'bytes', 1: 'KB', 2: 'MB', 3: 'GB', 4: 'TB'}
+    while size > power:
+        size /= power
+        n += 1
+    return '%s %s' % (round(size, 2), powerLabels[n])
+
 
 start = 0
 
@@ -59,30 +84,30 @@ elif data['status'] == 'ERROR':
     errorMessage = data['message']
     print(errorMessage)
     exit()
+print(total)
 
-# If user enters any collections in ignoreCollections, get count of those datasets within the time range
+# # If user enters any collections in ignoreCollections list, get alias of any collections within those collections
 
-if ignoreCollections:
-    ignoreTotal = 0
-    dataverseAliases = []
+# if ignoreCollections:
+#     ignoreTotal = 0
+#     dataverseAliases = []
 
-    # Get database IDs of collections entered and any collections within them
-    for collection in ignoreCollections:
-        params['subtree'] = collection
-        response = requests.get(
-            searchApiUrl,
-            params=params,
-            headers={'X-Dataverse-key': apiKey}
-        )
-        data = response.json()
-        ignoreTotal = data['data']['total_count'] + ignoreTotal
+#     # Get database IDs of collections entered and any collections within them
+#     for collection in ignoreCollections:
+#         params['subtree'] = collection
+#         response = requests.get(
+#             searchApiUrl,
+#             params=params,
+#             headers={'X-Dataverse-key': apiKey}
+#         )
+#         data = response.json()
+#         ignoreTotal = data['data']['total_count'] + ignoreTotal
 
-    total = total - ignoreTotal
-    params.pop('subtree', None)
+#     total = total - ignoreTotal
+#     params.pop('subtree', None)
 
-# List for storing indexed dataset PIDs and variable for counting misindexed datasets
-datasetPids = []
 misindexedDatasetsCount = 0
+datasetInfoDict = []
 
 # Initialization for paginating through results of Search API calls
 condition = True
@@ -98,15 +123,16 @@ while condition:
         )
         data = response.json()
 
-        # For each dataset...
         for i in data['data']['items']:
-            if i['identifier_of_dataverse'] not in ignoreCollections:
+            if i['versionState'] != 'DEACCESSIONED':
+                dataverseNameAlias = '%s (%s)' % (i['identifier_of_dataverse'], i['name_of_dataverse'])
+                newRow = {
+                    'datasetPID': i['global_id'],
+                    'dataverseNameAlias': dataverseNameAlias,
+                    'dataverseAlias': i['identifier_of_dataverse']}
+                datasetInfoDict.append(dict(newRow))
 
-                # Get the dataset PID and add it to the datasetPids list
-                globalId = i['global_id']
-                datasetPids.append(globalId)
-
-        print('Dataset PIDs found: %s of %s' % (len(datasetPids), total), end='\r', flush=True)
+        print('Dataset PIDs found: %s of %s' % (len(datasetInfoDict), total))
 
         # Update variables to paginate through the search results
         params['start'] = params['start'] + params['per_page']
@@ -124,11 +150,16 @@ while condition:
             )
             data = response.json()
 
-            # Get dataset PID and save to datasetPids list
-            globalId = data['data']['items'][0]['global_id']
-            datasetPids.append(globalId)
+            for i in data['data']['items']:
+                if i['versionState'] != 'DEACCESSIONED':
+                    dataverse = '%s (%s)' % (i['identifier_of_dataverse'], i['name_of_dataverse'])
+                    newRow = {
+                        'datasetPID': i['global_id'],
+                        'dataverseNameAlias': dataverseNameAlias,
+                        'dataverseAlias': i['identifier_of_dataverse']}
+                    datasetInfoDict.append(dict(newRow))
 
-            print('Dataset PIDs found: %s of %s' % (len(datasetPids), total), end='\r', flush=True)
+            print('Dataset PIDs found: %s of %s' % (len(datasetInfoDict), total))
 
             # Update variables to paginate through the search results
             params['start'] = params['start'] + params['per_page']
@@ -138,81 +169,46 @@ while condition:
             misindexedDatasetsCount += 1
             params['start'] = params['start'] + params['per_page']
 
-    # Stop paginating when there are no more results
     condition = params['start'] < total
 
-if misindexedDatasetsCount:
-    print('\n\nDatasets misindexed: %s\n' % (misindexedDatasetsCount))
+datasetDataverseInfoDF = pd.DataFrame(datasetInfoDict)
 
 # If there are duplicate PIDs, report the number of unique PIDs and explain:
 # Where there are published datasets with a draft version, the Search API lists the PID twice,
 # once for published versions and once for draft versions.
-if len(datasetPids) != len(set(datasetPids)):
-    uniqueDatasetPids = set(datasetPids)
-    print('Unique datasets: %s (The Search API returns both the draft and most \
-recently published versions of datasets.)' % (len(uniqueDatasetPids)))
+datasetDataverseInfoDF = datasetDataverseInfoDF.drop_duplicates()
+if total != len(datasetDataverseInfoDF):
+    datasetDataverseInfoDF.drop_duplicates()
+    total = len(datasetDataverseInfoDF)
+    print('Unique datasets: %s\n\tThe Search API returns both the draft and most \
+recently published versions of datasets.\n\tAny deaccessioned datasets have been skipped.' % (total))
 
-# Otherwise, copy datasetPids to uniqueDatasetPids variable
-else:
-    uniqueDatasetPids = datasetPids
+# Remove any rows in datasetDataverseInfoDF whose dataverseAlias column contains
+# any values in the ignoreCollections list. Then drop dataverseAlias column
 
-# Store name of CSV file, which includes the dataset start and end date range, to the 'filename' variable
-fileName = 'datasetinfo_%s-%s.csv' % (startDate.replace('-', '.'), endDate.replace('-', '.'))
+datasetDataverseInfoDF = datasetDataverseInfoDF[~datasetDataverseInfoDF['dataverseAlias'].isin(ignoreCollections)]
+datasetDataverseInfoDF = datasetDataverseInfoDF.drop(columns=['dataverseAlias'])
+total = len(datasetDataverseInfoDF)
 
-# Create variable for directory path and file name
-csvFilePath = os.path.join(directory, fileName)
-
-
-# Convert given timestamp string with UTC timezone into datetime object with local timezone
-def convert_to_local_tz(timestamp):
-    # Save local timezone to localTimezone variable
-    localTimezone = tz.tzlocal()
-    # Convert string to datetime object
-    timestamp = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S%z')
-    # Convert from UTC to local timezone
-    timestamp = timestamp.astimezone(localTimezone)
-    return timestamp
-
-
-# Create CSV file
-with open(csvFilePath, mode='w') as openCsvFile:
-    openCsvFile = csv.writer(openCsvFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-
-    # Create header row
-    openCsvFile.writerow([
-        'datasetTitle (versionState) (DOI)', 'fileName (fileSize)',
-        'fileType', 'lastUpdateTime', 'dataverseName (alias)'])
-
-# For each data file in each dataset, add to the CSV file the dataset's URL and
+# For each data file in each dataset, add to a dictionary the dataset's URL and
 # publication state, dataset title, data file name and data file contentType
 
-print('\nWriting dataset and file info to %s:' % (csvFilePath))
+print('\nGetting dataset and file info:')
 
 # Create list to store any PIDs whose info can't be retrieved with "Get JSON" or Search API endpoints
 pidErrors = []
-
-
-# Function for converting bytes to more human-readable KB, MB, etc
-def format_bytes(size):
-    power = 2**10
-    n = 0
-    powerLabels = {0: 'bytes', 1: 'KB', 2: 'MB', 3: 'GB', 4: 'TB'}
-    while size > power:
-        size /= power
-        n += 1
-    return '%s %s' % (round(size, 2), powerLabels[n])
-
+datafileInfoDict = []
 
 count = 0
-for pid in uniqueDatasetPids:
+for datasetPID in datasetDataverseInfoDF['datasetPID']:
     count += 1
-    print('Getting metadata for %s: %s of %s' % (pid, count, len(uniqueDatasetPids)))
+    print('Getting metadata for %s: %s of %s' % (datasetPID, count, total))
     # Construct "Get JSON" API endpoint url and get data about each dataset's latest version
     try:
         dataGetLatestVersionUrl = '%s/api/datasets/:persistentId' % (server)
         response = requests.get(
             dataGetLatestVersionUrl,
-            params={'persistentId': pid},
+            params={'persistentId': datasetPID},
             headers={'X-Dataverse-key': apiKey}
         )
 
@@ -220,28 +216,10 @@ for pid in uniqueDatasetPids:
         dataGetLatestVersion = response.json()
 
     except Exception:
-        pidErrors.append(pid)
+        pidErrors.append(datasetPID)
 
     # Check for "latestVersion" key. Deaccessioned datasets have no "latestVersion" key.
     if 'latestVersion' in dataGetLatestVersion['data']:
-
-        # Construct "Search API" url to get name of each dataset's dataverse
-        try:
-            q = '"%s"' % (pid)
-            response = requests.get(
-                searchApiUrl,
-                params={'q': q, 'type': 'dataset'},
-                headers={'X-Dataverse-key': apiKey}
-            )
-
-            dataDataverseName = response.json()
-        except Exception:
-            pidErrors.append(pid)
-
-        # Save dataverse name and alias
-        dataverseName = dataDataverseName['data']['items'][0]['name_of_dataverse']
-        dataverseAlias = dataDataverseName['data']['items'][0]['identifier_of_dataverse']
-        dataverseNameAlias = '%s (%s)' % (dataverseName, dataverseAlias)
 
         # Save dataset info
         dsTitle = dataGetLatestVersion['data']['latestVersion']['metadataBlocks']['citation']['fields'][0]['value']
@@ -264,28 +242,28 @@ for pid in uniqueDatasetPids:
                 datafileType = datafile['dataFile']['contentType']
                 datafileInfo = '%s (%s)' % (datafileName, datafileSize)
 
-                # Add fields to a new row in the CSV file
-                with open(csvFilePath, mode='a', encoding='utf-8') as openCsvFile:
+                # Add fields to a new row in datafileInfoDict
+                newRow = {
+                    'datasetPID': datasetPersistentId,
+                    'datasetInfo': datasetInfo,
+                    'datafileInfo': datafileInfo,
+                    'datafileType': datafileType,
+                    'lastUpdateTime': lastUpdateTime
+                }
+                datafileInfoDict.append(dict(newRow))
 
-                    openCsvFile = csv.writer(openCsvFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-
-                    # Create new row with dataset and file info
-                    openCsvFile.writerow([datasetInfo, datafileInfo, datafileType, lastUpdateTime, dataverseNameAlias])
-
-        # Otherwise write to the CSV that the dataset has no files
+        # Otherwise add row in datafileInfoDict that the dataset has no files
         else:
-            with open(csvFilePath, mode='a') as openCsvFile:
+            newRow = {
+                'datasetPID': datasetPersistentId,
+                'datasetInfo': datasetInfo,
+                'datafileInfo': '(no files found)',
+                'datafileType': '(no files found)',
+                'lastUpdateTime': lastUpdateTime
+            }
+            datafileInfoDict.append(dict(newRow))
 
-                openCsvFile = csv.writer(
-                    openCsvFile, delimiter=',', quotechar='"',
-                    quoting=csv.QUOTE_MINIMAL)
-
-                # Create new row with dataset and file info
-                openCsvFile.writerow([
-                    datasetInfo, '(no files found)', '(no files found)',
-                    lastUpdateTime, dataverseNameAlias])
-
-print('\nFinished writing dataset and file info of %s dataset(s) to %s' % (len(uniqueDatasetPids), csvFilePath))
+print('\nFinished getting dataset and file info of %s dataset(s)' % (total))
 
 # If info of any PIDs could not be retrieved, print list of those PIDs
 if pidErrors:
@@ -296,3 +274,23 @@ if pidErrors:
     print('Info about the following PIDs could not be retrieved. To investigate, \
 try running "Get JSON" endpoint or Search API on these datasets:')
     print(*pidErrors, sep='\n')
+
+datafileInfoDF = pd.DataFrame(datafileInfoDict)
+
+
+# Join datafileInfoDF and datasetDataverseInfoDF on the datasetPID column
+dataframes = [datafileInfoDF, datasetDataverseInfoDF]
+
+# For each dataframe, set the indexes (or the common columns across the dataframes to join on)
+for dataframe in dataframes:
+    dataframe.set_index(['datasetPID'], inplace=True)
+
+print('Preparing report...')
+
+# Merge all dataframes and save to the 'merged' variable
+report = reduce(lambda left, right: left.join(right, how='outer'), dataframes).reset_index()
+
+report = report.drop(columns=['datasetPID'])
+
+fileName = 'datasetinfo_%s-%s.csv' % (startDate.replace('-', '.'), endDate.replace('-', '.'))
+report.to_csv(fileName, index=False)
