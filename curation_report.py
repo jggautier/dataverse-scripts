@@ -173,8 +173,8 @@ while condition:
 datasetDataverseInfoDF = pd.DataFrame(datasetInfoDict)
 
 # If there are duplicate PIDs, report the number of unique PIDs and explain:
-# Where there are published datasets with a draft version, the Search API lists the PID twice,
-# once for published versions and once for draft versions.
+# Where there is a published dataset with a draft version, the Search API lists the PID twice,
+# once for published version and once for draft version.
 datasetDataverseInfoDF = datasetDataverseInfoDF.drop_duplicates()
 if total != len(datasetDataverseInfoDF):
     total = len(datasetDataverseInfoDF)
@@ -184,7 +184,7 @@ recently published versions of datasets.\n\tAny deaccessioned datasets have been
 # Remove any rows in datasetDataverseInfoDF whose dataverseAlias column contains
 # any values in the ignoreCollections list. Then drop dataverseAlias column
 if ignoreCollections:
-    print('\nRemoving datasets from collections you would like to ignore...')
+    print('\nRemoving datasets in collections you would like to ignore...')
     datasetDataverseInfoDF = datasetDataverseInfoDF[~datasetDataverseInfoDF['dataverseAlias'].isin(ignoreCollections)]
     datasetDataverseInfoDF = datasetDataverseInfoDF.drop(columns=['dataverseAlias'])
     total = len(datasetDataverseInfoDF)
@@ -233,8 +233,8 @@ for datasetPID in datasetDataverseInfoDF['datasetPID']:
         # Get date of latest dataset version
         lastUpdateTime = convert_to_local_tz(dataGetLatestVersion['data']['latestVersion']['lastUpdateTime'])
 
-        # If the dataset's latest version contains files, write dataset and file info (file name,
-        # file type, and size) to the CSV
+        # If the dataset's latest version contains files, add dataset and file info (file name,
+        # file type, and size) to the dictionary
         if dataGetLatestVersion['data']['latestVersion']['files']:
             for datafile in dataGetLatestVersion['data']['latestVersion']['files']:
                 datafileName = datafile['label']
@@ -252,7 +252,7 @@ for datasetPID in datasetDataverseInfoDF['datasetPID']:
                 }
                 datafileInfoDict.append(dict(newRow))
 
-        # Otherwise add row in datafileInfoDict that the dataset has no files
+        # Otherwise in datafileInfoDict add row saying that the dataset has no files
         else:
             newRow = {
                 'datasetPID': datasetPersistentId,
@@ -287,7 +287,7 @@ for dataframe in dataframes:
 
 print('\nPreparing report...')
 
-# Merge all dataframes and save to the 'merged' variable
+# Merge all dataframes and save to the 'report' variable
 report = reduce(lambda left, right: left.join(right, how='outer'), dataframes).reset_index()
 
 report = report.drop(columns=['datasetPID'])
