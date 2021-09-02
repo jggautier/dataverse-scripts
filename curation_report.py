@@ -30,7 +30,7 @@ startDate = ''  # yyyy-mm-dd
 endDate = ''  # yyyy-mm-dd
 apiKey = ''  # for getting unpublished datasets accessible to Dataverse account
 directory = ''  # directory for CSV file containing dataset and file info, e.g. '/Users/username/Desktop/'
-ignoreCollections = []  # alias of collections whose datasets should be ignored
+ignoreCollection = ''  # alias of collections whose datasets should be ignored
 
 
 # Function for converting given timestamp string with UTC timezone into datetime object with local timezone
@@ -86,24 +86,18 @@ elif data['status'] == 'ERROR':
     exit()
 
 # # If user enters any collections in ignoreCollections list, get alias of any collections within those collections
+if ignoreCollection:
+    ignoreCollections = [ignoreCollection]
+    url = '%s/api/search?q=*&subtree=%s&type=dataverse&per_page=100&key=%s' % (server, ignoreCollection, apiKey)
+    response = requests.get(url)
+    data = response.json()
 
-# if ignoreCollections:
-#     ignoreTotal = 0
-#     dataverseAliases = []
+    for dataverse in data['data']['items']:
+        alias = dataverse['identifier']
+        ignoreCollections.extend([alias])
 
-#     # Get database IDs of collections entered and any collections within them
-#     for collection in ignoreCollections:
-#         params['subtree'] = collection
-#         response = requests.get(
-#             searchApiUrl,
-#             params=params,
-#             headers={'X-Dataverse-key': apiKey}
-#         )
-#         data = response.json()
-#         ignoreTotal = data['data']['total_count'] + ignoreTotal
-
-#     total = total - ignoreTotal
-#     params.pop('subtree', None)
+print('Finding aliases of Dataverse collections to ignore')
+print('Found %s collections to ignore' % (len(ignoreCollections)))
 
 misindexedDatasetsCount = 0
 datasetInfoDict = []
@@ -126,7 +120,7 @@ while condition:
             if i['versionState'] != 'DEACCESSIONED':
                 dataverseNameAlias = '%s (%s)' % (i['name_of_dataverse'], i['identifier_of_dataverse'])
                 newRow = {
-                    'datasetPID': i['global_id'],
+                    'persistent_id': i['global_id'],
                     'dataverseNameAlias': dataverseNameAlias,
                     'dataverseAlias': i['identifier_of_dataverse']}
                 datasetInfoDict.append(dict(newRow))
@@ -153,7 +147,7 @@ while condition:
                 if i['versionState'] != 'DEACCESSIONED':
                     dataverse = '%s (%s)' % (i['identifier_of_dataverse'], i['name_of_dataverse'])
                     newRow = {
-                        'datasetPID': i['global_id'],
+                        'persistent_id': i['global_id'],
                         'dataverseNameAlias': dataverseNameAlias,
                         'dataverseAlias': i['identifier_of_dataverse']}
                     datasetInfoDict.append(dict(newRow))
@@ -188,7 +182,7 @@ if ignoreCollections:
     datasetDataverseInfoDF = datasetDataverseInfoDF[~datasetDataverseInfoDF['dataverseAlias'].isin(ignoreCollections)]
     datasetDataverseInfoDF = datasetDataverseInfoDF.drop(columns=['dataverseAlias'])
     total = len(datasetDataverseInfoDF)
-    print('Count of datasets excluding datasets in ignored collections: %s' % (total))
+    print('Count of datasets excluding datasets in %s ignored collection(s): %s' % (len(ignoreCollections), total))
 
 # For each data file in each dataset, add to a dictionary the dataset's URL and
 # publication state, dataset title, data file name and data file contentType
@@ -200,7 +194,7 @@ pidErrors = []
 datafileInfoDict = []
 
 count = 0
-for datasetPID in datasetDataverseInfoDF['datasetPID']:
+for datasetPID in datasetDataverseInfoDF['persistent_id']:
     count += 1
     print('Getting metadata for %s: %s of %s' % (datasetPID, count, total))
     # Construct "Get JSON" API endpoint url and get data about each dataset's latest version
@@ -244,7 +238,7 @@ for datasetPID in datasetDataverseInfoDF['datasetPID']:
 
                 # Add fields to a new row in datafileInfoDict
                 newRow = {
-                    'datasetPID': datasetPersistentId,
+                    'persistent_id': datasetPersistentId,
                     'datasetInfo': datasetInfo,
                     'datafileNameSize': datafileNameSize,
                     'datafileType': datafileType,
@@ -255,7 +249,7 @@ for datasetPID in datasetDataverseInfoDF['datasetPID']:
         # Otherwise in datafileInfoDict add row saying that the dataset has no files
         else:
             newRow = {
-                'datasetPID': datasetPersistentId,
+                'persistent_id': datasetPersistentId,
                 'datasetInfo': datasetInfo,
                 'datafileNameSize': '(no files found)',
                 'datafileType': '(no files found)',
@@ -283,14 +277,14 @@ dataframes = [datafileInfoDF, datasetDataverseInfoDF]
 
 # For each dataframe, set the indexes (or the common columns across the dataframes to join on)
 for dataframe in dataframes:
-    dataframe.set_index(['datasetPID'], inplace=True)
+    dataframe.set_index(['persistent_id'], inplace=True)
 
 print('\nPreparing report...')
 
 # Merge all dataframes and save to the 'report' variable
 report = reduce(lambda left, right: left.join(right, how='outer'), dataframes).reset_index()
 
-report = report.drop(columns=['datasetPID'])
+report = report.drop(columns=['persistent_id'])
 
 fileName = 'datasetinfo_%s-%s.csv' % (startDate.replace('-', '.'), endDate.replace('-', '.'))
 csvFilePath = os.path.join(directory, fileName)
