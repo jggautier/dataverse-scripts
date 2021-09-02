@@ -3,7 +3,7 @@
 from csv import DictReader
 import requests
 
-repositoryURL = 'https://demo.dataverse.org'
+repositoryURL = ''
 apikey = ''  # API key of superuser account
 file = ''  # Path to .txt or .csv file with database IDs of dataverses to be deleted
 
@@ -25,7 +25,7 @@ total = len(datasetPIDs)
 count = 0
 
 for datasetPID in datasetPIDs:
-    url = 'https://demo.dataverse.org/api/datasets/:persistentId/locks?persistentId=%s' % (datasetPID)
+    url = '%s/api/datasets/:persistentId/locks?persistentId=%s' % (repositoryURL, datasetPID)
     req = requests.delete(
         url,
         headers={
