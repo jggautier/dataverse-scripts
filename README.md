@@ -28,4 +28,4 @@ This script downloads dataset metadata of as many known Dataverse installations 
 - #### combine_tables.py
   This script does a join on CSV files in a given directory.
 - #### split_table.py
-  This script splits a given CSV file into many csv files based on the unique values in a given column. It's like the opposite of a JOIN.
+  This script splits a given CSV file into many csv files based on the unique values in a given column.
