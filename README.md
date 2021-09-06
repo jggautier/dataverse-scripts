@@ -15,6 +15,7 @@ Gets the persistent identifiers of any datasets in a given Dataverse installatio
   A collection of scripts for getting JSON metadata of given datasets and parsing metadata into csv files for metadata analysis, reporting and improving.
 - #### get_dataset_lock_info.py
 - #### publish_multiple_datasets.py
+- #### remove_dataset_links.py
 - #### replace_dataset_metadata.py
 
 ### curation_report.py
