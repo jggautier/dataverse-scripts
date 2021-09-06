@@ -73,6 +73,7 @@ label_dataverseUrl.grid(sticky='w', column=0, row=0)
 dataverseUrl = str()
 entry_dataverseUrl = Entry(window, width=50, textvariable=dataverseUrl)
 entry_dataverseUrl.grid(sticky='w', column=0, row=1, pady=2)
+entry_dataverseUrl.insert(0, 'https://demo.dataverse.org/')
 
 # Create help text for Dataverse URL field
 label_dataverseUrlHelpText = Label(window, text='Example: https://demo.dataverse.org or https://demo.dataverse.org/dataverse/dataversealias', foreground='grey', anchor='w')
