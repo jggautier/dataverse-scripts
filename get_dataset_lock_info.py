@@ -10,7 +10,7 @@ import time
 
 repositoryURL = ''
 inputFile = ''  # Path to .txt or .csv file with database IDs of dataverses to be deleted
-directory = ''
+directory = '' # Path to directory where CSV file containing lock info will be created
 
 
 # Function for converting given timestamp string into datetime object with local timezone
