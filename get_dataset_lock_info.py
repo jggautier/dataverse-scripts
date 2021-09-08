@@ -71,7 +71,7 @@ with open(csvOutputFilePath, mode='w', newline='') as f:
             locked = False
             reason = 'NA (Not locked)'
             lockedDate = ''
-            userName = lock['user']
+            userName = 'NA (Not locked)'
             f.writerow([datasetPID, locked, reason, lockedDate, userName])
 
             print('%s of %s datasets: %s' % (count, total, datasetPID))
