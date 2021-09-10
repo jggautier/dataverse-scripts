@@ -87,6 +87,8 @@ elif data['status'] == 'ERROR':
 
 # # If user enters any collections in ignoreCollections list, get alias of any collections within those collections
 if ignoreCollection:
+    print('Finding aliases of Dataverse collections to ignore')
+
     ignoreCollections = [ignoreCollection]
     url = '%s/api/search?q=*&subtree=%s&type=dataverse&per_page=100&key=%s' % (server, ignoreCollection, apiKey)
     response = requests.get(url)
@@ -96,8 +98,7 @@ if ignoreCollection:
         alias = dataverse['identifier']
         ignoreCollections.extend([alias])
 
-print('Finding aliases of Dataverse collections to ignore')
-print('Found %s collections to ignore' % (len(ignoreCollections)))
+    print('Found %s collections to ignore' % (len(ignoreCollections)))
 
 misindexedDatasetsCount = 0
 datasetInfoDict = []
@@ -177,7 +178,7 @@ recently published versions of datasets.\n\tAny deaccessioned datasets have been
 
 # Remove any rows in datasetDataverseInfoDF whose dataverseAlias column contains
 # any values in the ignoreCollections list. Then drop dataverseAlias column
-if ignoreCollections:
+if ignoreCollection:
     print('\nRemoving datasets in collections you would like to ignore...')
     datasetDataverseInfoDF = datasetDataverseInfoDF[~datasetDataverseInfoDF['dataverseAlias'].isin(ignoreCollections)]
     datasetDataverseInfoDF = datasetDataverseInfoDF.drop(columns=['dataverseAlias'])
