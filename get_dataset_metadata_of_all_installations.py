@@ -311,7 +311,7 @@ for installation in mapdata['installations']:
             # Get the metadata of each version of the dataset
                 try:
                     latest_version_url = '%s/api/datasets/:persistentId?persistentId=%s' % (installationURL, dataset_pid)
-                    response = requests.get(latest_version_url, headers=headers, timeout=20, verify=False)
+                    response = requests.get(latest_version_url, headers=headers, verify=False)
                     latest_version_metadata = response.json()
                     if latest_version_metadata['status'] == 'OK':
                         persistentUrl = latest_version_metadata['data']['persistentUrl']
@@ -319,7 +319,7 @@ for installation in mapdata['installations']:
                         publicationDate = latest_version_metadata['data']['publicationDate']
 
                         all_version_url = '%s/api/datasets/:persistentId/versions?persistentId=%s' % (installationURL, dataset_pid)
-                        response = requests.get(all_version_url, headers=headers, timeout=20, verify=False)
+                        response = requests.get(all_version_url, headers=headers, verify=False)
                         all_versions_metadata = response.json()
 
                         for dataset_version in all_versions_metadata['data']:
