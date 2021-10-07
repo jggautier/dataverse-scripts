@@ -11,7 +11,7 @@ Gets the persistent identifiers of any datasets in a given Dataverse installatio
 - #### delete_dataset_locks.py
 - #### delete_dataverses.py
 - #### destroy_datasets.py
-- #### [Get and convert metadata of datasets](https://github.com/jggautier/dataverse-scripts/tree/master/get-dataverse-metadata):
+- #### [Get and convert metadata of datasets](https://github.com/jggautier/dataverse_scripts/tree/main/get-dataverse-metadata):
   A collection of scripts for getting JSON metadata of given datasets and parsing metadata into csv files for metadata analysis, reporting and improving.
 - #### get_dataset_lock_info.py
 - #### move_datasets.py
