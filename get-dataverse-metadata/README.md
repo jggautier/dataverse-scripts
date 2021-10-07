@@ -1,11 +1,11 @@
 # Get and convert metadata of datasets
 This is a collection of Python 3 scripts for getting the metadata of published datasets in a [Dataverse](https://dataverse.org/) installation, in the Dataverse JSON format, and writing the metadata to CSV files for analysis, reporting, and metadata improvement.
 
-If you're interested in getting the metadata of all datasets in most known Dataverse-based repositories, please see the metadata collected in a dataset published in in the Harvard Dataverse Repository: https://doi.org/10.7910/DVN/DCDKZQ.
+If you're interested in getting the metadata of all datasets in most known Dataverse-based repositories, please see the metadata collected in a dataset published in  the Harvard Dataverse Repository: https://doi.org/10.7910/DVN/DCDKZQ.
 
 ## General
 The scripts can be grouped into three types:
- * One script, get_dataset_json_metadata.py, takes a list of dataset PIDs and downloads the metadata of either the latest published version or all published versions of those datasets (in the Dataverse JSON standard). If a Dataverse account API key is included, the script will download draft versions of any datasets accessible by the Dataverse account.
+ * One script, get_dataset_json_metadata.py, takes a list of dataset PIDs and downloads the metadata of either the latest published version or all published versions of those datasets (in the Dataverse JSON standard). If a Dataverse account API key is included, the script will download draft versions of any datasets accessible by the Dataverse installation account.
  * Several scripts, such as parse_basic_metadata.py and parse_metadatablock_metadata.py, parse the JSON files to extract metadata fields and write that metadata into CSV files.
 
 You can manipulate and analyze the metadata in the CSV files using many methods and tools, including MS Excel, Apple's Numbers, Google Sheets, OpenRefine, R, Python, and database applications like pgAdmin or DB Browser for SQLite.
