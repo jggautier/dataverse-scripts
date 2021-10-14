@@ -77,8 +77,10 @@ filename = os.path.join(csvDirectory, 'terms.csv')
 
 print('Creating CSV file')
 
+# Create CSV file
 with open(filename, mode='w', newline='') as metadatafile:
     metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    
     # Create header row
     metadatafile.writerow([
         'datasetVersionId', 'persistentUrl', 'persistent_id', 'license', 'termsOfUse', 'confidentialityDeclaration',
@@ -89,7 +91,8 @@ with open(filename, mode='w', newline='') as metadatafile:
 print('Getting metadata:')
 
 
-# Get value of nested key and truncate value to 10,000 characters or return nothing if key doesn't exist
+# Function for getting value of nested key, truncating the value to 10,000 characters
+# (character limit for many spreadsheet applications), or returning nothing if key doesn't exist
 def improved_get(_dict, path, default=None):
     for key in path.split('.'):
         try:
@@ -102,18 +105,37 @@ def improved_get(_dict, path, default=None):
         return _dict[:10000]
 
 
-for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON file in a folder
-    with open(file, 'r') as f1:  # Open each file in read mode
-        dataset_metadata = f1.read()  # Copy content to dataset_metadata variable
-        dataset_metadata = json.loads(dataset_metadata)  # Load content in variable as a json object
+# Save count of files in the given directory and initialize count variable to track progress of script and for debugging
+path, dirs, files = next(os.walk(jsonDirectory))
+file_count = len(files)
+count = 0
 
-    # Check if status is OK and there's a latestversion key (the dataset isn't deaccessioned)
+# For each JSON file in the given directory...
+for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON file in a folder
+    count += 1
+
+    # Save the name of the file to print to the terminal with the current and total counts
+    file_pid = file.rsplit('/')[-1]
+
+    # Open each file in read mode
+    with open(file, 'r') as f1:
+
+        # Copy content to dataset_metadata variable
+        dataset_metadata = f1.read()
+
+        # Load content in variable as a json object
+        dataset_metadata = json.loads(dataset_metadata)
+
+    # Print count of files opened, total file count, and name of file
+    print('%s of %s: %s' % (count, file_count, file_pid))
+
+    # Check if status is OK and there's a latestversion key (i.e. that the dataset isn't deaccessioned)
     if (dataset_metadata['status'] == 'OK') and ('datasetVersion' in dataset_metadata['data']):
 
         # Save the metadata values in variables
         datasetVersionId = improved_get(dataset_metadata, 'data.datasetVersion.id')
         persistentUrl = dataset_metadata['data']['persistentUrl']
-        datasetPersistentId = dataset_metadata['data']['datasetVersion']['datasetPersistentId']
+        datasetPersistentId = improved_get(dataset_metadata, 'data.datasetVersion.datasetPersistentId')
         license = improved_get(dataset_metadata, 'data.datasetVersion.license')
         termsOfUse = improved_get(dataset_metadata, 'data.datasetVersion.termsOfUse')
         confidentialityDeclaration = improved_get(dataset_metadata, 'data.datasetVersion.confidentialityDeclaration')
@@ -138,6 +160,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
             def to_utf8(lst):
                 return [unicode(elem).encode('utf-8') for elem in lst]
 
+            # Set how values are written to a row in the CSV file
             metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
             # Write new row
@@ -146,8 +169,3 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
                 specialPermissions, restrictions, citationRequirements, depositorRequirements,
                 conditions, disclaimer, termsOfAccess, dataaccessPlace, originalArchive,
                 availabilityStatus, contactForAccess, sizeOfCollection, studyCompletion])
-
-        # As a progress indicator, print a dot each time a row is written
-        sys.stdout.write('.')
-        sys.stdout.flush()
-print('\n')
