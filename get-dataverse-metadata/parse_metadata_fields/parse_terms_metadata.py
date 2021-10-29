@@ -85,7 +85,7 @@ with open(filename, mode='w', newline='') as metadatafile:
     metadatafile.writerow([
         'datasetVersionId', 'persistentUrl', 'persistent_id', 'license', 'termsOfUse', 'confidentialityDeclaration',
         'specialPermissions', 'restrictions', 'citationRequirements', 'depositorRequirements',
-        'conditions', 'disclaimer', 'termsOfAccess', 'dataaccessPlace', 'originalArchive',
+        'conditions', 'disclaimer', 'termsOfAccess', 'dataAccessPlace', 'originalArchive',
         'availabilityStatus', 'contactForAccess', 'sizeOfCollection', 'studyCompletion'])
 
 print('Getting metadata:')
@@ -146,7 +146,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
         conditions = improved_get(dataset_metadata, 'data.datasetVersion.conditions')
         disclaimer = improved_get(dataset_metadata, 'data.datasetVersion.disclaimer')
         termsOfAccess = improved_get(dataset_metadata, 'data.datasetVersion.termsOfAccess')
-        dataaccessPlace = improved_get(dataset_metadata, 'data.datasetVersion.dataaccessPlace')
+        dataAccessPlace = improved_get(dataset_metadata, 'data.datasetVersion.dataAccessPlace')
         originalArchive = improved_get(dataset_metadata, 'data.datasetVersion.originalArchive')
         availabilityStatus = improved_get(dataset_metadata, 'data.datasetVersion.availabilityStatus')
         contactForAccess = improved_get(dataset_metadata, 'data.datasetVersion.contactForAccess')
@@ -167,5 +167,5 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
             metadatafile.writerow([
                 datasetVersionId, persistentUrl, datasetPersistentId, license, termsOfUse, confidentialityDeclaration,
                 specialPermissions, restrictions, citationRequirements, depositorRequirements,
-                conditions, disclaimer, termsOfAccess, dataaccessPlace, originalArchive,
+                conditions, disclaimer, termsOfAccess, dataAccessPlace, originalArchive,
                 availabilityStatus, contactForAccess, sizeOfCollection, studyCompletion])
