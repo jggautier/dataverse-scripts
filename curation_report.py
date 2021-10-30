@@ -30,7 +30,9 @@ startDate = ''  # yyyy-mm-dd
 endDate = ''  # yyyy-mm-dd
 apiKey = ''  # for getting unpublished datasets accessible to Dataverse account
 directory = ''  # directory for CSV file containing dataset and file info, e.g. '/Users/username/Desktop/'
-ignoreCollection = ''  # alias of collections whose datasets should be ignored
+
+# alias of collections whose datasets should be ignored. The script won't try to retrieve info about hese datasets.
+ignoreCollection = 'ashkelonexcavations'
 
 
 # Function for converting given timestamp string with UTC timezone into datetime object with local timezone
