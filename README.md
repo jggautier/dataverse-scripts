@@ -30,3 +30,21 @@ This script downloads dataset metadata of as many known Dataverse installations 
   This script does a join on CSV files in a given directory.
 - #### split_table.py
   This script splits a given CSV file into many csv files based on the unique values in a given column.
+  
+## Installation
+ * Install Python 3 and pip if you don't already have it. There's a handy guide at https://docs.python-guide.org.
+ 
+ * [Download a zip folder with the files in this GitHub repository](https://github.com/jggautier/dataverse_scripts/archive/refs/heads/main.zip) or clone this GitHub repository:
+
+```
+git clone https://github.com/jggautier/get-dataverse-metadata.git
+```
+
+ * Check if you have pipenv installed (`pipenv --version`) or install pipenv (`pip install pipenv`)
+
+ * cd into the dataverse_scripts directory and install packages
+ ```
+pip install -r requirements.txt
+```
+
+* Use pipenv when running the scripts so that the installed packages are available to your script (`pipenv python change_citation_dates.py`). You can also use `pipenv shell` once so that all following commands have access to your installed packages.
