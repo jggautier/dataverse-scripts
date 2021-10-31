@@ -13,7 +13,7 @@ You can manipulate and analyze the metadata in the CSV files using many methods 
 ## Installation
  * Install Python 3 if you don't already have it. There's a handy guide at https://docs.python-guide.org.
  
- * [Download a zip folder with the files in this GitHub repository](https://github.com/jggautier/get-dataverse-metadata/archive/master.zip) or clone this GitHub repository:
+ * [Download a zip folder with the files in this GitHub repository](https://github.com/jggautier/dataverse_scripts/archive/refs/heads/main.zip) or clone this GitHub repository:
 
 ```
 git clone https://github.com/jggautier/get-dataverse-metadata.git
