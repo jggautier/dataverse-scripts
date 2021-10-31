@@ -183,7 +183,7 @@ for parent_compound_field in compound_field_dictionary:
         metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         metadatafile.writerow(header_row)  # Create header row
 
-    print('Getting %s metadata:' % (parent_compound_field))
+    print('\tGetting %s metadata:' % (parent_compound_field))
 
     # For each file in a folder of json files
     for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
@@ -248,7 +248,7 @@ for parent_compound_field in compound_field_dictionary:
         else:
             continue
 
-    print('\nFinished writing %s metadata to %s' % (parent_compound_field, compound_field_csv_filepath))
+    print('\tFinished writing %s metadata to %s' % (parent_compound_field, compound_field_csv_filepath))
 
 # Get list of primitive fields in the given metadatablock JSON file
 
@@ -278,7 +278,7 @@ for primitive_field in primitive_fields:
         # Create header row
         metadatafile.writerow(['datasetVersionId', 'persistentUrl', 'persistent_id', primitive_field])
 
-    print('\nGetting %s metadata:' % (primitive_field))
+    print('\tGetting %s metadata:' % (primitive_field))
 
     # For each file in the folder of JSON files
     for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
@@ -342,7 +342,7 @@ for primitive_field in primitive_fields:
             else:
                 continue
 
-    print('\nFinished writing %s metadata to %s' % (primitive_field, primitive_field_csv_filepath))
+    print('\tFinished writing %s metadata to %s' % (primitive_field, primitive_field_csv_filepath))
 
 # Increase the limit Python imposes on field sizes in CSV files
 csv.field_size_limit(sys.maxsize)
