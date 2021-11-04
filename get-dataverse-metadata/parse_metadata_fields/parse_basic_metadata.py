@@ -5,6 +5,7 @@ import json
 import glob
 import os
 from pathlib import Path
+import sys
 from tkinter import filedialog
 from tkinter import ttk
 from tkinter import *
