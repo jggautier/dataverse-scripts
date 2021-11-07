@@ -35,9 +35,9 @@ Gets the persistent identifiers of any datasets in a given Dataverse installatio
 git clone https://github.com/jggautier/dataverse_scripts.git
 ```
 
- * cd into the dataverse_scripts directory and install packages from [requirements.txt](https://github.com/jggautier/dataverse_scripts/blob/main/requirements.txt)
+ * cd into the dataverse_scripts directory and use `pipenv shell` so that package dependacies for these scripts are managed separately from any Python packages already on your system
+ * install packages from [requirements.txt](https://github.com/jggautier/dataverse_scripts/blob/main/requirements.txt)
  ```
 pip install -r requirements.txt
 ```
-
-* Use pipenv when running the scripts so that the packages installed from requirements.txt are available when running any of the scripts (such as `pipenv python change_citation_dates.py`). You can also use `pipenv shell` once so that all following commands in the terminal have access to the packages installed from requirements.txt.
+ * run any of the Python scripts, such as get_dataset_PIDs.py
