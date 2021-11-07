@@ -32,7 +32,7 @@ Gets the persistent identifiers of any datasets in a given Dataverse installatio
  * [Download a zip folder with the files in this GitHub repository](https://github.com/jggautier/dataverse_scripts/archive/refs/heads/main.zip) or clone this GitHub repository:
 
 ```
-git clone https://github.com/jggautier/get-dataverse-metadata.git
+git clone https://github.com/jggautier/dataverse_scripts.git
 ```
 
  * cd into the dataverse_scripts directory and install packages from [requirements.txt](https://github.com/jggautier/dataverse_scripts/blob/main/requirements.txt)
