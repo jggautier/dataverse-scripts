@@ -1,23 +1,23 @@
 # dataverse-scripts
 
-Scripts for automating things in a Dataverse repository/installation, plus some other scripts. The scripts are written using Python 3 and a Mac OS. Compatability with Python 2 and Windows is limited, although I plan to improve compatibility with Windows over time. 
+Scripts for automating things in a Dataverse repository/installation, plus some other scripts. The scripts are written using Python 3 and a Mac OS. Compatability with Python 2 and Windows is limited, although I plan to improve compatibility with Windows over time.
 
 ### get_dataset_PIDs.py
-Gets the persistent identifiers of any datasets in a given Dataverse installation or a given Dataverse collection within that installation (and optionally all of the Dataverse collections within that Dataverse collection)
+Gets the persistent identifiers of any datasets in a given Dataverse installation or a given Dataverse Collection within that installation (and optionally all of the Dataverse Collections within that Dataverse Collection)
 
-### These scripts do things with a given list of dataset PIDs or Dataverse collection IDs or aliases:
+### These scripts do things with a given list of dataset PIDs or Dataverse Collection IDs or aliases:
 
 | Script or directory                          | Purpose                                                                                                                                                        |
 |----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| change_citation_dates.py                     | Change citation year shown in Dataverse repository's suggested citation for given datasets                                                                     |
-| get_dataset_lock_info.py                     | Get information about the locks on given datasets                                                                                                              |
-| delete_dataset_locks.py                      | Delete all locks on given datasets                                                                                                                             |
-| delete_dataverses.py                         | Delete given Dataverse collections                                                                                                                             |
+| change_citation_dates.py                     | Change citation year shown in Dataverse repository's suggested citation                                            |
+| get_dataset_lock_info.py                     | Get information about locks on given datasets                                                                                                              |
+| delete_dataset_locks.py                      | Delete all locks of given datasets                                                                                                                             |
+| delete_dataverses.py                         | Delete given Dataverse Collections                                                                                                                             |
 | destroy_datasets.py                          | Delete given published datasets                                                                                                                                |
 | [Get and convert metadata of datasets](https://github.com/jggautier/dataverse_scripts/tree/main/get-dataverse-metadata)         | A collection of scripts for getting JSON metadata of given datasets and parsing metadata into csv files for metadata analysis, reporting and improving.        |
-| move_datasets.py                             | Move given datasets from one Dataverse collection into another                                                                                                 |
-| publish_multiple_datasets.py                 | Published given draft datasets (or draft dataset versions)                                                                                                     |
-| remove_dataset_links.py                      | Remove given dataset links from a given Dataverse collection                                                                                                   |
+| move_datasets.py                             | Move given datasets from one Dataverse Collection into another                                                                                                 |
+| publish_multiple_datasets.py                 | Publish given draft datasets (or draft dataset versions)                                                                                                     |
+| remove_dataset_links.py                      | Remove given dataset links from a given Dataverse Collection                                                                                                   |
 | replace_dataset_metadata.py                  | Replace the metadata of given datasets                                                                                                                         |
 
 ### Misc
