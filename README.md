@@ -19,10 +19,10 @@ Gets the persistent identifiers of any datasets in a given Dataverse installatio
 | publish_multiple_datasets.py                 | Published given draft datasets (or draft dataset versions)                                                                                                     |
 | remove_dataset_links.py                      | Remove given dataset links from a given Dataverse collection                                                                                                   |
 | replace_dataset_metadata.py                  | Replace the metadata of given datasets                                                                                                                         |
-| curation_report.py                           | This script creates an overview of datasets created in a Dataverse installation in a given time frame, which can be useful for regular dataset curation.       |
-| get_dataset_metadata_of_all_installations.py | This script downloads dataset metadata of as many known Dataverse installations as possible. Used to create the dataset at https://doi.org/10.7910/DVN/DCDKZQ. |
 
 ### Misc
+- **curation_report.py**: This script creates an overview of datasets created in a Dataverse installation in a given time frame, which can be useful for regular dataset curation.
+- **get_dataset_metadata_of_all_installations.py**: This script downloads dataset metadata of as many known Dataverse installations as possible. Used to create the dataset at https://doi.org/10.7910/DVN/DCDKZQ.
 - **combine_tables.py**: Joins CSV files in a given directory.
 - **split_table.py**: Splits a given CSV file into many CSV files based on the unique values in a given column.
   
