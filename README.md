@@ -25,6 +25,7 @@ Gets the persistent identifiers of any datasets in a given Dataverse installatio
 - **get_dataset_metadata_of_all_installations.py**: This script downloads dataset metadata of as many known Dataverse installations as possible. Used to create the dataset at https://doi.org/10.7910/DVN/DCDKZQ.
 - **combine_tables.py**: Joins CSV files in a given directory.
 - **split_table.py**: Splits a given CSV file into many CSV files based on the unique values in a given column.
+- **oaipmh_record_count.py**: This script writes the identifiers and statuses of records in a given OAI-PMH server and set.
   
 ## Installation
  * Install Python 3, pip and pipenv if you don't already have them. There's a handy guide at https://docs.python-guide.org.
