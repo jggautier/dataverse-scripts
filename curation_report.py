@@ -1,5 +1,5 @@
 '''
-Provide a date range and optional API key and this script will get info for datasets and files created
+Provide a date range and superuser API key and this script will get info for datasets and files created
 within that date range. Useful when curating deposited data, especially spotting problem datasets
 (e.g. datasets with no data).
 
@@ -31,7 +31,7 @@ endDate = ''  # yyyy-mm-dd
 apiKey = ''  # for getting unpublished datasets accessible to Dataverse account
 directory = ''  # directory for CSV file containing dataset and file info, e.g. '/Users/username/Desktop/'
 
-# alias of collections whose datasets should be ignored. The script won't try to retrieve info about hese datasets.
+# Alias of collections whose datasets should be ignored. The script won't try to retrieve info about hese datasets.
 ignoreCollection = ''
 
 
