@@ -16,7 +16,7 @@ window.title('Get terms of use and access metadata')
 window.geometry('550x350')  # width x height
 
 
-# Function called when Browse button is pressed
+# Function called when user presses button to browse for JSON files directory
 def retrieve_jsondirectory():
     global jsonDirectory
 
@@ -28,7 +28,7 @@ def retrieve_jsondirectory():
     label_showChosenDirectory.grid(sticky='w', column=0, row=2)
 
 
-# Function called when Browse button is pressed
+# Function called when user presses button to browse for CSV file directory
 def retrieve_csvdirectory():
     global csvDirectory
 
