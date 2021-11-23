@@ -18,7 +18,7 @@ window.title('Get basic dataset metadata')
 window.geometry('550x500')  # width x height
 
 
-# Function called when Browse button is pressed
+# Function called when user presses button to browse for JSON files directory
 def retrieve_jsondirectory():
     global jsonDirectory
 
@@ -30,7 +30,7 @@ def retrieve_jsondirectory():
     label_showChosenDirectory.grid(sticky='w', column=0, row=2)
 
 
-# Function called when Browse button is pressed
+# Function called when user presses button to browse for CSV files directory
 def retrieve_csvdirectory():
     global csvDirectory
 
@@ -42,7 +42,7 @@ def retrieve_csvdirectory():
     label_showChosenDirectory.grid(sticky='w', column=0, row=6)
 
 
-# Function called when Browse button is pressed
+# Function called when Start button is pressed
 def start():
     window.destroy()
 

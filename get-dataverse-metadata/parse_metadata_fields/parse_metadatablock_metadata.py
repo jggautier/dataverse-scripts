@@ -54,7 +54,7 @@ def retrieve_csvdirectory():
     label_showChosenDirectory.grid(sticky='w', column=0, row=10)
 
 
-# Function called when Browse button is pressed
+# Function called when Start button is pressed
 def start():
     window.destroy()
 
