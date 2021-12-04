@@ -11,15 +11,15 @@ versionType = ''  # Enter "major" or "minor".
 # see https://guides.dataverse.org/en/latest/user/dataset-management.html#dataset-versions
 
 datasetPIDs = []
-if '.csv' in file:
-    with open(file, mode='r', encoding='utf-8') as f:
+if '.csv' in datasetPIDFile:
+    with open(datasetPIDFile, mode='r', encoding='utf-8') as f:
         csvDictReader = DictReader(f, delimiter=',')
         for row in csvDictReader:
             datasetPIDs.append(row['persistent_id'].rstrip())
 
-elif '.txt' in file:
-    file = open(file)
-    for datasetPID in file:
+elif '.txt' in datasetPIDFile:
+    datasetPIDFile = open(datasetPIDFile)
+    for datasetPID in datasetPIDFile:
 
         # Remove any trailing spaces from datasetPID
         datasetPIDs.append(datasetPID.rstrip())
