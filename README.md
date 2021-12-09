@@ -23,7 +23,6 @@ Gets the persistent identifiers and some other basic information of datasets in 
 | replace_dataset_metadata.py                  | Replace the metadata of given datasets                                                                                                                         |
 
 ### Misc
-- **curation_report.py**: This script produces a report, as a CSV file, containing information about datasets created/published and files uploaded in a given Dataverse installation and within a given time frame. The report can be useful for regular dataset curation.
 - **get_dataset_metadata_of_all_installations.py**: This script downloads dataset metadata of as many known Dataverse installations as possible. Used to create the dataset at https://doi.org/10.7910/DVN/DCDKZQ.
 - **combine_tables.py**: This script joins CSV files in a given directory. Useful for combining the tables produced by [the "parse..." scripts](https://github.com/jggautier/dataverse-scripts/tree/main/get-dataverse-metadata/parse_metadata_fields).
 - **split_table.py**: This script splits a given CSV file into many CSV files based on the unique values in a given column.
