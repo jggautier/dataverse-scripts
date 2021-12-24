@@ -13,7 +13,6 @@ from tkinter import *
 # Create, title and size the root
 root = Tk()
 root.title('Join CSV files')
-root.geometry('550x250')  # width x height
 
 
 # Function called when Browse button is pressed
