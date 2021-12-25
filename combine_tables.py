@@ -88,7 +88,7 @@ button_getCsvFiles.grid(sticky='w', row=1)
 
 # Create and place frame for field for choosing directory for storing joined file
 panedWindowjoinedFileDirectory = PanedWindow(root, borderwidth=0)
-panedWindowjoinedFileDirectory.grid(sticky='w', row=1, padx=10, pady=5)
+panedWindowjoinedFileDirectory.grid(sticky='w', row=1, padx=10, pady=20)
 
 # Create label for button to browse for directory to add CSV files in
 label_joinedFileDirectory = Label(panedWindowjoinedFileDirectory, text='Choose folder to store the joined CSV file:', anchor='w')
