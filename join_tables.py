@@ -7,14 +7,8 @@ import pandas as pd
 from tkinter import *
 from tkinter import messagebox, filedialog
 
-# Create GUI for getting user input
 
-# Create, title and size the root
-root = Tk()
-root.title('Join CSV files')
-
-
-# Function called when Browse button is pressed
+# Function called when button is pressed for browsing for CSV files
 def retrieve_csv_files():
     global filesTuples
 
@@ -23,11 +17,13 @@ def retrieve_csv_files():
     text = 'You chose %s file(s)' % (len(filesTuples))
 
     # Show user which directory she chose
-    label_showFileCount = Label(panedWindowgetCsvFiles, text=text, anchor='w', foreground='green', wraplength=500, justify='left')
+    label_showFileCount = Label(
+        panedWindowgetCsvFiles, text=text, anchor='w', 
+        foreground='green', wraplength=500, justify='left')
     label_showFileCount.grid(sticky='w', row=2)
 
 
-# Function called when Browse button is pressed
+# Function called when button is pressed for browsing for folder to save joined CSV file
 def retrieve_joinedfiledirectory():
     global joinedFileDirectory
 
@@ -35,20 +31,15 @@ def retrieve_joinedfiledirectory():
     joinedFileDirectory = filedialog.askdirectory()
 
     # Show user which directory she chose
-    label_showChosenDirectory = Label(panedWindowjoinedFileDirectory, text='You chose: ' + joinedFileDirectory, anchor='w', foreground='green', wraplength=500, justify='left')
+    label_showChosenDirectory = Label(
+        panedWindowjoinedFileDirectory, 
+        text='You chose: ' + joinedFileDirectory, anchor='w', 
+        foreground='green', wraplength=500, justify='left')
     label_showChosenDirectory.grid(sticky='w', row=2)
 
 
-# Function called when Browse button is pressed
-def start():
-    indexString = entry_getIndexes.get()
-    indexList = [x.strip() for x in indexString.split(',')]
-
-    join_csv_files(joinedFileDirectory, filesTuples, indexList)
-    root.destroy()
-
-
-def join_csv_files(joinedFileDirectory, filesTuples, indexList):
+# Function for joining the given CSV files
+def join_csv_files(filesTuples, indexList, joinedFileDirectory):
 
     # Create CSV file in the directory that the user selected
     filename = os.path.join(joinedFileDirectory, 'joined.csv')
@@ -76,6 +67,29 @@ def join_csv_files(joinedFileDirectory, filesTuples, indexList):
     print('Joined dataframe exported to %s' % (filename))
 
 
+# Function called when button is pressed to join given CSV files
+def join():
+    indexString = entry_getIndexes.get()
+    if indexString == '':
+        label_getIndexesError = Label(
+            panedWindowgetIndexes, 
+            text='You must enter at least one column name', 
+            foreground='red')
+        label_getIndexesError.grid(sticky='w', row=4)
+    else:
+        indexList = [x.strip() for x in indexString.split(',')]
+
+        join_csv_files(filesTuples, indexList, joinedFileDirectory)
+
+        root.destroy()
+
+
+# Create GUI for getting user input
+
+# Create and title of the root main window
+root = Tk()
+root.title('Join CSV files (full outer join)')
+
 # Create frames
 panedWindowgetCsvFiles = PanedWindow(root, borderwidth=0)
 panedWindowgetIndexes = PanedWindow(root, borderwidth=0)
@@ -83,15 +97,21 @@ panedWindowjoinedFileDirectory = PanedWindow(root, borderwidth=0)
 panedWindowJoinButton = PanedWindow(root, borderwidth=0)
 
 # Create label for button to browse for directory containing CSV files
-label_getCsvFiles = Label(panedWindowgetCsvFiles, text='Choose CSV files to join', anchor='w')
+label_getCsvFiles = Label(
+    panedWindowgetCsvFiles, 
+    text='Choose CSV files to join', anchor='w')
 label_getCsvFiles.grid(sticky='w', row=0)
 
 # Create button to browse for directory containing JSON files
-button_getCsvFiles = Button(panedWindowgetCsvFiles, text='Browse', command=lambda: retrieve_csv_files())
+button_getCsvFiles = Button(
+    panedWindowgetCsvFiles, text='Browse', 
+    command=lambda: retrieve_csv_files())
 button_getCsvFiles.grid(sticky='w', row=1)
 
 # Create label for text box for entering names of columns to join on
-label_getIndexes = Label(panedWindowgetIndexes, text='Enter columns to join on', anchor='w')
+label_getIndexes = Label(
+    panedWindowgetIndexes, 
+    text='Enter column names to join on', anchor='w')
 label_getIndexes.grid(sticky='w', row=0)
 
 # Create text box for entering names of columns to join on
@@ -99,19 +119,27 @@ entry_getIndexes = Entry(panedWindowgetIndexes, width=30)
 entry_getIndexes.grid(sticky='w', row=1)
 
 # Create label for text box for entering names of columns to join on
-label_getIndexesHelpText = Label(panedWindowgetIndexes, text='Separate column names with commas', foreground='grey', anchor='w')
+label_getIndexesHelpText = Label(
+    panedWindowgetIndexes, text='Separate column names with commas', 
+    foreground='grey', anchor='w')
 label_getIndexesHelpText.grid(sticky='w', row=2)
 
 # Create label for button to browse for directory to add CSV files in
-label_joinedFileDirectory = Label(panedWindowjoinedFileDirectory, text='Choose folder to save the joined CSV file in', anchor='w')
+label_joinedFileDirectory = Label(
+    panedWindowjoinedFileDirectory, 
+    text='Choose folder to save the joined CSV file in', anchor='w')
 label_joinedFileDirectory.grid(sticky='w', row=0)
 
 # Create button to browse for directory containing JSON files
-button_joinedFileDirectory = Button(panedWindowjoinedFileDirectory, text='Browse', command=lambda: retrieve_joinedfiledirectory())
+button_joinedFileDirectory = Button(
+    panedWindowjoinedFileDirectory, 
+    text='Browse', command=lambda: retrieve_joinedfiledirectory())
 button_joinedFileDirectory.grid(sticky='w', row=1)
 
 # Create join button
-button_Join = Button(panedWindowJoinButton, text='Join CSV files', command=lambda: start())
+button_Join = Button(
+    panedWindowJoinButton, text='Join CSV files', foreground='blue',
+    command=lambda: join())
 button_Join.grid(sticky='w', row=0)
 
 # Place frames
