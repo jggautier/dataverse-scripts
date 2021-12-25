@@ -24,7 +24,7 @@ Gets the persistent identifiers and some other basic information of datasets in 
 
 ### Misc
 - **get_dataset_metadata_of_all_installations.py**: This script downloads dataset metadata of as many known Dataverse installations as possible. Used to create the dataset at https://doi.org/10.7910/DVN/DCDKZQ.
-- **join_csv_files.py**: This script performs full outer joins on two or more CSV files. Useful for combining the tables produced by [the "parse..." scripts](https://github.com/jggautier/dataverse-scripts/tree/main/get-dataverse-metadata/parse_metadata_fields).
+- **join_csv_files.py**: This script performs [outer joins](https://dataschool.com/how-to-teach-people-sql/full-outer-join-animated/) on two or more CSV files. Useful for joining the tables produced by [the "parse..." scripts](https://github.com/jggautier/dataverse-scripts/tree/main/get-dataverse-metadata/parse_metadata_fields).
 - **split_table.py**: This script splits a given CSV file into many CSV files based on the unique values in a given column.
 - **oaipmh_record_count.py**: This script writes the identifiers and statuses of records in a given OAI-PMH server and set.
   
