@@ -69,19 +69,38 @@ def join_csv_files(filesTuples, indexList, joinedFileDirectory):
 
 # Function called when button is pressed to join given CSV files
 def join():
+    print('join button pressed')
+    try:
+        filesTuples
+    except NameError:
+        filesTuples = ''
+
     indexString = entry_getIndexes.get()
-    if indexString == '':
-        label_getIndexesError = Label(
-            panedWindowgetIndexes, 
-            text='You must enter at least one column name', 
-            foreground='red')
-        label_getIndexesError.grid(sticky='w', row=4)
-    else:
+
+    try:
+        joinedFileDirectory
+    except NameError:
+        joinedFileDirectory = ''
+        
+    if filesTuples != '' and indexString != '' and joinedFileDirectory != '':
+        print('script should start')
         indexList = [x.strip() for x in indexString.split(',')]
 
         join_csv_files(filesTuples, indexList, joinedFileDirectory)
 
         root.destroy()
+
+    elif filesTuples == '' or indexString == '' or joinedFileDirectory == '':
+        print('Error')
+        print(filesTuples)
+        print(indexString)
+        print(joinedFileDirectory)
+
+        label_Error = Label(
+            panedWindowJoinButton, 
+            text='Check the fields', 
+            foreground='red')
+        label_Error.grid(sticky='w', row=1)
 
 
 # Create GUI for getting user input
