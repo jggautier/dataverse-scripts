@@ -70,35 +70,25 @@ def join_csv_files(filesTuples, indexList, joinedFileDirectory):
 # Function called when button is pressed to join given CSV files
 def join():
     print('join button pressed')
-    try:
-        filesTuples
-    except NameError:
-        filesTuples = ''
 
     indexString = entry_getIndexes.get()
-
     try:
-        joinedFileDirectory
-    except NameError:
-        joinedFileDirectory = ''
-        
-    if filesTuples != '' and indexString != '' and joinedFileDirectory != '':
-        print('script should start')
         indexList = [x.strip() for x in indexString.split(',')]
 
         join_csv_files(filesTuples, indexList, joinedFileDirectory)
 
         root.destroy()
+    except Exception as e:
+        e = str(e)
+        if e == 'name \'filesTuples\' is not defined' or\
+            'are in the columns' in e or\
+            e == 'name \'joinedFileDirectory\' is not defined':
 
-    elif filesTuples == '' or indexString == '' or joinedFileDirectory == '':
-        print('Error')
-        print(filesTuples)
-        print(indexString)
-        print(joinedFileDirectory)
+            error = 'Check your entries and try again.'
 
         label_Error = Label(
-            panedWindowJoinButton, 
-            text='Check the fields', 
+            panedWindowJoinButton,
+            text=error,
             foreground='red')
         label_Error.grid(sticky='w', row=1)
 
