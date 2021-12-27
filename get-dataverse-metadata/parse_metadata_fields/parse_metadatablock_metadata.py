@@ -152,14 +152,14 @@ def getsubfields(parent_compound_field, subfield):
 
             # If the compound field allows multiple instances, use the index variable to iterate over each instance
             if fields['typeName'] == parent_compound_field and fields['multiple'] is True:
-                subfield = fields['value'][index][subfield]['value']
+                subfield = fields['value'][index][subfield]['value'][:10000].replace('\r', ' - ')
 
                 # Truncate value to 10000 characters (some metadata fields have 30,000+ characters, which messes with CSV writing/reading)
-                subfield = subfield[:10000]
+                # subfield = subfield[:10000].replace('\r', ' - ')
 
             # If the compound field doesn't allow multiple values, the index isn't needed
             elif fields['typeName'] == parent_compound_field and fields['multiple'] is False:
-                subfield = fields['value'][subfield]['value']
+                subfield = fields['value'][subfield]['value'][:10000].replace('\r', ' - ')
 
     except KeyError:
         subfield = ''
@@ -299,7 +299,7 @@ for primitive_field in primitive_fields:
                 persistentUrl = dataset_metadata['data']['persistentUrl']
                 datasetPersistentId = improved_get(dataset_metadata, 'data.datasetVersion.datasetPersistentId')
 
-                # Couple each field value with the dataset version ID and write as a row to subjects.csv
+                # Couple each field value with the dataset version ID and write as a row
                 for fields in dataset_metadata['data']['datasetVersion']['metadataBlocks'][metadatablock_name]['fields']:
                     if fields['typeName'] == primitive_field:
                         value = fields['value']
@@ -308,7 +308,7 @@ for primitive_field in primitive_fields:
                         if isinstance(value, str):
 
                             # Truncate value to 10000 characters (some metadata fields have 30,000+ characters, which messes with CSV writing/reading)
-                            value = value[:10000]
+                            value = value[:10000].replace('\r', ' - ')
 
                             with open(primitive_field_csv_filepath, mode='a', newline='', encoding='utf-8') as metadatafile:
 
@@ -326,7 +326,7 @@ for primitive_field in primitive_fields:
                             for value in fields['value']:
 
                                 # Truncate value to 10000 characters (some metadata fields have 30,000+ characters, which messes with CSV writing/reading)
-                                value = value[:10000]
+                                value = value[:10000].replace('\r', ' - ')
 
                                 # persistentUrl = dataset_metadata['data']['persistentUrl']
                                 with open(primitive_field_csv_filepath, mode='a', newline='', encoding='utf-8') as metadatafile:
@@ -342,7 +342,7 @@ for primitive_field in primitive_fields:
             else:
                 continue
 
-    print('\tFinished writing %s metadata to %s' % (primitive_field, primitive_field_csv_filepath))
+    print('\nFinished writing %s metadata to %s' % (primitive_field, primitive_field_csv_filepath))
 
 # Increase the limit Python imposes on field sizes in CSV files
 csv.field_size_limit(sys.maxsize)
