@@ -85,6 +85,8 @@ def join():
             e == 'name \'joinedFileDirectory\' is not defined':
 
             error = 'Check your entries and try again.'
+        else:
+            error = e
 
         label_Error = Label(
             panedWindowJoinButton,
