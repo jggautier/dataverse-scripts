@@ -102,7 +102,7 @@ def improved_get(_dict, path, default=None):
     if isinstance(_dict, int):
         return _dict
     else:
-        return _dict[:10000]
+        return _dict[:10000].replace('\r', ' - ')
 
 
 # Save count of files in the given directory and initialize count variable to track progress of script and for debugging
