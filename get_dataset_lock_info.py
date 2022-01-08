@@ -9,7 +9,7 @@ import requests
 import time
 
 repositoryURL = ''
-inputFile = ''  # Path to .txt or .csv file with database IDs of dataverses to be deleted
+inputFile = ''  # Path to .txt or .csv file with database PIDs of datasets to get lock info
 directory = '' # Path to directory where CSV file containing lock info will be created
 
 
