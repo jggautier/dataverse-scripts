@@ -4,13 +4,15 @@ from functools import reduce
 import glob
 import os
 import pandas as pd
-from tkinter import messagebox, filedialog, Label, Tk, PanedWindow, Entry, mainloop
+from tkinter import filedialog, Label, Tk, PanedWindow, Entry, mainloop, Listbox
+from tkinter import MULTIPLE, StringVar, Scrollbar, N, S, E, W
 from tkmacosx import Button
 
 
 # Function called when button is pressed for browsing for CSV files
 def retrieve_csv_files():
     global filesTuples
+    global columnLists
 
     filesTuples = filedialog.askopenfilenames(filetypes=[('CSV','*.csv')])
 
@@ -22,6 +24,15 @@ def retrieve_csv_files():
         foreground='green', wraplength=500, justify='left')
     label_showFileCount.grid(sticky='w', row=2)
 
+    # Get names of columns that exist in all chosen CSV files
+    dataframes = [pd.read_csv(table, sep=',') for table in filesTuples]
+    columnLists = []
+    for dataframe in dataframes:
+        columnLists.append(dataframe.columns)
+    commonColumns = list(reduce(set.intersection, map(set, columnLists)))
+
+    # Add names of common columns to list box
+    values.set(commonColumns)
 
 # Function called when button is pressed for browsing for folder to save joined CSV file
 def retrieve_joinedfiledirectory():
@@ -47,7 +58,7 @@ def join_csv_files(filesTuples, indexList, joinedFileDirectory):
     print('Creating a dataframe for each CSV file...')
 
     # Create a dataframe of each CSV file in the 'filesTuples' list
-    dataframes = [pd.read_csv(table, sep=',') for table in filesTuples]
+    dataframes = [pd.read_csv(table, sep=',', na_filter = False) for table in filesTuples]
 
     # For each dataframe, set the indexes (or the common columns across the dataframes to join on)
     for dataframe in dataframes:
@@ -69,12 +80,15 @@ def join_csv_files(filesTuples, indexList, joinedFileDirectory):
 
 # Function called when button is pressed to join given CSV files
 def join():
-    indexString = entry_getIndexes.get()
+    # Get columns user chose from listbox
+    selectedColumns = []
+    selections = listBox_chooseColumns.curselection()
+    for selection in selections:
+        column = listBox_chooseColumns.get(selection)
+        selectedColumns.append(column)
+
     try:
-        indexList = [x.strip() for x in indexString.split(',')]
-
-        join_csv_files(filesTuples, indexList, joinedFileDirectory)
-
+        join_csv_files(filesTuples, selectedColumns, joinedFileDirectory)
         root.destroy()
     except Exception as e:
         e = str(e)
@@ -121,18 +135,21 @@ button_getCsvFiles.grid(sticky='w', row=1)
 # Create label for text box for entering names of columns to join on
 label_getIndexes = Label(
     panedWindowgetIndexes, 
-    text='Enter column names to join on', anchor='w')
+    text='Choose column names to join on', anchor='w')
 label_getIndexes.grid(sticky='w', row=0)
 
-# Create text box for entering names of columns to join on
-entry_getIndexes = Entry(panedWindowgetIndexes, width=30)
-entry_getIndexes.grid(sticky='w', row=1)
+# Create Listbox for choosing columns to join on
+values = StringVar()
+listBox_chooseColumns = Listbox(panedWindowgetIndexes,
+    width=28, height=5,
+    listvariable=values, selectmode=MULTIPLE, exportselection=0)
+listBox_chooseColumns.grid(sticky='w', row=1)
 
-# Create label for text box for entering names of columns to join on
-label_getIndexesHelpText = Label(
-    panedWindowgetIndexes, text='Separate column names with commas', 
-    foreground='grey', anchor='w')
-label_getIndexesHelpText.grid(sticky='w', row=2)
+# Add scroll bar to Listbox for choosing columns to join on
+scrollbar = Scrollbar(panedWindowgetIndexes, orient='vertical')
+scrollbar.config(command=listBox_chooseColumns.yview)
+scrollbar.grid(column=1, row=1, sticky=N+S+W)
+listBox_chooseColumns.config(yscrollcommand=scrollbar.set)
 
 # Create label for button to browse for directory to add CSV files in
 label_joinedFileDirectory = Label(
