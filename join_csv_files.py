@@ -46,7 +46,7 @@ def join_csv_files(filesTuples, indexList, joinedFileDirectory):
 
     print('Creating a dataframe for each CSV file...')
 
-    # Create a dataframe of each CSV file in the 'all-tables' list
+    # Create a dataframe of each CSV file in the 'filesTuples' list
     dataframes = [pd.read_csv(table, sep=',') for table in filesTuples]
 
     # For each dataframe, set the indexes (or the common columns across the dataframes to join on)
@@ -149,7 +149,7 @@ button_joinedFileDirectory.grid(sticky='w', row=1)
 # Create join button
 button_Join = Button(
     panedWindowJoinButton, text='Join CSV files', 
-    width='15', fg='white', bg='blue',
+    width=150, height=40, fg='white', bg='blue',
     command=lambda: join())
 button_Join.grid(sticky='w', row=0)
 
