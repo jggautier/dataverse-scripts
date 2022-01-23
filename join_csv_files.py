@@ -11,12 +11,12 @@ from tkmacosx import Button
 
 # Function called when button is pressed for browsing for CSV files
 def retrieve_csv_files():
-    global filesTuples
+    global filesList
     global columnLists
 
-    filesTuples = filedialog.askopenfilenames(filetypes=[('CSV','*.csv')])
+    filesList = filedialog.askopenfilenames(filetypes=[('CSV','*.csv')])
 
-    text = 'You chose %s file(s)' % (len(filesTuples))
+    text = 'You chose %s file(s)' % (len(filesList))
 
     # Show user which directory she chose
     label_showFileCount = Label(
@@ -25,7 +25,7 @@ def retrieve_csv_files():
     label_showFileCount.grid(sticky='w', row=2)
 
     # Get names of columns that exist in all chosen CSV files
-    dataframes = [pd.read_csv(table, sep=',') for table in filesTuples]
+    dataframes = [pd.read_csv(table, sep=',') for table in filesList]
     columnLists = []
     for dataframe in dataframes:
         columnLists.append(dataframe.columns)
@@ -50,15 +50,15 @@ def retrieve_joinedfiledirectory():
 
 
 # Function for joining the given CSV files
-def join_csv_files(filesTuples, indexList, joinedFileDirectory):
+def join_csv_files(filesList, indexList, joinedFileDirectory):
 
     # Create CSV file in the directory that the user selected
     filename = os.path.join(joinedFileDirectory, 'joined.csv')
 
     print('Creating a dataframe for each CSV file...')
 
-    # Create a dataframe of each CSV file in the 'filesTuples' list
-    dataframes = [pd.read_csv(table, sep=',', na_filter = False) for table in filesTuples]
+    # Create a dataframe of each CSV file in the 'filesList' list
+    dataframes = [pd.read_csv(table, sep=',', na_filter = False) for table in filesList]
 
     # For each dataframe, set the indexes (or the common columns across the dataframes to join on)
     for dataframe in dataframes:
@@ -88,11 +88,11 @@ def join():
         selectedColumns.append(column)
 
     try:
-        join_csv_files(filesTuples, selectedColumns, joinedFileDirectory)
+        join_csv_files(filesList, selectedColumns, joinedFileDirectory)
         root.destroy()
     except Exception as e:
         e = str(e)
-        if e == 'name \'filesTuples\' is not defined' or\
+        if e == 'name \'filesList\' is not defined' or\
             e == 'are in the columns' in e or\
             e == 'name \'joinedFileDirectory\' is not defined' or\
             e == 'reduce() of empty sequence with no initial value':
