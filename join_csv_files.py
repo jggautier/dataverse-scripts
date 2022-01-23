@@ -4,8 +4,8 @@ from functools import reduce
 import glob
 import os
 import pandas as pd
-from tkinter import *
-from tkinter import messagebox, filedialog
+from tkinter import messagebox, filedialog, Label, Tk, PanedWindow, Entry, mainloop
+from tkmacosx import Button
 
 
 # Function called when button is pressed for browsing for CSV files
@@ -69,8 +69,6 @@ def join_csv_files(filesTuples, indexList, joinedFileDirectory):
 
 # Function called when button is pressed to join given CSV files
 def join():
-    print('join button pressed')
-
     indexString = entry_getIndexes.get()
     try:
         indexList = [x.strip() for x in indexString.split(',')]
@@ -81,8 +79,9 @@ def join():
     except Exception as e:
         e = str(e)
         if e == 'name \'filesTuples\' is not defined' or\
-            'are in the columns' in e or\
-            e == 'name \'joinedFileDirectory\' is not defined':
+            e == 'are in the columns' in e or\
+            e == 'name \'joinedFileDirectory\' is not defined' or\
+            e == 'reduce() of empty sequence with no initial value':
 
             error = 'Check your entries and try again.'
         else:
@@ -149,7 +148,8 @@ button_joinedFileDirectory.grid(sticky='w', row=1)
 
 # Create join button
 button_Join = Button(
-    panedWindowJoinButton, text='Join CSV files', foreground='blue',
+    panedWindowJoinButton, text='Join CSV files', 
+    width='15', fg='white', bg='blue',
     command=lambda: join())
 button_Join.grid(sticky='w', row=0)
 
