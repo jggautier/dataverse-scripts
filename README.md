@@ -37,7 +37,7 @@ Gets the persistent identifiers and some other basic information of datasets in 
 git clone https://github.com/jggautier/dataverse-scripts.git
 ```
 
- * cd into the dataverse-scripts directory and use `pipenv shell` so that package dependacies for these scripts are managed separately from any Python packages already on your system
+ * cd into the dataverse-scripts directory and use `pipenv shell` so that package dependencies for these scripts are managed separately from any Python packages already on your system
  * Install packages from [requirements.txt](https://github.com/jggautier/dataverse-scripts/blob/main/requirements.txt)
  ```
 pip install -r requirements.txt
