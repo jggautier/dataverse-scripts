@@ -1,3 +1,5 @@
 .DS_Store
 .idea/modules.xml
 .idea/dataverse-scripts.iml
+*.pyc
+testing_curation_app_functions.py
