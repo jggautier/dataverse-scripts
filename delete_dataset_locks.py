@@ -8,6 +8,7 @@ apikey = ''  # API key of superuser account
 file = ''  # Path to .txt or .csv file with database IDs of dataverses to be deleted
 
 datasetPIDs = []
+
 if '.csv' in file:
     with open(file, mode='r', encoding='utf-8') as f:
         csvDictReader = DictReader(f, delimiter=',')
@@ -35,6 +36,6 @@ for datasetPID in datasetPIDs:
     count += 1
 
     if req.status_code == 200:
-        print('Success: %s! %s of %s' % (datasetPID, count, total))
+        print('Success!: %s %s of %s' % (datasetPID, count, total))
     else:
-        print('Failure: %s! %s of %s' % (datasetPID, count, total))
+        print('Failure: %s %s of %s' % (datasetPID, count, total))
