@@ -6,7 +6,8 @@ A small application for automating things in Dataverse repositories/installation
 The application is written using the Dataverse software's APIs, Python 3, and Python's tkinter package (for creating the user interface), and made into an executable file using pyInstaller.
 
 ## Status
-[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)  
+Work in progress: Doing usability testing, fixing UI bugs, adding more documentation 
 
 ## Using the application
 ### Executable file
