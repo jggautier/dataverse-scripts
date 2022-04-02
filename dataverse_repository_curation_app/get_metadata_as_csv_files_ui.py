@@ -1,6 +1,6 @@
 # App for getting the metadata of datasets as CSV files
 
-from curation_app_functions import *
+from dataverse_repository_curation_app_functions import *
 import json
 import os
 import requests
