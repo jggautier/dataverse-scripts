@@ -1,6 +1,6 @@
 from curation_app_functions import *
-from get_metadata_as_csv_files import *
-from delete_published_datasets import *
+from get_metadata_as_csv_files_ui import *
+from delete_published_datasets_ui import *
 # from PIL import ImageTk, Image
 from tkinter import Tk, ttk, Frame, Label, IntVar, StringVar
 from tkinter.ttk import OptionMenu
