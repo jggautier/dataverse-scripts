@@ -3,7 +3,7 @@
 
 
 A small application for automating things in Dataverse repositories/installations, including:
-- Getting the dataset metadata as CSV files
+- Getting dataset metadata as CSV files
 - Deleting published datasets (only available to "super user" accounts, usually used by administrators of Dataverse installations)
 
 I plan to add more tasks over time, including:
