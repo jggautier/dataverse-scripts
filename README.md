@@ -18,7 +18,7 @@ If you'd like to run the application on earlier versions of MacOS or on other op
 
 ## Upcoming changes
 
-I plan to add more tasks over time, including:
+I plan to add more functionality to the application over time, including:
 - Merging dataverse accounts
 - Getting the guestbooks of all Dataverse Collections within a dataverse Collection
 - Deleting Dataverse Collections (and optionally all collections and datasets within it)
@@ -28,3 +28,6 @@ I plan to add more tasks over time, including:
 - Moving datasets to different Dataverse Collections
 - Publishing datasets
 - Removing dataset links in Dataverse Collections
+
+## Other scripts
+The [other_scripts directory](https://github.com/jggautier/dataverse-scripts/tree/main/other_scripts) contains Python scripts I've written over the past three years for automating some common curation and research-related tasks. Some of these scripts do what the Dataverse repository curation app does or will do. I'll remove these scripts from the directory as the scripts functionality gets added to the application.
