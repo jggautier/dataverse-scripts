@@ -11,7 +11,14 @@ Work in progress: Doing usability testing, fixing UI bugs, adding more documenta
 
 ## Using the application
 ### Executable file
-The executable file works only on MacOS and may only work on macOS Monterey (12) and later MacOS versions. To use it, [download the ZIP file](https://github.com/jggautier/dataverse-scripts/raw/main/Dataverse%20Repository%20Curation%20App.zip), and extract the Dataverse Repository Curation App file.
+The executable file works only on MacOS and may only work on macOS Monterey (12) and later MacOS versions. To use it:
+* [Download the ZIP file](https://github.com/jggautier/dataverse-scripts/raw/main/Dataverse%20Repository%20Curation%20App.zip). If you're using Google Chrome, keep an eye out for the browser blocking the download of the ZIP file. You might have to tell the browswer that the download is safe
+* Extract the Zip file's Dataverse Repository Curation App file
+* Right click on the file and choose Open. MacOS will display a warning that “Dataverse Repository Curation App” can’t be opened because Apple cannot check it for malicious software. (See [Apple's support article](https://support.apple.com/guide/mac-help/apple-cant-check-app-for-malicious-software-mchleab3a043/mac) for more info about this warning.)
+* Click "Open" and wait for the application to appear
+* The file will be saved as an exception to your computer's security settings, and you'll be able to open it at any time by double-clicking it
+
+If you re-download the file, e.g. to use a version with more functionality or bug fixes, you'll have to follow these steps again to re-add the application as an exemption to your computer's security settings.
 
 ### Python script
 If you'd like to run the application on earlier versions of MacOS or on other operating systems, or if you run into problems with the exectable file, you can run the curation_app_main.py file. You'll need Python 3 installed and may need Python 3.7 or later, as well as the Python libraries listed in the [requirements.txt file](https://github.com/jggautier/dataverse-scripts/blob/main/dataverse_repository_curation_app/requirements.txt):
