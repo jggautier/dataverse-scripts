@@ -1,4 +1,4 @@
-from curation_app_functions import *
+from dataverse_curation_app_functions import *
 from get_metadata_as_csv_files_ui import *
 from delete_published_datasets_ui import *
 # from PIL import ImageTk, Image
