@@ -10,7 +10,7 @@ The application is written using the Dataverse software's APIs, Python 3, and Py
 
 ## Using the application
 ### Executable file
-The executable file works only on MacOS and may only work on macOS Monterey (12) and later MacOS versions. To use it, visit https://github.com/jggautier/dataverse-scripts/blob/main/dataverse_curation_app_main.zip, download the ZIP and extract the Dataverse Curation App.
+The executable file works only on MacOS and may only work on macOS Monterey (12) and later MacOS versions. To use it, [download the ZIP file](https://github.com/jggautier/dataverse-scripts/raw/main/Dataverse%20Repository%20Curation%20App.zip), and extract the Dataverse Repository Curation App file.
 
 ### Python script
 If you'd like to run the application on earlier versions of MacOS or on other operating systems, or if you run into problems with the exectable file, you can run the curation_app_main.py file.
