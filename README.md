@@ -16,6 +16,21 @@ The executable file works only on MacOS and may only work on macOS Monterey (12)
 ### Python script
 If you'd like to run the application on earlier versions of MacOS or on other operating systems, or if you run into problems with the exectable file, you can run the curation_app_main.py file. You'll need Python 3 installed and may need Python 3.7 or later, as well as the Python libraries listed in the [requirements.txt file](https://github.com/jggautier/dataverse-scripts/blob/main/dataverse_repository_curation_app/requirements.txt).
 
+* Install Python 3, pip and pipenv if you don't already have them. There's a handy guide at https://docs.python-guide.org.
+ 
+ * [Download a zip folder with the files in this GitHub repository](https://github.com/jggautier/dataverse-scripts/archive/refs/heads/main.zip) or clone this GitHub repository:
+
+```
+git clone https://github.com/jggautier/dataverse-scripts.git
+```
+
+ * Iin your terminal, cd into the dataverse_repository_curation_app directory and use `pipenv shell` so that package dependencies for these scripts are managed separately from any Python packages already on your system
+ * Install packages from the requirements.txt file
+ ```
+pip install -r requirements.txt
+```
+ * Run dataverse_repository_curation_app_main.py to run the application
+
 ## Upcoming changes
 
 I plan to add more functionality to the application over time, including:
