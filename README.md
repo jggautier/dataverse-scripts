@@ -36,12 +36,12 @@ Note: The tkinter library comes with most installations of Python 3, so pip does
 ## Upcoming changes
 
 I plan to add more functionality to the application over time, including:
-- Merging dataverse accounts
-- Getting the guestbooks of all Dataverse Collections within a dataverse Collection
+- Merging user accounts in a Dataverse repository
+- Getting information about locked datasets in a Dataverse repository
+- Deleting dataset locks
+- Getting the guestbooks of all Dataverse Collections within a Dataverse Collection
 - Deleting Dataverse Collections (and optionally all collections and datasets within it)
 - Changing datasets' citation dates
-- Deleting dataset locks
-- Getting information about locked datasets in a Dataverse repository
 - Moving datasets to different Dataverse Collections
 - Publishing datasets
 - Removing dataset links in Dataverse Collections
