@@ -1,4 +1,6 @@
 # Dataverse repository curation app
+[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+
 
 A small application for automating things in Dataverse repositories/installations, including:
 - Getting the dataset metadata as CSV files
