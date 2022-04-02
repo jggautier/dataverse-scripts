@@ -1,0 +1,17 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "name" :  "Dataverse repository curation app",
+  "description" :  "A small application for automating things in Dataverse repositories/installations",
+  "license" :  "https://creativecommons.org/publicdomain/zero/1.0",
+  "operatingSystem"  : ["macOS"],
+  "dateCreated": "2019-12-15",
+  "softwareRequirements" :  ["Python 3.7", "Pandas", "requests", "tkmacosx", "ttkthemes"],
+  "url" : "https://github.com/jggautier/dataverse-scripts",
+  "codeRepository" : "https://github.com/jggautier/dataverse-scripts",
+  "maintainer" : "Julian Gautier",
+  "keywords" : ["dataverse", "metadata", "curation"],
+  "readme" : "https://github.com/jggautier/dataverse-scripts/blob/main/README.md",
+  "programmingLanguage" : "Python 3",
+  "developmentStatus": "wip"
+}
