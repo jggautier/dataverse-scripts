@@ -11,6 +11,16 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import time
 from urllib.parse import urlparse
 
+
+def improved_get(_dict, path, default=None):
+    for key in path.split('.'):
+        try:
+            _dict = _dict[key]
+        except KeyError:
+            return default
+    return str(_dict)
+
+
 # Enter directory path for installation directories and where the CSV of API keys is located
 # (if on a Windows machine, use forward slashes, which will be converted to back slashes)
 base_directory = ''  # e.g. /Users/Owner/Desktop
@@ -75,7 +85,7 @@ for installation in mapdata['installations']:
 
     # Get status code of installation website or report no response from website
     try:
-        response = requests.get(installationURL, headers=headers, timeout=20, verify=False)
+        response = requests.get(installationURL, headers=headers, timeout=60, verify=False)
 
         # Save final URL redirect to installationURL variable
         installationURL = response.url
@@ -90,7 +100,7 @@ for installation in mapdata['installations']:
         else:
             installation_url = 'https://%s' % (hostname)
             try:
-                response = requests.get(installation_url, headers=headers, timeout=10, verify=False)
+                response = requests.get(installation_url, headers=headers, timeout=30, verify=False)
                 if (response.status_code == 200 or response.status_code == 301 or response.status_code == 302):
                     installation_status = str(response.status_code)
             except Exception:
@@ -206,8 +216,9 @@ for installation in mapdata['installations']:
                 with open(metadatablock_file, mode='w') as f:
                     f.write(json.dumps(response.json(), indent=4))
 
-        # Use the Search API to get the installation's dataset PIDs, name and alias of owning dataverse and write them to a CSV file,
-        # and use the "Get dataset JSON" endpoint to get those datasets' metadata
+        # Use the Search API to get the installation's dataset PIDs, name and alias of owning 
+        # Dataverse Collection and write them to a CSV file, and use the "Get dataset JSON" 
+        # endpoint to get those datasets' metadata
 
         # Create CSV file
         dataset_pids_file = installation_directory + '/' + 'dataset_pids_%s_%s.csv' % (installation_name, current_time)
@@ -317,6 +328,7 @@ for installation in mapdata['installations']:
                         persistentUrl = latest_version_metadata['data']['persistentUrl']
                         publisher = latest_version_metadata['data']['publisher']
                         publicationDate = latest_version_metadata['data']['publicationDate']
+                        metadataLanguage = improved_get(latest_version_metadata, 'data.metadataLanguage')
 
                         all_version_url = '%s/api/datasets/:persistentId/versions?persistentId=%s' % (installationURL, dataset_pid)
                         response = requests.get(all_version_url, headers=headers, verify=False)
@@ -330,6 +342,10 @@ for installation in mapdata['installations']:
                                     'publisher': publisher,
                                     'publicationDate': publicationDate,
                                     'datasetVersion': dataset_version}}
+
+                            # If there's a metadatalanguage, add it to the dataset_version['data'] dict
+                            if metadataLanguage is not None:
+                                dataset_version['data']['metadataLanguage'] = metadataLanguage
 
                             majorversion = str(dataset_version['data']['datasetVersion']['versionNumber'])
                             minorversion = str(dataset_version['data']['datasetVersion']['versionMinorNumber'])
