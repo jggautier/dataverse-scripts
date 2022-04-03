@@ -44,7 +44,7 @@ def checkapiendpoint(url):
         data = response.json()
         status = data['status']
         if status == 'ERROR':
-            status = '%s: %s' % (status, data['message'])
+            status = f'{status}: {data['message']}'
     except Exception:
         status = 'NA'
     return status
@@ -54,7 +54,7 @@ def checkapiendpoint(url):
 currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
 
 # Create the main directory that will store a directory for each installation
-allInstallationsMetadataDirectory = str(Path(baseDirectory + '/' + 'all_installation_metadata_%s' % (currentTime)))
+allInstallationsMetadataDirectory = str(Path(baseDirectory + '/' + f'all_installation_metadata_{currentTime}'))
 os.mkdir(allInstallationsMetadataDirectory)
 
 # Read CSV file containing apikeys into a dataframe and turn convert into list to compare each installation name
@@ -78,10 +78,10 @@ countOfInstallations = len(mapdata['installations'])
 installationProgressCount = 1
 
 for installation in mapdata['installations']:
-    installation_name = installation['name']
+    installationName = installation['name']
     hostname = installation['hostname']
-    installationUrl = 'http://%s' % (hostname)
-    print('\nChecking %s of %s installations: %s' % (installationProgressCount, countOfInstallations, installation_name))
+    installationUrl = f'http://{hostname}'
+    print(f'\nChecking {installationProgressCount} of {countOfInstallations} installations: {installationName}')
 
     # Get status code of installation website or report no response from website
     try:
@@ -123,7 +123,7 @@ for installation in mapdata['installations']:
         else:
             headers.pop('X-Dataverse-key', None)
 
-        searchApiUrl = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&sort=date&order=desc' % (installationUrl)
+        searchApiUrl = f'{installationUrl}/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&sort=date&order=desc'
         searchApiUrl = searchApiUrl.replace('//api', '/api')
         searchApiStatus = checkapiendpoint(searchApiUrl)
     else:
@@ -150,12 +150,12 @@ for installation in mapdata['installations']:
 
     # If a local dataset PID can be retreived, check if "Get dataset JSON" endpoint works
     if testDatasetPid != 'NA':
-        getJsonApiUrl = '%s/api/v1/datasets/:persistentId/?persistentId=%s' % (installationUrl, testDatasetPid)
+        getJsonApiUrl = f'{installationUrl}/api/v1/datasets/:persistentId/?persistentId={testDatasetPid}'
         getJsonApiUrl = getJsonApiUrl.replace('//api', '/api')
         getJsonApiStatus = checkapiendpoint(getJsonApiUrl)
     else:
         getJsonApiStatus = 'NA'
-    print('\t"Get dataset JSON" API status: %s' % (getJsonApiStatus))
+    print(f'\t"Get dataset JSON" API status: {getJsonApiStatus}')
 
     # If the "Get dataset JSON" endpoint works, download the installation's metadatablock JSON files, dataset PIDs, and dataset metadata
 
@@ -165,11 +165,11 @@ for installation in mapdata['installations']:
         currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
 
         # Create directory for the installation
-        installationDirectory = allInstallationsMetadataDirectory + '/' + installation_name.replace(' ', '_') + '_%s' % (currentTime)
+        installationDirectory = allInstallationsMetadataDirectory + '/' + installationName.replace(' ', '_') + f'_{currentTime}'
         os.mkdir(installationDirectory)
 
         # Use the "Get Version" endpoint to get installation's Dataverse version (or set version as 'NA')
-        getInstallationVersionApiUrl = '%s/api/v1/info/version' % (installationUrl)
+        getInstallationVersionApiUrl = f'{installationUrl}/api/v1/info/version'
         getInstallationVersionApiUrl = getInstallationVersionApiUrl.replace('//api', '/api')
         getInstallationVersionApiStatus = checkapiendpoint(getInstallationVersionApiUrl)
 
@@ -181,19 +181,19 @@ for installation in mapdata['installations']:
         else:
             dataverseVersion = 'NA'
 
-        print('\tDataverse version: %s' % (dataverseVersion))
+        print(f'\tDataverse version: {dataverseVersion}')
 
         # Create a directory for the installation's metadatablock files
-        metadatablockFileDirectoryPath = installationDirectory + '/' + 'metadatablocks_v%s' % (dataverseVersion)
+        metadatablockFileDirectoryPath = installationDirectory + '/' + f'metadatablocks_v{dataverseVersion}'
         os.mkdir(metadatablockFileDirectoryPath)
 
         # Download metadatablock JSON files
 
         # Get list of the installation's metadatablock names
-        metadatablocksApi = '%s/api/v1/metadatablocks' % (installationUrl)
-        metadatablocksApi = metadatablocksApi.replace('//api', '/api')
+        metadatablocksApiEndpointUrl = f'{installationUrl}/api/v1/metadatablocks'
+        metadatablocksApiEndpointUrl = metadatablocksApiEndpointUrl.replace('//api', '/api')
 
-        response = requests.get(metadatablocksApi, headers=headers, timeout=20, verify=False)
+        response = requests.get(metadatablocksApiEndpointUrl, headers=headers, timeout=20, verify=False)
         metadatablockData = response.json()
 
         metadatablockNames = []
@@ -204,14 +204,14 @@ for installation in mapdata['installations']:
         print('\tDownloading metadatablock JSON file(s) into metadatablocks folder')
 
         for metadatablockName in metadatablockNames:
-            metadatablockApiEndpointUrl = '%s/%s' % (metadatablocksApi, metadatablockName)
+            metadatablockApiEndpointUrl = f'{metadatablocksApiEndpointUrl}/{metadatablockName}'
             response = requests.get(metadatablockApiEndpointUrl, headers=headers, timeout=20, verify=False)
             metadata = response.json()
 
             # If the metadatablock has fields, download the metadatablock data into a JSON file
             if len(metadata['data']['fields']) > 0:
 
-                metadatablockFile = str(Path(metadatablockFileDirectoryPath)) + '/' '%s_v%s.json' % (metadatablockName, dataverseVersion)
+                metadatablockFile = str(Path(metadatablockFileDirectoryPath)) + '/' f'{metadatablockName}_v{dataverseVersion}.json'
 
                 with open(metadatablockFile, mode='w') as f:
                     f.write(json.dumps(response.json(), indent=4))
@@ -221,89 +221,91 @@ for installation in mapdata['installations']:
         # endpoint to get those datasets' metadata
 
         # Create CSV file
-        datasetPidsFile = installationDirectory + '/' + 'dataset_pids_%s_%s.csv' % (installation_name, currentTime)
+        datasetPidsFile = installationDirectory + '/' + f'dataset_pids_{installationName}_{currentTime}.csv'
 
         with open(datasetPidsFile, mode='w', newline='') as f1:
             f1 = csv.writer(f1, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             f1.writerow(['persistent_id', 'persistentUrl', 'dataverse_name', 'dataverse_alias'])
 
         # Use Search API to get installation's dataset info and write it to a CSV file
-        print('\tWriting %s dataset info to CSV file:' % (datasetCount))
+        print(f'\tWriting {datasetCount} dataset info to CSV file:')
 
         # Initialization for paginating through Search API results and showing progress
         start = 0
         condition = True
-        dataset_pid_count = 0
+        datasetPidCount = 0
 
         # Create variable for storing count of misindexed datasets
-        misindexed_datasets_count = 0
+        misindexedDatasetsCount = 0
 
         with open(datasetPidsFile, mode='a', encoding='utf-8', newline='') as f1:
             f1 = csv.writer(f1, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
             while (condition):
                 try:
-                    per_page = 10
-                    url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (installationUrl, per_page, start)
+                    perPage = 10
+                    url = f'{installationUrl}/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page={perPage}&start={start}&sort=date&order=desc'
                     response = requests.get(url, headers=headers, verify=False)
                     data = response.json()
 
                     # For each dataset, write the dataset info to the CSV file
                     for i in data['data']['items']:
-                        persistent_id = i['global_id']
-                        persistent_url = i['url']
-                        dataverse_name = i.get('name_of_dataverse', 'NA')
-                        dataverse_alias = i.get('identifier_of_dataverse', 'NA')
+                        persistentId = i['global_id']
+                        persistentUrl = i['url']
+                        dataverseName = i.get('name_of_dataverse', 'NA')
+                        dataverseAlias = i.get('identifier_of_dataverse', 'NA')
 
                         # Create new row with dataset and file info
-                        f1.writerow([persistent_id, persistent_url, dataverse_name, dataverse_alias])
+                        f1.writerow([persistentId, persistentUrl, dataverseName, dataverseAlias])
 
-                        dataset_pid_count += 1
-                        print('\t\t%s of %s' % (dataset_pid_count, datasetCount), end='\r', flush=True)
+                        datasetPidCount += 1
+                        print('\t\t%s of %s' % (datasetPidCount, datasetCount), end='\r', flush=True)
 
                     # Update variables to paginate through the search results
-                    start = start + per_page
+                    start = start + perPage
 
                 # Print error message if misindexed datasets break the Search API call, and try the next page.
                 # See https://github.com/IQSS/dataverse/issues/4225
                 except Exception:
                     print('\t\tper_page=10 url broken. Checking per_page=1')
                     try:
-                        per_page = 1
-                        url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (installationUrl, per_page, start)
+                        perPage = 1
+                        url = f'{installationUrl}/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page={perPage}&start={start}&sort=date&order=desc'
                         response = requests.get(url, headers=headers, timeout=20, verify=False)
                         data = response.json()
 
                         # For each dataset, write the dataset info to the CSV file
                         for i in data['data']['items']:
-                            persistent_id = i['global_id']
-                            persistent_url = i['url']
-                            dataverse_name = i.get('name_of_dataverse', 'NA')
-                            dataverse_alias = i.get('identifier_of_dataverse', 'NA')
+                            persistentId = i['global_id']
+                            persistentUrl = i['url']
+                            dataverseName = i.get('name_of_dataverse', 'NA')
+                            dataverseAlias = i.get('identifier_of_dataverse', 'NA')
 
                             # Create new row with dataset and file info
-                            f1.writerow([persistent_id, persistent_url, dataverse_name, dataverse_alias])
+                            f1.writerow([persistentId, persistentUrl, dataverseName, dataverseAlias])
 
-                            dataset_pid_count += 1
-                            print('\t\t%s of %s' % (dataset_pid_count, datasetCount), end='\r', flush=True)
+                            datasetPidCount += 1
+                            print(f'\t\t{datasetPidCount} of {datasetCount}', end='\r', flush=True)
 
                             # Update variables to paginate through the search results
-                            start = start + per_page
+                            start = start + perPage
 
                     except Exception:
-                        misindexed_datasets_count += 1
-                        start = start + per_page
+                        misindexedDatasetsCount += 1
+                        start = start + perPage
 
                 # Stop paginating when there are no more results
                 condition = start < datasetCount
 
             print('\n\t%s dataset PIDs written to CSV file' % (datasetCount))
 
-        if misindexed_datasets_count:
-            print('\n\n\tUnretrievable dataset PIDs due to misindexing: %s\n' % (misindexed_datasets_count))
+        if misindexedDatasetsCount:
+
+            # Create txt file and list 
+            print(f'\n\n\tUnretrievable dataset PIDs due to misindexing: {misindexedDatasetsCount}\n')
 
         # Create directory for dataset JSON metadata
-        jsonMetadataDirectory = installationDirectory + '/' + 'JSON_metadata' + '_%s' % (currentTime)
+        jsonMetadataDirectory = installationDirectory + '/' + 'JSON_metadata' + f'_{currentTime}' % (currentTime)
         os.mkdir(jsonMetadataDirectory)
 
         # For each dataset PID in CSV file, download dataset's JSON metadata
@@ -321,7 +323,7 @@ for installation in mapdata['installations']:
 
             # Get the metadata of each version of the dataset
                 try:
-                    latestVersionEndpointUrl = '%s/api/datasets/:persistentId?persistentId=%s' % (installationUrl, datasetPid)
+                    latestVersionEndpointUrl = f'{installationUrl}/api/datasets/:persistentId?persistentId={datasetPid}' % (installationUrl, datasetPid)
                     response = requests.get(latestVersionEndpointUrl, headers=headers, verify=False)
                     latestVersionMetadata = response.json()
                     if latestVersionMetadata['status'] == 'OK':
@@ -330,7 +332,7 @@ for installation in mapdata['installations']:
                         publicationDate = latestVersionMetadata['data']['publicationDate']
                         metadataLanguage = improved_get(latestVersionMetadata, 'data.metadataLanguage')
 
-                        allVersionUrl = '%s/api/datasets/:persistentId/versions?persistentId=%s' % (installationUrl, datasetPid)
+                        allVersionUrl = f'{installationUrl}/api/datasets/:persistentId/versions?persistentId={datasetPid}'
                         response = requests.get(allVersionUrl, headers=headers, verify=False)
                         allVersionsMetadata = response.json()
 
@@ -349,9 +351,9 @@ for installation in mapdata['installations']:
 
                             majorversion = str(datasetVersion['data']['datasetVersion']['versionNumber'])
                             minorversion = str(datasetVersion['data']['datasetVersion']['versionMinorNumber'])
-                            version_number = majorversion + '.' + minorversion
+                            versionNumber = majorversion + '.' + minorversion
 
-                            metadataFile = jsonMetadataDirectory + '/' + '%s_v%s.json' % (datasetPid.replace(':', '_').replace('/', '_'), version_number)
+                            metadataFile = jsonMetadataDirectory + '/' + f'{datasetPid.replace(':', '_').replace('/', '_')}_v{versionNumber}.json'
 
                             # Write the JSON to the new file
                             with open(metadataFile, mode='w') as f3:
@@ -361,15 +363,15 @@ for installation in mapdata['installations']:
                     metadataDownloadedCount += 1
 
                     # Print progress
-                    print('\t\tDownloaded Dataverse JSON metadata of %s of %s datasets' % (metadataDownloadedCount, datasetCount), end='\r', flush=True)
+                    print(f'\t\tDownloaded Dataverse JSON metadata of {metadataDownloadedCount} of {datasetCount} datasets', end='\r', flush=True)
 
                 except Exception:
                     metadataNotDownloaded.append(datasetPid)
 
-        print('\t\tDownloaded Dataverse JSON metadata of %s of %s datasets' % (metadataDownloadedCount, datasetCount))
+        print(f'\t\tDownloaded Dataverse JSON metadata of {metadataDownloadedCount} of {datasetCount} datasets' % (metadataDownloadedCount, datasetCount))
 
         if metadataNotDownloaded:
-            print('The metadata of the following %s dataset(s) could not be downloaded:' % (len(metadataNotDownloaded)))
+            print(f'The metadata of the following {len(metadataNotDownloaded)} dataset(s) could not be downloaded:'
             print(metadataNotDownloaded)
 
     installationProgressCount += 1
