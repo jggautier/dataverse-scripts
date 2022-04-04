@@ -9,7 +9,7 @@ The application is written using the Dataverse software's APIs, Python 3, and Py
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)  
 Work in progress: Usability testing, fixing UI bugs, adding more documentation 
 
-## Opening the softwareapplication...
+## Opening the software application...
 ### By downloading and clicking on a file
 The file works only on MacOS and may work only on macOS Monterey (12) and later MacOS versions. To use it:
 * [Download the ZIP file](https://github.com/jggautier/dataverse-scripts/raw/main/Dataverse%20Repository%20Curation%20App.zip). If you're using Google Chrome, keep an eye out for the browser giving a warning about downloading the ZIP file. You might have to tell Google Chrome that the download is safe
