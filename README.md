@@ -31,14 +31,14 @@ If you'd like to run the application on earlier versions of MacOS or on other op
 git clone https://github.com/jggautier/dataverse-scripts.git
 ```
 
- * Iin your terminal, cd into the dataverse_repository_curation_app directory and use `pipenv shell` so that package dependencies for these scripts are managed separately from any Python packages already on your system
+ * In your terminal, cd into the dataverse_repository_curation_app directory and use `pipenv shell` so that library dependencies for these scripts are managed separately from any Python libraries already on your system
  * Install packages from the requirements.txt file
 ```
 pip install -r requirements.txt
 ```
  * Run dataverse_repository_curation_app_main.py to run the application
 
-Note: The tkinter library comes with most installations of Python 3, so pip doesn't include it in the requirements.txt it produces. But if after installing packages in a pipenv shell, you get error messages about tkinter not being defined, you may have to install tkinter "manually". For example, if you use homebrew's version of Python 3, you might have to `brew install python-tk`
+Note: The tkinter library comes with most installations of Python 3, so pip doesn't include it in the requirements.txt it produces. But if after installing libraries in a pipenv shell, you get error messages about tkinter not being defined, you may have to install tkinter "manually". For example, if you use homebrew's version of Python 3, you might have to `brew install python-tk`
 
 ## Upcoming changes
 
