@@ -726,42 +726,45 @@ def get_directory_path():
     return directoryPath
 
 
-def get_dataset_metadata_export(installationUrl, datasetPid, exportFormat, apiKey=''):
+def get_dataset_metadata_export(installationUrl, datasetPid, exportFormat, header={}, apiKey=''):
     if apiKey:
-        header = {'X-Dataverse-key': apiKey}
-    else:
-        header = {}
+        header['X-Dataverse-key'] = apiKey
 
     if exportFormat == 'dataverse_json':
         getJsonRepresentationOfADatasetEndpoint = '%s/api/datasets/:persistentId/?persistentId=%s' % (installationUrl, datasetPid)
+        getJsonRepresentationOfADatasetEndpoint = getJsonRepresentationOfADatasetEndpoint.replace('//api', '/api')
         response = requests.get(
             getJsonRepresentationOfADatasetEndpoint,
             headers=header)
         if response.status_code in (200, 401): # 401 is the unauthorized code. Valid API key is needed
             data = response.json()
-            return data
-        # To-do: Error check will come from here
-        # else:
-        #     print('Bad response: ' + str(response.status_code))       
+        else:
+            data = 'ERROR'
 
-    # For plans for letting users get metadata from other exports, which are produced only for published dataset versions
+        return data
+
+    # For getting metadata from other exports, which are available only for each dataset's latest published
+    #  versions (whereas Dataverse JSON export is available for unpublished versions)
     if exportFormat != 'dataverse_json':
         datasetMetadataExportEndpoint = '%s/api/datasets/export?exporter=%s&persistentId=%s' % (installationUrl, exportFormat, datasetPid)
+        datasetMetadataExportEndpoint = datasetMetadataExportEndpoint.replace('//api', '/api')
+       
         response = requests.get(
             datasetMetadataExportEndpoint,
             headers=header)
 
         if response.status_code == 200:
             
-            if exportFormat in ('schema.org' , 'OAI_ORE', 'Datacite', 'oai_datacite'):
+            if exportFormat in ('schema.org' , 'OAI_ORE'):
                 data = response.json()
-                # print(json.dumps(data, indent=4))
 
-            # if exportFormat in ('ddi' , 'oai_ddi', 'dcterms', 'oai_dc'):
-            #     print(response.text)
-        # To-do: Error check will come from here
-        # else:
-        #     print('Bad response: ' + str(response.status_code))
+            if exportFormat in ('ddi' , 'oai_ddi', 'dcterms', 'oai_dc', 'Datacite', 'oai_datacite'):
+                string = response.text
+                data = BeautifulSoup(string, 'xml').prettify()
+        else:
+            data = 'ERROR'
+
+        return data
 
 
 def get_metadatablock_data(installationUrl, metadatablockName):
