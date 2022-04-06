@@ -382,12 +382,6 @@ for installation in mapdata['installations']:
             for row in csvDictReader:
                 datasetPid = row['persistent_id'].rstrip()
 
-                '''
-                'dataverse_json_export_saved', 'OAI_ORE_export_saved', 'ddi_export_saved',
-                'dcterms_export_saved', 'oai_dc_export_saved', 'Datacite_export_saved',
-                'oai_datacite_export_saved'
-                '''
-
                 # Get the Dataverse JSON metadata of each version of the dataset
                 try:
                     latestVersionEndpointUrl = f'{installationUrl}/api/datasets/:persistentId?persistentId={datasetPid}'
@@ -452,20 +446,19 @@ for installation in mapdata['installations']:
                 dataverseJsonMetadataNotDownloadedString = list_to_string(dataverseJsonMetadataNotDownloaded)
                 print(f'\t\t{dataverseJsonMetadataNotDownloadedString}')
 
-    # dataverseJsonExportSavedDF.reset_index()
-    dataverseJsonExportSavedDF = dataverseJsonExportSavedDF.set_index('persistent_id')
+        dataverseJsonExportSavedDF = dataverseJsonExportSavedDF.set_index('persistent_id')
 
-    # Turn datasetPidsFile into a dataframe to join with dataverseJsonExportSavedDF
-    datasetPidsFileDF = pd.read_csv(datasetPidsFile).set_index('persistent_id')
+        # Turn datasetPidsFile into a dataframe to join with dataverseJsonExportSavedDF
+        datasetPidsFileDF = pd.read_csv(datasetPidsFile).set_index('persistent_id')
 
-    mergedFileDF = pd.merge(dataverseJsonExportSavedDF, datasetPidsFileDF, left_index=True, right_index=True).reset_index()
+        mergedFileDF = pd.merge(dataverseJsonExportSavedDF, datasetPidsFileDF, left_index=True, right_index=True).reset_index()
 
-    mergedFile = installationDirectory + '/' + f'dataset_pids_{installationName}_merged_file.csv'
-    columnOrderList = [
-        'persistent_id', 'persistent_url', 'dataverse_name', 'dataverse_alias',
-        'dataverse_json_export_saved']
-    mergedFileDF = mergedFileDF[columnOrderList]
-    mergedFileDF.to_csv(datasetPidsFile, index=False)
+        mergedFile = installationDirectory + '/' + f'dataset_pids_{installationName}_merged_file.csv'
+        columnOrderList = [
+            'persistent_id', 'persistent_url', 'dataverse_name', 'dataverse_alias',
+            'dataverse_json_export_saved']
+        mergedFileDF = mergedFileDF[columnOrderList]
+        mergedFileDF.to_csv(datasetPidsFile, index=False)
 
     installationProgressCount += 1
 
