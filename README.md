@@ -10,18 +10,18 @@ The application is written using the Dataverse software's APIs, Python 3, and Py
 Work in progress: Usability testing, fixing UI bugs, adding more documentation 
 
 ## Opening the software application...
-### By downloading and clicking on a file
+### By downloading and clicking on an application file
 The file works only on MacOS and may work only on macOS Monterey (12) and later MacOS versions. To use it:
 * [Visit the releases page](https://github.com/jggautier/dataverse-scripts/releases) to download the latest version of the ZIP file (Dataverse.Repository.Curation.App.zip ). If you're using Google Chrome when you download the ZIP file, keep an eye out for the browser giving a warning about downloading the ZIP file. You might have to tell Google Chrome that the download is safe
 * Extract the Zip file's Dataverse Repository Curation App file
-* Right click on the file and choose Open. MacOS may display a warning that “Dataverse Repository Curation App” can’t be opened because Apple cannot check it for malicious software. This is because the application is not in Apple's App Store. (See [Apple's support article](https://support.apple.com/guide/mac-help/apple-cant-check-app-for-malicious-software-mchleab3a043/mac) for more info about this warning.)
+* Right click on the application file and choose Open. MacOS may display a warning that “Dataverse Repository Curation App” can’t be opened because Apple cannot check it for malicious software. This is because the application is not in Apple's App Store. (See [Apple's support article](https://support.apple.com/guide/mac-help/apple-cant-check-app-for-malicious-software-mchleab3a043/mac) for more info about this warning.)
 * Click "Open" and wait for the application to appear
-* The file will be saved as an exception to your computer's security settings, and you'll be able to open it again by double-clicking it as you would any other file
+* The application will be saved as an exception to your computer's security settings, and you'll be able to open it again by double-clicking it as you would other Desktop applications
 
-If you re-download the file from this GitHub repo, e.g. to use a future version with more functionality or bug fixes, you'll have to follow these steps again to re-add the application as an exemption to your computer's security settings.
+If you re-download the application file from this GitHub repo, e.g. to use a future version with more functionality or bug fixes, you'll have to follow these steps again to re-add the application as an exemption to your computer's security settings.
 
 ### By downloading and running a Python script
-If you'd like to run the application on earlier versions of MacOS or on other operating systems, or if you run into problems with the exectable file, you can run the curation_app_main.py file. You'll need Python 3 installed and may need Python 3.7 or later, as well as the Python libraries listed in the [requirements.txt file](https://github.com/jggautier/dataverse-scripts/blob/main/dataverse_repository_curation_app/requirements.txt):
+If you'd like to run the application on earlier versions of MacOS or on other operating systems, or if you run into problems with the application file, you can run the curation_app_main.py file. You'll need Python 3 installed and may need Python 3.7 or later, as well as the Python libraries listed in the [requirements.txt file](https://github.com/jggautier/dataverse-scripts/blob/main/dataverse_repository_curation_app/requirements.txt) and some familiarity with running Python scripts:
 
 * Install Python 3, pip and pipenv if you don't already have them. There's a handy guide at https://docs.python-guide.org.
  
@@ -54,4 +54,4 @@ I plan to add more functionality to the application over time, including:
 - Removing dataset links in Dataverse Collections
 
 ## Other scripts
-The [other_scripts directory](https://github.com/jggautier/dataverse-scripts/tree/main/other_scripts) contains Python scripts I've written over the past three years for automating some common curation and research-related tasks. Some of these scripts do what the Dataverse repository curation app does or will do. I'll remove these scripts from the directory as the scripts functionality gets added to the application.
+The [other_scripts directory](https://github.com/jggautier/dataverse-scripts/tree/main/other_scripts) contains Python scripts I've written over the years for automating some common curation and research-related tasks. Some of these scripts do what the Dataverse repository curation app already does or will do. I'll remove these scripts from the directory as the scripts functionality gets added to the application.
