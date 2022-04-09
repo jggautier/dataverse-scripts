@@ -176,7 +176,7 @@ for parent_compound_field in compound_field_dictionary:
     print('\nCreating CSV file for %s metadata' % (parent_compound_field))
 
     # Create column names for the header row
-    ids = ['datasetVersionId', 'persistentUrl', 'persistent_id']
+    ids = ['dataset_version_id', 'persistent_url', 'persistent_id']
     header_row = ids + subfields
 
     with open(compound_field_csv_filepath, mode='w', newline='') as metadatafile:
@@ -276,7 +276,7 @@ for primitive_field in primitive_fields:
         metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
         # Create header row
-        metadatafile.writerow(['datasetVersionId', 'persistentUrl', 'persistent_id', primitive_field])
+        metadatafile.writerow(['dataset_version_id', 'persistent_url', 'persistent_id', primitive_field])
 
     print('\tGetting %s metadata:' % (primitive_field))
 
