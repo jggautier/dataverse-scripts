@@ -197,7 +197,7 @@ class getMetadataAsCSVsFrame(Frame):
             text='Find datasets',
             # bg=appPrimaryBlueColor, fg='white',
             bg=appPrimaryGreyColor, fg='white',
-            width=140, height=30,
+            # width=140, height=30,
             command=lambda: get_datasets_from_collection_or_search_url(
                 rootWindow=self.mainFrame,
                 url=self.entryCollectionURL.get().strip(),
