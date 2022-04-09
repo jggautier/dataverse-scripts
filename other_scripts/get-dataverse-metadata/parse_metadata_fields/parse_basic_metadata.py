@@ -91,16 +91,19 @@ print('Creating CSV file')
 with open(filename, mode='w', newline='') as metadatafile:
     metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     metadatafile.writerow([
-            'datasetVersionId', 'persistentUrl', 'persistent_id', 'datasetPublicationDate', 
-            'versionCreateTime', 'versionState', 'majorVersionNumber', 'minorVersionNumber', 
+            'dataset_version_id', 'persistent_url', 'persistent_id', 'dataset_publication_date', 
+            'version_create_time', 'version_state', 'major_version_number', 'minor_version_number', 
             'publisher'])  # Create header row
 
 print('Getting metadata:')
 error_files = []
+fileCount = 0
+fileCountTotal = len(glob.glob(os.path.join(jsonDirectory, '*.json')))
 
 # For each JSON file in a folder
 for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
-
+    fileCount += 1
+    print(f'Getting metadata from {fileCount} of {fileCountTotal} files', end='\r', flush=True)
     # Open each file in read mode
     with open(file, 'r') as f1:
         # Copy content to dataset_metadata variable
@@ -134,13 +137,10 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
                     datasetVersionId, persistentUrl, datasetPersistentId, datasetPublicationDate,
                     versionCreateTime, versionState, majorVersionNumber, minorVersionNumber,
                     publisher])
-            # As a progress indicator, print a dot each time a row is written
-            sys.stdout.write('.')
-            sys.stdout.flush()
 
         # If JSON file doens't have "data" key, add file to list of error_files
         else:
             error_files.append(Path(file).name)
-print('\n')
+print(f'Finished getting metadata from {fileCount} of {fileCountTotal} files')
 if error_files:
     print('\nThe following files may not have metadata:%s' % (error_files))
