@@ -11,8 +11,10 @@ from tkinter import Checkbutton, Listbox, MULTIPLE, filedialog, END, INSERT, N, 
 from tkinter.scrolledtext import ScrolledText
 from ttkthemes import ThemedTk
 from tkinter.ttk import Entry, Progressbar, Combobox, OptionMenu, Scrollbar
-from tkmacosx import Button
-# import webbrowser
+try:
+    from tkmacosx import Button
+except ImportError:
+    from tkinter import Button# import webbrowser
 
 
 appPrimaryBlueColor = '#286090'
