@@ -14,7 +14,8 @@ from tkinter.ttk import Entry, Progressbar, Combobox, OptionMenu, Scrollbar
 try:
     from tkmacosx import Button
 except ImportError:
-    from tkinter import Button# import webbrowser
+    from tkinter import Button
+# import webbrowser
 
 
 appPrimaryBlueColor = '#286090'
