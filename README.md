@@ -21,7 +21,7 @@ The file works only on MacOS and may work only on macOS Monterey (12) and later 
 If you re-download the application file from this GitHub repo, e.g. to use a future version with more functionality or bug fixes, you'll have to follow these steps again to re-add the application as an exemption to your computer's security settings.
 
 ### By downloading and running a Python script
-If you'd like to run the application on earlier versions of MacOS or on other operating systems, or if you run into problems with the application file, you can run the curation_app_main.py file. You'll need Python 3 installed and may need Python 3.7 or later, as well as the Python libraries listed in the [requirements.txt file](https://github.com/jggautier/dataverse-scripts/blob/main/dataverse_repository_curation_app/requirements.txt) and some familiarity with running Python scripts:
+If you'd like to run the application on earlier versions of MacOS, or if you run into problems with the application file, you can run the curation_app_main.py file. You'll need Python 3 installed and may need Python 3.7 or later, as well as the Python libraries listed in the [requirements.txt file](https://github.com/jggautier/dataverse-scripts/blob/main/dataverse_repository_curation_app/requirements.txt) and some familiarity with running Python scripts:
 
 * Install Python 3, pip and pipenv if you don't already have them. There's a handy guide at https://docs.python-guide.org.
  
