@@ -91,7 +91,7 @@ print('Creating CSV file')
 with open(filename, mode='w', newline='') as metadatafile:
     metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     metadatafile.writerow([
-            'dataset_version_id', 'persistent_url', 'persistent_id', 'dataset_publication_date', 
+            'dataset_version_id', 'dataset_pid_url', 'dataset_pid', 'dataset_publication_date', 
             'version_create_time', 'version_state', 'major_version_number', 'minor_version_number', 
             'publisher'])  # Create header row
 
