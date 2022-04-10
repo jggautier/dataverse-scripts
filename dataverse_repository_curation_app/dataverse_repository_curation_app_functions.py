@@ -891,7 +891,8 @@ def get_metadata_values_lists(
     if (datasetMetadata['status'] == 'OK') and\
         (metadatablockName in datasetMetadata['data']['latestVersion']['metadataBlocks']):
 
-        datasetPid = datasetMetadata['data']['latestVersion']['datasetPersistentId']
+        persistentUrl = datasetMetadata['data']['persistentUrl']
+        datasetPid = get_canonical_pid(persistentUrl)
         datasetUrl = installationUrl + '/dataset.xhtml?persistentId=' +\
             datasetMetadata['data']['latestVersion']['datasetPersistentId']
         # versionId = str(datasetMetadata['data']['latestVersion']['id'])
