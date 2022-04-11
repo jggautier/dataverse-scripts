@@ -5,6 +5,7 @@ import json
 import glob
 import os
 from pathlib import Path
+import re
 import sys
 from tkinter import filedialog
 from tkinter import ttk
@@ -16,6 +17,31 @@ from tkinter import *
 window = Tk()
 window.title('Get basic dataset metadata')
 window.geometry('550x500')  # width x height
+
+
+def get_canonical_pid(pidOrUrl):
+
+    # If entered dataset PID is the dataset page URL, get canonical PID
+    if pidOrUrl.startswith('http') and 'persistentId=' in pidOrUrl:
+        canonicalPid = pidOrUrl.split('persistentId=')[1]
+        canonicalPid = canonicalPid.split('&version')[0]
+        canonicalPid = canonicalPid.replace('%3A', ':').replace('%2F', ('/'))
+
+    # If entered dataset PID is a DOI URL, get canonical PID
+    elif pidOrUrl.startswith('http') and 'doi.' in pidOrUrl:
+        canonicalPid = re.sub('http.*org\/', 'doi:', pidOrUrl)
+
+    elif pidOrUrl.startswith('doi:') and '/' in pidOrUrl:
+        canonicalPid = pidOrUrl
+
+    # If entered dataset PID is a Handle URL, get canonical PID
+    elif pidOrUrl.startswith('http') and 'hdl.' in pidOrUrl:
+        canonicalPid = re.sub('http.*net\/', 'hdl:', pidOrUrl)
+
+    elif pidOrUrl.startswith('hdl:') and '/' in pidOrUrl:
+        canonicalPid = pidOrUrl
+
+    return canonicalPid
 
 
 # Function called when user presses button to browse for JSON files directory
@@ -90,10 +116,10 @@ print('Creating CSV file')
 
 with open(filename, mode='w', newline='') as metadatafile:
     metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    # Create header row
     metadatafile.writerow([
-            'dataset_version_id', 'dataset_pid_url', 'dataset_pid', 'dataset_publication_date', 
-            'version_create_time', 'version_state', 'major_version_number', 'minor_version_number', 
-            'publisher'])  # Create header row
+            'dataset_pid', 'dataset_pid_url', 'dataset_version_number', 'dataset_publication_date', 
+            'dataset_version_create_time', 'dataset_version_state', 'publisher'])
 
 print('Getting metadata:')
 error_files = []
@@ -106,22 +132,27 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
     print(f'Getting metadata from {fileCount} of {fileCountTotal} files', end='\r', flush=True)
     # Open each file in read mode
     with open(file, 'r') as f1:
-        # Copy content to dataset_metadata variable
-        dataset_metadata = f1.read()
+        # Copy content to datasetMetadata variable
+        datasetMetadata = f1.read()
         # Load content in variable as a json object
-        dataset_metadata = json.loads(dataset_metadata)
+        datasetMetadata = json.loads(datasetMetadata)
 
         # Check if JSON file has "data" key
-        if dataset_metadata['status'] == 'OK':
-            datasetVersionId = dataset_metadata['data']['datasetVersion']['id']
-            persistentUrl = dataset_metadata['data']['persistentUrl']
-            datasetPersistentId = improved_get(dataset_metadata, 'data.datasetVersion.datasetPersistentId')
-            versionCreateTime = dataset_metadata['data']['datasetVersion']['createTime']
-            versionState = dataset_metadata['data']['datasetVersion']['versionState']
-            datasetPublicationDate = dataset_metadata['data']['publicationDate']
-            majorVersionNumber = improved_get(dataset_metadata, 'data.datasetVersion.versionNumber')
-            minorVersionNumber = improved_get(dataset_metadata, 'data.datasetVersion.versionMinorNumber')
-            publisher = dataset_metadata['data']['publisher']
+        if datasetMetadata['status'] == 'OK':
+            # datasetVersionId = datasetMetadata['data']['datasetVersion']['id']
+
+            # datasetPersistentId = improved_get(datasetMetadata, 'data.datasetVersion.datasetPersistentId')
+            datasetPersistentUrl = datasetMetadata['data']['persistentUrl']
+            datasetPersistentId = get_canonical_pid(datasetPersistentUrl)
+
+            majorVersionNumber = improved_get(datasetMetadata, 'data.datasetVersion.versionNumber')
+            minorVersionNumber = improved_get(datasetMetadata, 'data.datasetVersion.versionMinorNumber')
+            datasetVersionNumber = f'{majorVersionNumber}.{minorVersionNumber}'
+
+            datasetVersionCreateTime = datasetMetadata['data']['datasetVersion']['createTime']
+            datasetVersionState = datasetMetadata['data']['datasetVersion']['versionState']
+            datasetPublicationDate = datasetMetadata['data']['publicationDate']
+            publisher = datasetMetadata['data']['publisher']
 
             # Write fields to the csv file
             with open(filename, mode='a', newline='') as metadatafile:
@@ -134,13 +165,13 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 
                 # Write new row
                 metadatafile.writerow([
-                    datasetVersionId, persistentUrl, datasetPersistentId, datasetPublicationDate,
-                    versionCreateTime, versionState, majorVersionNumber, minorVersionNumber,
-                    publisher])
+                    datasetPersistentId, datasetPersistentUrl, datasetVersionNumber, datasetPublicationDate,
+                    datasetVersionCreateTime, datasetVersionState, publisher])
 
         # If JSON file doens't have "data" key, add file to list of error_files
         else:
             error_files.append(Path(file).name)
 print(f'Finished getting metadata from {fileCount} of {fileCountTotal} files')
+
 if error_files:
-    print('\nThe following files may not have metadata:%s' % (error_files))
+    print(f'\nThe following files may not have metadata:{error_files}')

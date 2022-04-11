@@ -123,7 +123,7 @@ with open(filename, mode='w', newline='') as metadatafile:
     
     # Create header row
     metadatafile.writerow([
-        'dataset_version_id', 'persistent_url', 'persistent_id', 'license_name', 'license_uri', 
+        'dataset_pid', 'dataset_pid_url', 'dataset_version_number', 'license_name', 'license_uri', 
         'terms_of_use', 'confidentiality_declaration', 'special_permissions', 'restrictions',
         'citation_requirements', 'depositor_requirements', 'conditions', 'disclaimer',
         'terms_of_access', 'data_access_place', 'original_archive',
@@ -147,29 +147,32 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
     # Open each file in read mode
     with open(file, 'r') as f1:
 
-        # Copy content to dataset_metadata variable
-        dataset_metadata = f1.read()
+        # Copy content to datasetMetadata variable
+        datasetMetadata = f1.read()
 
         # Load content in variable as a json object
-        dataset_metadata = json.loads(dataset_metadata)
+        datasetMetadata = json.loads(datasetMetadata)
 
     # Print count of files opened, total file count, and name of file
     print('%s of %s: %s' % (count, file_count, file_pid))
 
     # Check if status is OK and there's a latestversion key (i.e. that the dataset isn't deaccessioned)
-    if (dataset_metadata['status'] == 'OK') and ('datasetVersion' in dataset_metadata['data']):
+    if (datasetMetadata['status'] == 'OK') and ('datasetVersion' in datasetMetadata['data']):
 
         # Save the metadata values in variables
-        datasetVersionId = improved_get(dataset_metadata, 'data.datasetVersion.id')
-        persistentUrl = dataset_metadata['data']['persistentUrl']
-        datasetPersistentId = get_canonical_pid(persistentUrl)
+        datasetPersistentUrl = datasetMetadata['data']['persistentUrl']
+        datasetPersistentId = get_canonical_pid(datasetPersistentUrl)
 
-        license = improved_get(dataset_metadata, 'data.datasetVersion.license', '')
+        majorVersionNumber = datasetMetadata['data']['datasetVersion']['versionNumber']
+        minorVersionNumber = datasetMetadata['data']['datasetVersion']['versionMinorNumber']
+        datasetVersionNumber = f'{majorVersionNumber}.{minorVersionNumber}'
+
+        license = improved_get(datasetMetadata, 'data.datasetVersion.license', '')
 
         # If value of license is a dictionary, installation is v5.10+. Get licenseName and licenseUri
         if isinstance(license, dict):
-            licenseName = improved_get(dataset_metadata, 'data.datasetVersion.license.name')
-            licenseUri = improved_get(dataset_metadata, 'data.datasetVersion.license.uri')
+            licenseName = improved_get(datasetMetadata, 'data.datasetVersion.license.name')
+            licenseUri = improved_get(datasetMetadata, 'data.datasetVersion.license.uri')
 
         # If value of license is a string, installation is pre v5.10.
         # Save string to licenseName and set licenseUri as empty string
@@ -177,21 +180,21 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
             licenseName = license
             licenseUri = ''
         
-        termsOfUse = improved_get(dataset_metadata, 'data.datasetVersion.termsOfUse')
-        confidentialityDeclaration = improved_get(dataset_metadata, 'data.datasetVersion.confidentialityDeclaration')
-        specialPermissions = improved_get(dataset_metadata, 'data.datasetVersion.specialPermissions')
-        restrictions = improved_get(dataset_metadata, 'data.datasetVersion.restrictions')
-        citationRequirements = improved_get(dataset_metadata, 'data.datasetVersion.citationRequirements')
-        depositorRequirements = improved_get(dataset_metadata, 'data.datasetVersion.depositorRequirements')
-        conditions = improved_get(dataset_metadata, 'data.datasetVersion.conditions')
-        disclaimer = improved_get(dataset_metadata, 'data.datasetVersion.disclaimer')
-        termsOfAccess = improved_get(dataset_metadata, 'data.datasetVersion.termsOfAccess')
-        dataAccessPlace = improved_get(dataset_metadata, 'data.datasetVersion.dataAccessPlace')
-        originalArchive = improved_get(dataset_metadata, 'data.datasetVersion.originalArchive')
-        availabilityStatus = improved_get(dataset_metadata, 'data.datasetVersion.availabilityStatus')
-        contactForAccess = improved_get(dataset_metadata, 'data.datasetVersion.contactForAccess')
-        sizeOfCollection = improved_get(dataset_metadata, 'data.datasetVersion.sizeOfCollection')
-        studyCompletion = improved_get(dataset_metadata, 'data.datasetVersion.studyCompletion')
+        termsOfUse = improved_get(datasetMetadata, 'data.datasetVersion.termsOfUse')
+        confidentialityDeclaration = improved_get(datasetMetadata, 'data.datasetVersion.confidentialityDeclaration')
+        specialPermissions = improved_get(datasetMetadata, 'data.datasetVersion.specialPermissions')
+        restrictions = improved_get(datasetMetadata, 'data.datasetVersion.restrictions')
+        citationRequirements = improved_get(datasetMetadata, 'data.datasetVersion.citationRequirements')
+        depositorRequirements = improved_get(datasetMetadata, 'data.datasetVersion.depositorRequirements')
+        conditions = improved_get(datasetMetadata, 'data.datasetVersion.conditions')
+        disclaimer = improved_get(datasetMetadata, 'data.datasetVersion.disclaimer')
+        termsOfAccess = improved_get(datasetMetadata, 'data.datasetVersion.termsOfAccess')
+        dataAccessPlace = improved_get(datasetMetadata, 'data.datasetVersion.dataAccessPlace')
+        originalArchive = improved_get(datasetMetadata, 'data.datasetVersion.originalArchive')
+        availabilityStatus = improved_get(datasetMetadata, 'data.datasetVersion.availabilityStatus')
+        contactForAccess = improved_get(datasetMetadata, 'data.datasetVersion.contactForAccess')
+        sizeOfCollection = improved_get(datasetMetadata, 'data.datasetVersion.sizeOfCollection')
+        studyCompletion = improved_get(datasetMetadata, 'data.datasetVersion.studyCompletion')
 
         # Append fields to the csv file
         with open(filename, mode='a', newline='') as metadatafile:
@@ -205,7 +208,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
 
             # Write new row
             metadatafile.writerow([
-                datasetVersionId, persistentUrl, datasetPersistentId, licenseName, licenseUri,
+                datasetPersistentId, datasetPersistentUrl, datasetVersionNumber, licenseName, licenseUri,
                 termsOfUse, confidentialityDeclaration, specialPermissions, restrictions, 
                 citationRequirements, depositorRequirements, conditions, disclaimer, 
                 termsOfAccess, dataAccessPlace, originalArchive,
