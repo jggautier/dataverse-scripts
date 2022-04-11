@@ -134,7 +134,7 @@ print('Getting metadata:')
 
 # Save count of files in the given directory and initialize count variable to track progress of script and for debugging
 path, dirs, files = next(os.walk(jsonDirectory))
-file_count = len(files)
+fileCount = len(files)
 count = 0
 
 # For each JSON file in the given directory...
@@ -142,7 +142,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
     count += 1
 
     # Save the name of the file to print to the terminal with the current and total counts
-    file_pid = file.rsplit('/')[-1]
+    filePid = file.rsplit('/')[-1]
 
     # Open each file in read mode
     with open(file, 'r') as f1:
@@ -154,7 +154,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
         datasetMetadata = json.loads(datasetMetadata)
 
     # Print count of files opened, total file count, and name of file
-    print('%s of %s: %s' % (count, file_count, file_pid))
+    print(f'{count} of {fileCount}: {filePid}', end='\r', flush=True)
 
     # Check if status is OK and there's a latestversion key (i.e. that the dataset isn't deaccessioned)
     if (datasetMetadata['status'] == 'OK') and ('datasetVersion' in datasetMetadata['data']):
@@ -213,3 +213,5 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
                 citationRequirements, depositorRequirements, conditions, disclaimer, 
                 termsOfAccess, dataAccessPlace, originalArchive,
                 availabilityStatus, contactForAccess, sizeOfCollection, studyCompletion])
+            
+print(f'Finished: {count} of {fileCount}')
