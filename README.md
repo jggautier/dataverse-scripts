@@ -1,6 +1,6 @@
 # Dataverse repository curation app
 A small software application for automating things in repositories that use the Dataverse software (https://dataverse.org). With this application you can:
-- Get dataset metadata as CSV files
+- Get dataset metadata as CSV files (the dataset metadata of most known Dataverse installations is available at https://doi.org/10.7910/DVN/DCDKZQ)
 - Delete published datasets (to do this you'll need a "super user" account, usually used by administrators of Dataverse installations)
 
 The application is written using the Dataverse software's APIs, Python 3, and Python's tkinter library (for creating the user interface), and made into an executable file using [pyInstaller](https://pyinstaller.readthedocs.io/).
