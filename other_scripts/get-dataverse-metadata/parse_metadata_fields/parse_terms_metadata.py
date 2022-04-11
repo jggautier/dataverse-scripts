@@ -113,7 +113,7 @@ mainloop()
 
 
 # Store path of csv file to filename variable
-filename = os.path.join(csvDirectory, 'terms.csv')
+filename = os.path.join(csvDirectory, 'license_and_terms.csv')
 
 print('Creating CSV file')
 
