@@ -4,6 +4,7 @@ import csv
 import json
 import glob
 import os
+import re
 from tkinter import filedialog
 from tkinter import ttk
 from tkinter import *
@@ -14,6 +15,45 @@ from tkinter import *
 window = Tk()
 window.title('Get terms of use and access metadata')
 window.geometry('550x350')  # width x height
+
+
+def get_canonical_pid(pidOrUrl):
+
+    # If entered dataset PID is the dataset page URL, get canonical PID
+    if pidOrUrl.startswith('http') and 'persistentId=' in pidOrUrl:
+        canonicalPid = pidOrUrl.split('persistentId=')[1]
+        canonicalPid = canonicalPid.split('&version')[0]
+        canonicalPid = canonicalPid.replace('%3A', ':').replace('%2F', ('/'))
+
+    # If entered dataset PID is a DOI URL, get canonical PID
+    elif pidOrUrl.startswith('http') and 'doi.' in pidOrUrl:
+        canonicalPid = re.sub('http.*org\/', 'doi:', pidOrUrl)
+
+    elif pidOrUrl.startswith('doi:') and '/' in pidOrUrl:
+        canonicalPid = pidOrUrl
+
+    # If entered dataset PID is a Handle URL, get canonical PID
+    elif pidOrUrl.startswith('http') and 'hdl.' in pidOrUrl:
+        canonicalPid = re.sub('http.*net\/', 'hdl:', pidOrUrl)
+
+    elif pidOrUrl.startswith('hdl:') and '/' in pidOrUrl:
+        canonicalPid = pidOrUrl
+
+    return canonicalPid
+
+
+# Function for getting value of nested key, truncating the value to 10,000 characters if it's a string
+# (character limit for many spreadsheet applications), and returning nothing if key doesn't exist
+def improved_get(_dict, path, default=None):
+    for key in path.split('.'):
+        try:
+            _dict = _dict[key]
+        except KeyError:
+            return default
+    if isinstance(_dict, int) or isinstance(_dict, dict):
+        return _dict
+    elif isinstance(_dict, str):
+        return _dict[:10000].replace('\r', ' - ')
 
 
 # Function called when user presses button to browse for JSON files directory
@@ -83,26 +123,13 @@ with open(filename, mode='w', newline='') as metadatafile:
     
     # Create header row
     metadatafile.writerow([
-        'datasetVersionId', 'persistentUrl', 'persistent_id', 'license', 'termsOfUse', 'confidentialityDeclaration',
-        'specialPermissions', 'restrictions', 'citationRequirements', 'depositorRequirements',
-        'conditions', 'disclaimer', 'termsOfAccess', 'dataAccessPlace', 'originalArchive',
-        'availabilityStatus', 'contactForAccess', 'sizeOfCollection', 'studyCompletion'])
+        'dataset_version_id', 'persistent_url', 'persistent_id', 'license_name', 'license_uri', 
+        'terms_of_use', 'confidentiality_declaration', 'special_permissions', 'restrictions',
+        'citation_requirements', 'depositor_requirements', 'conditions', 'disclaimer',
+        'terms_of_access', 'data_access_place', 'original_archive',
+        'availability_status', 'contact_for_access', 'size_of_collection', 'study_completion'])
 
 print('Getting metadata:')
-
-
-# Function for getting value of nested key, truncating the value to 10,000 characters
-# (character limit for many spreadsheet applications), or returning nothing if key doesn't exist
-def improved_get(_dict, path, default=None):
-    for key in path.split('.'):
-        try:
-            _dict = _dict[key]
-        except KeyError:
-            return default
-    if isinstance(_dict, int):
-        return _dict
-    else:
-        return _dict[:10000].replace('\r', ' - ')
 
 
 # Save count of files in the given directory and initialize count variable to track progress of script and for debugging
@@ -135,8 +162,21 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
         # Save the metadata values in variables
         datasetVersionId = improved_get(dataset_metadata, 'data.datasetVersion.id')
         persistentUrl = dataset_metadata['data']['persistentUrl']
-        datasetPersistentId = improved_get(dataset_metadata, 'data.datasetVersion.datasetPersistentId')
-        license = improved_get(dataset_metadata, 'data.datasetVersion.license')
+        datasetPersistentId = get_canonical_pid(persistentUrl)
+
+        license = improved_get(dataset_metadata, 'data.datasetVersion.license', '')
+
+        # If value of license is a dictionary, installation is v5.10+. Get licenseName and licenseUri
+        if isinstance(license, dict):
+            licenseName = improved_get(dataset_metadata, 'data.datasetVersion.license.name')
+            licenseUri = improved_get(dataset_metadata, 'data.datasetVersion.license.uri')
+
+        # If value of license is a string, installation is pre v5.10.
+        # Save string to licenseName and set licenseUri as empty string
+        if isinstance(license, str):
+            licenseName = license
+            licenseUri = ''
+        
         termsOfUse = improved_get(dataset_metadata, 'data.datasetVersion.termsOfUse')
         confidentialityDeclaration = improved_get(dataset_metadata, 'data.datasetVersion.confidentialityDeclaration')
         specialPermissions = improved_get(dataset_metadata, 'data.datasetVersion.specialPermissions')
@@ -165,7 +205,8 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
 
             # Write new row
             metadatafile.writerow([
-                datasetVersionId, persistentUrl, datasetPersistentId, license, termsOfUse, confidentialityDeclaration,
-                specialPermissions, restrictions, citationRequirements, depositorRequirements,
-                conditions, disclaimer, termsOfAccess, dataAccessPlace, originalArchive,
+                datasetVersionId, persistentUrl, datasetPersistentId, licenseName, licenseUri,
+                termsOfUse, confidentialityDeclaration, specialPermissions, restrictions, 
+                citationRequirements, depositorRequirements, conditions, disclaimer, 
+                termsOfAccess, dataAccessPlace, originalArchive,
                 availabilityStatus, contactForAccess, sizeOfCollection, studyCompletion])
