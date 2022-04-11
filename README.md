@@ -5,7 +5,7 @@ A small software application for automating things in repositories that use the 
 - Delete published datasets
   - This requires the API token of a "super user" account, usually used by administrators of Dataverse installations
 
-The application is written using the Dataverse software's APIs, Python 3, and Python's tkinter library (for creating the user interface), and made into an executable file using [pyInstaller](https://pyinstaller.readthedocs.io/).
+The application is written using the [Dataverse software's APIs](https://guides.dataverse.org/en/5.10/api/index.html), Python 3, and Python's [tkinter library](https://docs.python.org/3/library/tkinter.html) (for creating the user interface), and made into an executable file using [pyInstaller](https://pyinstaller.readthedocs.io/).
 
 ## Status
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)  
@@ -14,8 +14,8 @@ Work in progress: Usability testing, fixing UI bugs, adding more documentation
 ## Opening the software application...
 ### By downloading and clicking on an application file
 The file works only on MacOS and may work only on macOS Monterey (12) and later MacOS versions. To use it:
-* [Visit the releases page](https://github.com/jggautier/dataverse-scripts/releases) to download the latest version of the ZIP file (Dataverse.Repository.Curation.App.zip ). If you're using Google Chrome when you download the ZIP file, keep an eye out for the browser giving a warning about downloading the ZIP file. You might have to tell Google Chrome that the download is safe
-* Extract the Zip file's Dataverse Repository Curation App file
+* [Visit the releases page](https://github.com/jggautier/dataverse-scripts/releases) to download the latest version of the ZIP file (Dataverse.Repository.Curation.App.zip ). If you're using Google Chrome when you download the ZIP file, keep an eye out for the browser warning you about downloading the ZIP file. You might have to tell Google Chrome that the download is safe
+* Extract the ZIP file's "Dataverse Repository Curation App" file
 * Right click on the application file and choose Open. MacOS may display a warning that “Dataverse Repository Curation App” can’t be opened because Apple cannot check it for malicious software. This is because the application is not in Apple's App Store. (See [Apple's support article](https://support.apple.com/guide/mac-help/apple-cant-check-app-for-malicious-software-mchleab3a043/mac) for more info about this warning.)
 * Click "Open" and wait for the application to appear
 * The application will be saved as an exception to your computer's security settings, and you'll be able to open it again by double-clicking it as you would other Desktop applications
@@ -23,7 +23,7 @@ The file works only on MacOS and may work only on macOS Monterey (12) and later 
 If you re-download the application file from this GitHub repo, e.g. to use a future version with more functionality or bug fixes, you'll have to follow these steps again to re-add the application as an exemption to your computer's security settings.
 
 ### By downloading and running a Python script
-If you'd like to run the application on earlier versions of MacOS or if you run into problems with the application file, you can run the curation_app_main.py file. You'll need Python 3 installed and may need Python 3.7 or later, as well as the Python libraries listed in the [requirements.txt file](https://github.com/jggautier/dataverse-scripts/blob/main/dataverse_repository_curation_app/requirements.txt) and some familiarity with running Python scripts:
+If you'd like to run the application on earlier versions of MacOS or if you run into problems with the application file, you can run the dataverse_repository_curation_app_main.py file, which will create the application's UI. You'll need Python 3 installed and may need Python 3.7 or later, as well as the Python libraries listed in the [requirements.txt file](https://github.com/jggautier/dataverse-scripts/blob/main/dataverse_repository_curation_app/requirements.txt) and some familiarity with running Python scripts:
 
 * Install Python 3, pip and pipenv if you don't already have them. There's a handy guide at https://docs.python-guide.org.
  
