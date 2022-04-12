@@ -891,11 +891,14 @@ def get_metadata_values_lists(
     if (datasetMetadata['status'] == 'OK') and\
         (metadatablockName in datasetMetadata['data']['latestVersion']['metadataBlocks']):
 
-        persistentUrl = datasetMetadata['data']['persistentUrl']
-        datasetPid = get_canonical_pid(persistentUrl)
-        datasetUrl = installationUrl + '/dataset.xhtml?persistentId=' +\
-            datasetMetadata['data']['latestVersion']['datasetPersistentId']
+        datasetPersistentUrl = datasetMetadata['data']['persistentUrl']
+        datasetPid = get_canonical_pid(datasetPersistentUrl)
+        datasetUrl = installationUrl + '/dataset.xhtml?persistentId=' + datasetPid
         # versionId = str(datasetMetadata['data']['latestVersion']['id'])
+
+        majorVersionNumber = datasetMetadata['data']['datasetVersion']['versionNumber']
+        minorVersionNumber = datasetMetadata['data']['datasetVersion']['versionMinorNumber']
+        datasetVersionNumber = f'{majorVersionNumber}.{minorVersionNumber}'
 
         for fields in datasetMetadata['data']['latestVersion']['metadataBlocks'][metadatablockName]['fields']:
             if fields['typeName'] == chosenTitleDBName:
@@ -906,12 +909,14 @@ def get_metadata_values_lists(
 
                 if typeClass in ('primitive', 'controlledVocabulary') and allowsMultiple is True:
                     for value in fields['value']:
-                        rowVariables = [datasetPid, datasetUrl, value[:10000].replace('\r', ' - ')]
+                        rowVariables = [
+                            datasetPid, datasetUrl, datasetVersionNumber,
+                            value[:10000].replace('\r', ' - ')]
                         rowVariablesList.append(rowVariables)
 
                 elif typeClass in ('primitive', 'controlledVocabulary') and allowsMultiple is False:
                     value = fields['value'][:10000].replace('\r', ' - ')
-                    rowVariables = [datasetPid, datasetUrl, value]
+                    rowVariables = [datasetPid, datasetUrl, datasetVersionNumber, value]
 
                     rowVariablesList.append(rowVariables)
 
@@ -921,7 +926,7 @@ def get_metadata_values_lists(
                     condition = True
 
                     while condition:
-                        rowVariables = [datasetPid, datasetUrl]
+                        rowVariables = [datasetPid, datasetUrl, datasetVersionNumber]
 
                         # Get number of multiples
                         total = len(fields['value'])
@@ -943,7 +948,7 @@ def get_metadata_values_lists(
                         condition = index < total
 
                 elif typeClass == 'compound' and allowsMultiple is False:
-                    rowVariables = [datasetPid, datasetUrl]
+                    rowVariables = [datasetPid, datasetUrl, datasetVersionNumber]
 
                     for chosenField in chosenFields:
                         try:
