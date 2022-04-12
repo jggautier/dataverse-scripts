@@ -201,8 +201,8 @@ class getMetadataAsCSVsFrame(Frame):
             command=lambda: get_datasets_from_collection_or_search_url(
                 rootWindow=self.mainFrame,
                 url=self.entryCollectionURL.get().strip(),
-                progressLabel=self.labelProgressText,
-                progressText=self.progressText,
+                progressLabel=self.labelLoadDatasetsProgressText,
+                progressText=self.loadDatasetsProgressText,
                 textBoxCollectionDatasetPIDs=self.textBoxCollectionDatasetPIDs,
                 ignoreDeaccessionedDatasets=True,
                 apiKey=self.entryApiToken.get().strip(),
@@ -266,10 +266,10 @@ class getMetadataAsCSVsFrame(Frame):
             bg=appPrimaryGreyColor, fg='white',
             width=140, height=30,
             command=lambda: get_datasets_from_collection_or_search_url(
-                rootWindow=self.frameLoadDataSets,
+                rootWindow=self.frameLoadDatasetsProgress,
                 url=self.entrySearchURL.get().strip(),
-                progressLabel=self.labelProgressText,
-                progressText=self.progressText,
+                progressLabel=self.labelLoadDatasetsProgressText,
+                progressText=self.loadDatasetsProgressText,
                 textBoxCollectionDatasetPIDs=self.textBoxCollectionDatasetPIDs,
                 apiKey=self.entryApiToken.get().strip(),
                 ignoreDeaccessionedDatasets=True,
@@ -287,19 +287,19 @@ class getMetadataAsCSVsFrame(Frame):
         self.buttonLoadDatasets.grid(sticky='w', row=4, columnspan=2, pady=15)
 
         # Create frame and labels for indicating progress and showing results
-        self.frameLoadDataSets = Frame(self.frameChooseDatasets, bg='white')
-        self.progressText = StringVar()
-        self.labelProgressText = Label(
-            self.frameLoadDataSets,
-            textvariable=self.progressText,
+        self.frameLoadDatasetsProgress = Frame(self.frameChooseDatasets, bg='white')
+        self.loadDatasetsProgressText = StringVar()
+        self.labelLoadDatasetsProgressText = Label(
+            self.frameLoadDatasetsProgress,
+            textvariable=self.loadDatasetsProgressText,
             fg='green', bg='white', anchor='w', justify='left')
         self.textBoxCollectionDatasetPIDs = ScrolledText(
-            self.frameLoadDataSets,
+            self.frameLoadDatasetsProgress,
             width=45, height=5,
             font='Helvetica')
 
         # Place frame that holds widgets for indicating progress and showing results
-        self.frameLoadDataSets.grid(sticky='w', row=4, pady=5)
+        self.frameLoadDatasetsProgress.grid(sticky='w', row=4, pady=5)
 
         
         # # Create Enter dataset URLs or PIDs frame, field label,
