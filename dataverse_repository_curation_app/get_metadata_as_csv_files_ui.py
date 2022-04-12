@@ -215,7 +215,6 @@ class getMetadataAsCSVsFrame(Frame):
         self.checkboxGetSubdataverses.grid(sticky='w', row=3, columnspan=2, pady=10)
         self.buttonLoadDatasets.grid(sticky='w', row=4, columnspan=2, pady=10)
 
-
         # Create Enter Search URL frames, field label, text box, and validation error label
         self.frameSearchURL = Frame(self.frameChooseDatasets, bg='white')
 
@@ -297,7 +296,7 @@ class getMetadataAsCSVsFrame(Frame):
             font='Helvetica')
 
         # Place frame that holds widgets for indicating progress and showing results
-        self.frameLoadDatasetsProgress.grid(sticky='w', row=4, pady=5)
+        self.frameLoadDatasetsProgress.grid(sticky='w', row=2, pady=5)
 
         
         # # Create Enter dataset URLs or PIDs frame, field label,
@@ -374,7 +373,7 @@ class getMetadataAsCSVsFrame(Frame):
         # self.buttonBrowseJSONFiles.grid(sticky='w', row=0)
         # self.labelBrowseJSONFilesConfirmation.grid(sticky='w', row=1)
 
-        # Create Select datasets label and dropdown for menu
+        # Create dropdown for choosing how to get datasets
         self.options = [
             'In a Dataverse Collection',
             'From a Search URL']
