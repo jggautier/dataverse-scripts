@@ -195,9 +195,7 @@ class getMetadataAsCSVsFrame(Frame):
         self.buttonLoadDatasets = Button(
             self.frameCollectionURL,
             text='Find datasets',
-            # bg=appPrimaryBlueColor, fg='white',
             bg=appPrimaryGreyColor, fg='white',
-            # width=140, height=30,
             command=lambda: get_datasets_from_collection_or_search_url(
                 rootWindow=self.mainFrame,
                 url=self.entryCollectionURL.get().strip(),
@@ -552,10 +550,6 @@ class getMetadataAsCSVsFrame(Frame):
     # def open_url(self, url):
     #     webbrowser.open_new(url)
 
-    def stop(self):
-        # if self.cancel_id is not None:
-        self.textBox.after_cancel(self.cancel_id)
-        self.cancel_id = None
 
     # Hide all frames function
     def hide_choose_dataset_frames(self):
