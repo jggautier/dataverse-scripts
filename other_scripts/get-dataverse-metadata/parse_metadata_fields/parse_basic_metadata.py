@@ -19,6 +19,20 @@ window.title('Get basic dataset metadata')
 window.geometry('550x500')  # width x height
 
 
+# Function for getting value of nested key, truncating the value to 10,000 characters if it's a string
+# (character limit for many spreadsheet applications), and returning nothing if key doesn't exist
+def improved_get(_dict, path, default=None):
+    for key in path.split('.'):
+        try:
+            _dict = _dict[key]
+        except KeyError:
+            return default
+    if isinstance(_dict, int) or isinstance(_dict, dict):
+        return _dict
+    elif isinstance(_dict, str):
+        return _dict[:10000].replace('\r', ' - ')
+
+
 def get_canonical_pid(pidOrUrl):
 
     # If entered dataset PID is the dataset page URL, get canonical PID
@@ -98,15 +112,6 @@ button_Start.grid(sticky='w', column=0, row=7, pady=40)
 
 # Keep window open until it's closed
 mainloop()
-
-
-def improved_get(_dict, path, default=None):
-    for key in path.split('.'):
-        try:
-            _dict = _dict[key]
-        except KeyError:
-            return default
-    return str(_dict)
 
 
 # Add path of csv file to filename variable

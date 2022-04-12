@@ -18,6 +18,20 @@ window.title('Get metadata from a metadatablock')
 window.geometry('600x600')  # width x height
 
 
+# Function for getting value of nested key, truncating the value to 10,000 characters if it's a string
+# (character limit for many spreadsheet applications), and returning nothing if key doesn't exist
+def improved_get(_dict, path, default=None):
+    for key in path.split('.'):
+        try:
+            _dict = _dict[key]
+        except KeyError:
+            return default
+    if isinstance(_dict, int) or isinstance(_dict, dict):
+        return _dict
+    elif isinstance(_dict, str):
+        return _dict[:10000].replace('\r', ' - ')
+
+
 # Function called when user presses the browse button to choose the metadatablock file
 def retrieve_metadatablockfile():
     global metadatablockfile
@@ -95,15 +109,6 @@ button_Start.grid(sticky='w', column=0, row=11, pady=40)
 
 # Keep window open until it's closed
 mainloop()
-
-
-def improved_get(_dict, path, default=None):
-    for key in path.split('.'):
-        try:
-            _dict = _dict[key]
-        except KeyError:
-            return default
-    return str(_dict)
 
 
 # Read metadatablock file

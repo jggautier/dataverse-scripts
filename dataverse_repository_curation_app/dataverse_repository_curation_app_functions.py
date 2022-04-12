@@ -62,15 +62,18 @@ def forget_widget(widget):
         pass
 
 
-# Function for getting the value of a nested key in a dictionary
-# or returning a default value
+# Function for getting value of nested key, truncating the value to 10,000 characters if it's a string
+# (character limit for many spreadsheet applications), and returning nothing if key doesn't exist
 def improved_get(_dict, path, default=None):
     for key in path.split('.'):
         try:
             _dict = _dict[key]
         except KeyError:
             return default
-    return str(_dict)
+    if isinstance(_dict, int) or isinstance(_dict, dict):
+        return _dict
+    elif isinstance(_dict, str):
+        return _dict[:10000].replace('\r', ' - ')
 
 
 def list_to_string(lst): 
