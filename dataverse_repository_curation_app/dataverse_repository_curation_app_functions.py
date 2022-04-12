@@ -885,22 +885,24 @@ def get_column_names(
 
 def get_metadata_values_lists(
     installationUrl, datasetMetadata, metadatablockName,
-    chosenTitleDBName, chosenFields=None):
+    chosenTitleDBName, chosenFields=None, versions='latestVersion'):
+
+    if versions == 'allVersions':
+        versions = 'datasetVersion'
     rowVariablesList = []
 
     if (datasetMetadata['status'] == 'OK') and\
-        (metadatablockName in datasetMetadata['data']['latestVersion']['metadataBlocks']):
+        (metadatablockName in datasetMetadata['data'][versions]['metadataBlocks']):
 
         datasetPersistentUrl = datasetMetadata['data']['persistentUrl']
         datasetPid = get_canonical_pid(datasetPersistentUrl)
         datasetUrl = installationUrl + '/dataset.xhtml?persistentId=' + datasetPid
-        # versionId = str(datasetMetadata['data']['latestVersion']['id'])
 
-        majorVersionNumber = datasetMetadata['data']['datasetVersion']['versionNumber']
-        minorVersionNumber = datasetMetadata['data']['datasetVersion']['versionMinorNumber']
+        majorVersionNumber = datasetMetadata['data'][versions]['versionNumber']
+        minorVersionNumber = datasetMetadata['data'][versions]['versionMinorNumber']
         datasetVersionNumber = f'{majorVersionNumber}.{minorVersionNumber}'
 
-        for fields in datasetMetadata['data']['latestVersion']['metadataBlocks'][metadatablockName]['fields']:
+        for fields in datasetMetadata['data'][versions]['metadataBlocks'][metadatablockName]['fields']:
             if fields['typeName'] == chosenTitleDBName:
 
                 # Save the field's typeClass and if it allows multiple values 
@@ -910,13 +912,15 @@ def get_metadata_values_lists(
                 if typeClass in ('primitive', 'controlledVocabulary') and allowsMultiple is True:
                     for value in fields['value']:
                         rowVariables = [
-                            datasetPid, datasetUrl, datasetVersionNumber,
-                            value[:10000].replace('\r', ' - ')]
+                            datasetPid, datasetPersistentUrl, datasetUrl,
+                            datasetVersionNumber, value[:10000].replace('\r', ' - ')]
                         rowVariablesList.append(rowVariables)
 
                 elif typeClass in ('primitive', 'controlledVocabulary') and allowsMultiple is False:
                     value = fields['value'][:10000].replace('\r', ' - ')
-                    rowVariables = [datasetPid, datasetUrl, datasetVersionNumber, value]
+                    rowVariables = [
+                        datasetPid, datasetPersistentUrl, datasetUrl, 
+                        datasetVersionNumber, value]
 
                     rowVariablesList.append(rowVariables)
 
@@ -926,7 +930,9 @@ def get_metadata_values_lists(
                     condition = True
 
                     while condition:
-                        rowVariables = [datasetPid, datasetUrl, datasetVersionNumber]
+                        rowVariables = [
+                            datasetPid, datasetPersistentUrl, datasetUrl, 
+                            datasetVersionNumber]
 
                         # Get number of multiples
                         total = len(fields['value'])
@@ -948,7 +954,7 @@ def get_metadata_values_lists(
                         condition = index < total
 
                 elif typeClass == 'compound' and allowsMultiple is False:
-                    rowVariables = [datasetPid, datasetUrl, datasetVersionNumber]
+                    rowVariables = [datasetPid, datasetPersistentUrl, datasetUrl, datasetVersionNumber]
 
                     for chosenField in chosenFields:
                         try:
@@ -985,7 +991,7 @@ def join_metadata_csv_files(csvDirectory):
     allMetadataFileName = os.path.join(csvDirectory, 'all_fields.csv')
 
     # Create list of common columns in CSV files to join on
-    indexList = ['dataset_pid', 'dataset_url']
+    indexList = ['dataset_pid', 'dataset_pid_url', 'dataset_url', 'dataset_version_number']
 
     # Get list of CSV files in the csvDirectory
     filesList = listdir(csvDirectory)
@@ -1042,7 +1048,7 @@ def get_dataset_metadata(
         csvFilePath = str(Path(mainDirectoryPath, csvFileName)) + '.csv'
           
         # Create header row for the CSV file
-        headerRow = ['dataset_pid', 'dataset_url']
+        headerRow = ['dataset_pid', 'dataset_pid_url', 'dataset_url', 'dataset_version_number']
 
         childFieldsList = get_column_names(
             metadatablockData, parentFieldTitle, allFieldsDBNamesDict)
