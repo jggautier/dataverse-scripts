@@ -206,7 +206,7 @@ class deletePublishedDatasetsFrame(Frame):
         self.buttonDeleteDatasets.grid(sticky='w', column=0, row=0)
 
         # Create Enter Dataverse collection URL frame, field label, 
-        # text box, load datasets button, and scrolled textbox for PIDs
+        # text box, load datasets button
         self.frameCollectionURL = Frame(self.frameChooseDatasets, bg='white')
         self.frameCollectionURL.columnconfigure(0, weight=1)
         self.frameCollectionURL.columnconfigure(1, weight=180)
@@ -329,8 +329,6 @@ class deletePublishedDatasetsFrame(Frame):
             self.frameEnterUrls,
             text='Enter dataset URLs or PIDs',
             font='Helvetica', bg='white', anchor='w')
-
-        
 
         # Place Enter dataset URLs or PIDs field label, text box, and validation error label
         self.labelEnterDatasets.grid(sticky='w', row=0)
