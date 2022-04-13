@@ -57,7 +57,7 @@ class collapsiblePanel(Frame):
 def forget_widget(widget):
     exists = widget.winfo_exists()
     if exists == 1:
-        widget.forget_grid()
+        widget.grid_forget()
     else:
         pass
 
@@ -469,7 +469,7 @@ def get_object_dataframe_from_search_api(
     text = 'Looking for datasets...'
     progressText.set(text)
     progressLabel.config(fg='green')
-    # progressLabel = progressLabel.grid(sticky='w', row=0)
+    progressLabel = progressLabel.grid(sticky='w', row=0)
     rootWindow.update_idletasks()
     
     while condition:
