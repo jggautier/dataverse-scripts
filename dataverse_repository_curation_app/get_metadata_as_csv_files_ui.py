@@ -157,7 +157,7 @@ class getMetadataAsCSVsFrame(Frame):
         self.frameChooseDatasets.grid(row=1)
 
         # Create Enter Dataverse collection URL frame, field label, 
-        # text box, load datasets button, and scrolled textbox for PIDs
+        # text box, and load datasets button
         self.frameCollectionURL = Frame(self.frameChooseDatasets, bg='white')
         self.frameCollectionURL.columnconfigure(0, weight=1)
         self.frameCollectionURL.columnconfigure(1, weight=180)
@@ -194,10 +194,10 @@ class getMetadataAsCSVsFrame(Frame):
             variable=self.getSubdataverses, onvalue = True, offvalue = False)
         self.buttonLoadDatasets = Button(
             self.frameCollectionURL,
-            text='Find datasets',
+            text='Find the datasets',
             bg=appPrimaryGreyColor, fg='white',
             command=lambda: get_datasets_from_collection_or_search_url(
-                rootWindow=self.mainFrame,
+                rootWindow=self.frameLoadDatasetsProgress,
                 url=self.entryCollectionURL.get().strip(),
                 progressLabel=self.labelLoadDatasetsProgressText,
                 progressText=self.loadDatasetsProgressText,
@@ -215,7 +215,7 @@ class getMetadataAsCSVsFrame(Frame):
         self.checkboxGetSubdataverses.grid(sticky='w', row=3, columnspan=2, pady=10)
         self.buttonLoadDatasets.grid(sticky='w', row=4, columnspan=2, pady=10)
 
-        # Create Enter Search URL frames, field label, text box, and validation error label
+        # Create Enter Search URL frames, field label, text box
         self.frameSearchURL = Frame(self.frameChooseDatasets, bg='white')
 
         self.frameSearchURLField = Frame(self.frameSearchURL, bg='white')
@@ -261,7 +261,7 @@ class getMetadataAsCSVsFrame(Frame):
             self.frameSearchURLField,
             text='Find the datasets',
             bg=appPrimaryGreyColor, fg='white',
-            width=140, height=30,
+            # width=140, height=30,
             command=lambda: get_datasets_from_collection_or_search_url(
                 rootWindow=self.frameLoadDatasetsProgress,
                 url=self.entrySearchURL.get().strip(),
@@ -284,7 +284,7 @@ class getMetadataAsCSVsFrame(Frame):
         self.buttonLoadDatasets.grid(sticky='w', row=4, columnspan=2, pady=15)
 
         # Create frame and labels for indicating progress and showing results
-        self.frameLoadDatasetsProgress = Frame(self.frameChooseDatasets, bg='white')
+        self.frameLoadDatasetsProgress = Frame(self.frameChooseDatasets, height=20, bg='white')
         self.loadDatasetsProgressText = StringVar()
         self.labelLoadDatasetsProgressText = Label(
             self.frameLoadDatasetsProgress,
@@ -297,6 +297,7 @@ class getMetadataAsCSVsFrame(Frame):
 
         # Place frame that holds widgets for indicating progress and showing results
         self.frameLoadDatasetsProgress.grid(sticky='w', row=2, pady=5)
+        # self.textBoxCollectionDatasetPIDs.grid(sticky='w', row=1)
 
         
         # # Create Enter dataset URLs or PIDs frame, field label,
@@ -554,9 +555,15 @@ class getMetadataAsCSVsFrame(Frame):
     def hide_choose_dataset_frames(self):
         self.frameCollectionURL.grid_forget()
         self.frameSearchURL.grid_forget()
-        # self.frameEnterUrls.grid_forget()
-        # self.frameDatasetList.grid_forget()
-        # self.frameBrowseJSONFiles.grid_forget()
+        forget_widget(self.labelLoadDatasetsProgressText)
+        forget_widget(self.textBoxCollectionDatasetPIDs)
+        # self.textBoxCollectionDatasetPIDs.delete('1.0', END)
+
+
+        self.frameLoadDatasetsProgress.config(height=1)
+        # forget_widget(self.frameLoadDatasetsProgress)
+
+        
         
 
     def get_datasets_method(self, *args):
