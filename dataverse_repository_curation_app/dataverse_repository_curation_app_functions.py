@@ -235,7 +235,8 @@ def get_search_api_url(url):
             pass
         
         # Get the Dataverse Collection name in the search URL
-        dataverseName = re.search(r'\/dataverse\/\w*\?q', url)
+        # dataverseName = re.search(r'\/dataverse\/\w*\?q', url)
+        dataverseName = re.search(r'\/dataverse\/.*\?q', url)
         dataverseName = dataverseName.group()
 
         subtree = dataverseName.replace('/dataverse/', '&subtree=').replace('?q', '')
@@ -611,21 +612,24 @@ def get_datasets_from_collection_or_search_url(
         params=params, objectType='dataset', apiKey=apiKey)
 
     datasetCount = len(datasetInfoDF.index)
-
-    # To ignore deaccessioned datasets, remove from the dataframe all datasets where version_state is DEACCESSIONED 
-    if ignoreDeaccessionedDatasets == True:
-        datasetInfoDF = datasetInfoDF[datasetInfoDF['version_state'].str.contains('DEACCESSIONED') == False]
-        deaccessionedDatasetCount = datasetCount - len(datasetInfoDF.index)
-
-    # Remove version_state column so that I can remove duplicate rows
-    datasetInfoDF = datasetInfoDF.drop('version_state', axis=1)
-
-    # Drop duplicate rows, which happens when Search API results lists a dataset's published and draft versions
-    datasetInfoDF = datasetInfoDF.drop_duplicates()
-
-    datasetCount = len(datasetInfoDF.index)
+    deaccessionedDatasetCount = 0
 
     if datasetCount > 0:
+
+        # To ignore deaccessioned datasets, remove from the dataframe all datasets where version_state is DEACCESSIONED 
+        if ignoreDeaccessionedDatasets == True:
+            datasetInfoDF = datasetInfoDF[datasetInfoDF['version_state'].str.contains('DEACCESSIONED') == False]
+            deaccessionedDatasetCount = datasetCount - len(datasetInfoDF.index)
+
+        # Remove version_state column so that I can remove duplicate rows
+        datasetInfoDF = datasetInfoDF.drop('version_state', axis=1)
+
+        # Drop duplicate rows, which happens when Search API results lists a dataset's published and draft versions
+        datasetInfoDF = datasetInfoDF.drop_duplicates()
+
+        datasetCount = len(datasetInfoDF.index)
+
+        # if datasetCount > 0:
 
         # Place textbox with list of dataset PIDs and set state to read/write (normal) 
         textBoxCollectionDatasetPIDs.grid(sticky='w', row=2, pady=5)
