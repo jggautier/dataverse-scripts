@@ -45,7 +45,7 @@ frameAppHeading.grid(row=0, sticky='w', padx=20, pady=10)
 
 labelAppHeading = Label(
     frameAppHeading, 
-    text='Dataverse repository curation app', 
+    text='Dataverse repository curation app',
     bg='white', font=('Arial', 20, 'bold'),
     anchor='w')
 labelAppHeading.grid(row=0, sticky='w')
