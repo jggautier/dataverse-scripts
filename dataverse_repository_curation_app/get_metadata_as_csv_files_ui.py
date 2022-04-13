@@ -407,7 +407,7 @@ class getMetadataAsCSVsFrame(Frame):
             self.frameWhichFields,
             text='List metadata field names',
             bg=appPrimaryGreyColor, fg='white',
-            width=175, height=30,
+            # width=175, height=30,
             command=lambda: get_parent_field_names(
                 metadatablockData=get_metadatablock_data(
                     installationUrl=get_installation_url(self.comboboxInstallationUrl.get().strip()),
