@@ -404,12 +404,8 @@ class getMetadataAsCSVsFrame(Frame):
                     noMetadataText=self.fieldsWithNoMetadataText,
                     noMetadataLabel=self.labelFieldsWithNoMetadata,
                     installationUrl=get_installation_url(self.comboboxInstallationUrl.get().strip()),
-
-                    # get_dataset_metadata function needs to turn this string into a list of pids
                     datasetPidString=self.textBoxCollectionDatasetPIDs.get('1.0', END),
-
                     parentFieldTitleList=get_listbox_values(self.listboxSelectFieldNames),
-
                     directoryPath=get_directory_path(), # function that asks user for directory
                     apiKey=self.entryApiToken.get().strip()
                     )
