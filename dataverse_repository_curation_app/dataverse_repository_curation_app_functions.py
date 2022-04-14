@@ -615,7 +615,10 @@ def get_datasets_from_collection_or_search_url(
     datasetCount = len(datasetInfoDF.index)
     deaccessionedDatasetCount = 0
 
-    if datasetCount > 0:
+    if datasetCount == 0:
+        forget_widget(textBoxCollectionDatasetPIDs)
+
+    elif datasetCount > 0:
 
         # To ignore deaccessioned datasets, remove from the dataframe all datasets where version_state is DEACCESSIONED 
         if ignoreDeaccessionedDatasets == True:
