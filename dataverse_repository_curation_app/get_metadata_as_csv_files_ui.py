@@ -316,7 +316,8 @@ class getMetadataAsCSVsFrame(Frame):
                 listbox=self.listboxSelectFieldNames))
 
         labelSelectFieldNamesHelpTextString = (
-            'Only fields in the Citation metadatablock are listed')
+            'Only fields in the Citation metadatablock are listed. CSV files will include each dataset\'s '
+            'PID and version number')
         self.labelSelectFieldNamesHelpText = Label(
             self.frameWhichFields,
             text=labelSelectFieldNamesHelpTextString,
