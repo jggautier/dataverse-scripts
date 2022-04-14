@@ -653,23 +653,28 @@ def get_datasets_from_collection_or_search_url(
         url=baseUrl, rootWindow=rootWindow, progressLabel=progressLabel, progressText=progressText,
         params=params, objectType='dataset', apiKey=apiKey)
     datasetCount = len(datasetInfoDF.index)
-    print(datasetCount)
 
-    # To ignore deaccessioned datasets, remove from the dataframe all datasets where version_state is DEACCESSIONED 
-    if ignoreDeaccessionedDatasets == True:
-        datasetInfoDF = datasetInfoDF[datasetInfoDF['version_state'].str.contains('DEACCESSIONED') == False]
-        deaccessionedDatasetCount = datasetCount - len(datasetInfoDF.index)
+    if datasetCount == 0:
+        text = 'Datasets found: 0'
+        progressText.set(text)
+    
+    elif datasetCount > 0:
 
-    # Remove version_state column so that I can remove the dataframe's duplicate rows and there's only one row per dataset
-    datasetInfoDF = datasetInfoDF.drop('version_state', axis=1)
+        deaccessionedDatasetCount = 0
+        
+        # To ignore deaccessioned datasets, remove from the dataframe all datasets where version_state is DEACCESSIONED 
+        if ignoreDeaccessionedDatasets == True:
+            datasetInfoDF = datasetInfoDF[datasetInfoDF['version_state'].str.contains('DEACCESSIONED') == False]
+            deaccessionedDatasetCount = datasetCount - len(datasetInfoDF.index)
 
-    # Drop duplicate rows, which happens when Search API results lists a dataset's published and draft versions
-    datasetInfoDF = datasetInfoDF.drop_duplicates()
+        # Remove version_state column so that I can remove the dataframe's duplicate rows and there's only one row per dataset
+        datasetInfoDF = datasetInfoDF.drop('version_state', axis=1)
 
-    # Recount datasets
-    uniqueDatasetCount = len(datasetInfoDF.index)
+        # Drop duplicate rows, which happens when Search API results lists a dataset's published and draft versions
+        datasetInfoDF = datasetInfoDF.drop_duplicates()
 
-    if uniqueDatasetCount > 0:
+        # Recount datasets
+        uniqueDatasetCount = len(datasetInfoDF.index)
 
         # Check if url is collection url. If so:
         if 'q=' not in url:
@@ -708,8 +713,6 @@ def get_datasets_from_collection_or_search_url(
         elif 'q=' in url:
             uniqueDatasetCount = len(datasetInfoDF)
 
-    if uniqueDatasetCount > 0:
-
         # Place textbox with list of dataset PIDs and set state to read/write (normal) 
         textBoxCollectionDatasetPIDs.grid(sticky='w', row=2, pady=5)
         textBoxCollectionDatasetPIDs.configure(state ='normal')
@@ -722,12 +725,12 @@ def get_datasets_from_collection_or_search_url(
             datasetPid = dfRow['dataset_pid'] + '\n'
             textBoxCollectionDatasetPIDs.insert('end', datasetPid)
 
-    # Create and place result text with uniqueDatasetCount
-    if deaccessionedDatasetCount == 0:
-        text = 'Datasets found: %s' % (str(uniqueDatasetCount))
-    if deaccessionedDatasetCount > 0:
-        text = 'Datasets found: %s\rDeaccessioned datasets ignored: %s' % (str(uniqueDatasetCount), str(deaccessionedDatasetCount))
-    progressText.set(text)
+        # Create and place result text with uniqueDatasetCount
+        if deaccessionedDatasetCount == 0:
+            text = 'Datasets found: %s' % (str(uniqueDatasetCount))
+        if deaccessionedDatasetCount > 0:
+            text = 'Datasets found: %s\rDeaccessioned datasets ignored: %s' % (str(uniqueDatasetCount), str(deaccessionedDatasetCount))
+        progressText.set(text)
 
 
 # def get_datasets_from_pids_or_urls(installationUrl, textBoxEnterDatasets, apiKey=''):
