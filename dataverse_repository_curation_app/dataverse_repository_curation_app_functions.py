@@ -280,6 +280,7 @@ def get_search_api_url(url):
 def convert_html_encoding(string):
     string = (
         string
+            .replace('%C3%8D', 'Í')
             .replace('%20', ' ').replace('%21', '!').replace('%22', '\"').replace('%23', '#')
             .replace('%24', '$').replace('%25', '%').replace('%26', '&').replace('%27', '\'')
             .replace('%28', '(').replace('%29', ')').replace('%2A', '*').replace('%2B', '+')
