@@ -604,6 +604,10 @@ def get_datasets_from_collection_or_search_url(
     url, rootWindow, progressLabel, progressText, textBoxCollectionDatasetPIDs, 
     apiKey='', ignoreDeaccessionedDatasets=False, subdataverses=False):
 
+    # Hide the textBoxCollectionDatasetPIDs scrollbox if it exists
+    forget_widget(textBoxCollectionDatasetPIDs)
+    
+    # Use the Search API to get dataset info from the given search url or Dataverse collection URL
     searchApiUrl = get_search_api_url(url)
     requestsGetProperties = get_params(searchApiUrl)
     baseUrl = requestsGetProperties['baseUrl']
@@ -611,47 +615,30 @@ def get_datasets_from_collection_or_search_url(
     datasetInfoDF = get_object_dataframe_from_search_api(
         url=baseUrl, rootWindow=rootWindow, progressLabel=progressLabel, progressText=progressText,
         params=params, objectType='dataset', apiKey=apiKey)
-
     datasetCount = len(datasetInfoDF.index)
-    deaccessionedDatasetCount = 0
 
-    if datasetCount == 0:
-        forget_widget(textBoxCollectionDatasetPIDs)
+    # To ignore deaccessioned datasets, remove from the dataframe all datasets where version_state is DEACCESSIONED 
+    if ignoreDeaccessionedDatasets == True:
+        datasetInfoDF = datasetInfoDF[datasetInfoDF['version_state'].str.contains('DEACCESSIONED') == False]
+        deaccessionedDatasetCount = datasetCount - len(datasetInfoDF.index)
 
-    elif datasetCount > 0:
+    # Remove version_state column so that I can remove the dataframe's duplicate rows and there's only one row per dataset
+    datasetInfoDF = datasetInfoDF.drop('version_state', axis=1)
 
-        # To ignore deaccessioned datasets, remove from the dataframe all datasets where version_state is DEACCESSIONED 
-        if ignoreDeaccessionedDatasets == True:
-            datasetInfoDF = datasetInfoDF[datasetInfoDF['version_state'].str.contains('DEACCESSIONED') == False]
-            deaccessionedDatasetCount = datasetCount - len(datasetInfoDF.index)
+    # Drop duplicate rows, which happens when Search API results lists a dataset's published and draft versions
+    datasetInfoDF = datasetInfoDF.drop_duplicates()
 
-        # Remove version_state column so that I can remove duplicate rows
-        datasetInfoDF = datasetInfoDF.drop('version_state', axis=1)
+    # Recount datasets
+    uniqueDatasetCount = len(datasetInfoDF.index)
 
-        # Drop duplicate rows, which happens when Search API results lists a dataset's published and draft versions
-        datasetInfoDF = datasetInfoDF.drop_duplicates()
-
-        datasetCount = len(datasetInfoDF.index)
-
-        # if datasetCount > 0:
-
-        # Place textbox with list of dataset PIDs and set state to read/write (normal) 
-        textBoxCollectionDatasetPIDs.grid(sticky='w', row=2, pady=5)
-        textBoxCollectionDatasetPIDs.configure(state ='normal')
-        
-        # Clear whatever's in the textBoxCollectionDatasetPIDs textbox
-        textBoxCollectionDatasetPIDs.delete('1.0', END)
+    if uniqueDatasetCount > 0:
 
         # Check if url is collection url. If so:
         if 'q=' not in url:
             # If the user wants datasets in all subdataverses and the url
             # is the root collection, don't filter the dataframe
             if subdataverses == True and is_root_collection(url) == True:
-                datasetCount = len(datasetInfoDF)
-
-                for dfIndex, dfRow in datasetInfoDF.iterrows():
-                    datasetPid = dfRow['dataset_pid'] + '\n'
-                    textBoxCollectionDatasetPIDs.insert('end', datasetPid)
+                uniqueDatasetCount = len(datasetInfoDF)
 
             # If the user wants datasets in all subdataverses and the url
             # is not the root collection...
@@ -664,11 +651,7 @@ def get_datasets_from_collection_or_search_url(
                 datasetInfoDF = datasetInfoDF[
                     datasetInfoDF['dataverse_alias'].isin(dataverseAliases)]
 
-                datasetCount = len(datasetInfoDF)
-
-                for dfIndex, dfRow in datasetInfoDF.iterrows():
-                    datasetPid = dfRow['dataset_pid'] + '\n'
-                    textBoxCollectionDatasetPIDs.insert('end', datasetPid)
+                uniqueDatasetCount = len(datasetInfoDF)
 
             # If the user wants only datasets in the collection,
             # and not in collections within the collection...
@@ -678,29 +661,34 @@ def get_datasets_from_collection_or_search_url(
                 # Retain only datasets owned by that collection
                 datasetInfoDF = datasetInfoDF[datasetInfoDF['dataverse_alias'].isin([alias])]
 
-                datasetCount = len(datasetInfoDF)
-
-                for dfIndex, dfRow in datasetInfoDF.iterrows():
-                    datasetPid = dfRow['dataset_pid'] + '\n'
-                    textBoxCollectionDatasetPIDs.insert('end', datasetPid)
+                uniqueDatasetCount = len(datasetInfoDF)
 
             # Set state of textbox with dataset PIDs to readonly (disabled)
-            textBoxCollectionDatasetPIDs.configure(state ='disabled')
+            # textBoxCollectionDatasetPIDs.configure(state ='disabled')
 
         # If the url is a search URL, get all datasetPids from datasetInfoDF 
         elif 'q=' in url:
-            datasetCount = len(datasetInfoDF)
+            uniqueDatasetCount = len(datasetInfoDF)
 
-            for dfIndex, dfRow in datasetInfoDF.iterrows():
-                datasetPid = dfRow['dataset_pid'] + '\n'
-                textBoxCollectionDatasetPIDs.insert('end', datasetPid)
+    if uniqueDatasetCount > 0:
 
-    # Create and place result text with datasetCount
+        # Place textbox with list of dataset PIDs and set state to read/write (normal) 
+        textBoxCollectionDatasetPIDs.grid(sticky='w', row=2, pady=5)
+        textBoxCollectionDatasetPIDs.configure(state ='normal')
+        
+        # Clear whatever's in the textBoxCollectionDatasetPIDs textbox
+        textBoxCollectionDatasetPIDs.delete('1.0', END)
+
+        # Insert the dataset PIDs into the textBoxCollectionDatasetPIDs scrollbox
+        for dfIndex, dfRow in datasetInfoDF.iterrows():
+            datasetPid = dfRow['dataset_pid'] + '\n'
+            textBoxCollectionDatasetPIDs.insert('end', datasetPid)
+
+    # Create and place result text with uniqueDatasetCount
     if deaccessionedDatasetCount == 0:
-        text = 'Datasets found: %s' % (str(datasetCount))
+        text = 'Datasets found: %s' % (str(uniqueDatasetCount))
     if deaccessionedDatasetCount > 0:
-        text = 'Datasets found: %s\rDeaccessioned datasets ignored: %s' % (str(datasetCount), str(deaccessionedDatasetCount))
-    # progressText.config(fg='green')
+        text = 'Datasets found: %s\rDeaccessioned datasets ignored: %s' % (str(uniqueDatasetCount), str(deaccessionedDatasetCount))
     progressText.set(text)
 
 
