@@ -367,11 +367,11 @@ def convert_utf8bytes_to_characters(string):
             .replace('%C3%A2', 'â').replace('%C3%A3', 'ã').replace('%C3%A4', 'ä')
             .replace('%C3%A6', 'æ').replace('%C3%A7', 'ç').replace('%C3%A8', 'è')
             .replace('%C3%AA', 'ê').replace('%C3%AB', 'ë').replace('%C3%AC', 'ì')
-            .replace('%C3%AE', 'î').replace('%C3%AF', 'ï').replace('%C3%B0', 'ð')
-            .replace('%C3%B2', 'ò').replace('%C3%B3', 'ó').replace('%C3%B4', 'ô')
-            .replace('%C3%B6', 'ö').replace('%C3%B7', '÷').replace('%C3%B8', 'ø')
-            .replace('%C3%BA', 'ú').replace('%C3%BB', 'û').replace('%C3%BC', 'ü')
-            .replace('%C3%BE', 'þ').replace('%C3%BF', 'ÿ')
+            .replace('%C3%8D', 'Í').replace('%C3%AE', 'î').replace('%C3%AF', 'ï')
+            .replace('%C3%B0', 'ð').replace('%C3%B2', 'ò').replace('%C3%B3', 'ó')
+            .replace('%C3%B4', 'ô').replace('%C3%B6', 'ö').replace('%C3%B7', '÷')
+            .replace('%C3%B8', 'ø').replace('%C3%BA', 'ú').replace('%C3%BB', 'û')
+            .replace('%C3%BC', 'ü').replace('%C3%BE', 'þ').replace('%C3%BF', 'ÿ')
         )
     return string
 
@@ -653,6 +653,7 @@ def get_datasets_from_collection_or_search_url(
         url=baseUrl, rootWindow=rootWindow, progressLabel=progressLabel, progressText=progressText,
         params=params, objectType='dataset', apiKey=apiKey)
     datasetCount = len(datasetInfoDF.index)
+    print(datasetCount)
 
     # To ignore deaccessioned datasets, remove from the dataframe all datasets where version_state is DEACCESSIONED 
     if ignoreDeaccessionedDatasets == True:
