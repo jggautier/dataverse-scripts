@@ -5,7 +5,6 @@ import json
 import os
 import requests
 import sys
-# import threading
 import time
 from tkinter import Tk, ttk, Frame, Label, IntVar, StringVar, BooleanVar, font
 from tkinter import Checkbutton, Listbox, MULTIPLE, filedialog, END, INSERT, N, E, S, W
@@ -172,10 +171,6 @@ class getMetadataAsCSVsFrame(Frame):
             font='Helvetica', anchor='w', bg='white')
         self.entryCollectionURL = Entry(
             self.frameCollectionURL, width=40)
-        # self.labelCollectionURLValidation = Label(
-        #     self.frameCollectionURL,
-        #     text='You must enter a Dataverse Collection URL',
-        #     font='Helvetica', fg='red', bg='white', anchor='w')
 
         labelEntryCollectionURLHelpTextString = (
             'E.g. https://demo.dataverse.org/dataverse/name'
@@ -206,12 +201,11 @@ class getMetadataAsCSVsFrame(Frame):
                 apiKey=self.entryApiToken.get().strip(),
                 subdataverses=self.getSubdataverses.get()))
         
-        # Place Enter Dataverse collection URL field label, text box, and validation error label 
+        # Place Enter Dataverse collection URL field label, and text box
         self.labelCollectionURL.grid(sticky='w', column=0, row=0)
         self.labelCollectionURLAsterisk.grid(sticky='w', column=1, row=0)
         self.entryCollectionURL.grid(sticky='w', row=1, columnspan=2)
         self.labelEntryCollectionURLHelpText.grid(sticky='w', row=2, columnspan=2)
-        # self.labelCollectionURLValidation.grid(sticky='w', row=2)
         self.checkboxGetSubdataverses.grid(sticky='w', row=3, columnspan=2, pady=10)
         self.buttonLoadDatasets.grid(sticky='w', row=4, columnspan=2, pady=10)
 
@@ -246,22 +240,15 @@ class getMetadataAsCSVsFrame(Frame):
 
         searchURLEntryHelpTextString = (
             'E.g. https://demo.dataverse.org/dataverse/demo/?q=surveys')
-            # '\r\rTo get a search URL, first search for datasets in the repository, '
-            # 'then copy the URL from your browser\'s address bar')
         self.labelSearchURLHelpText = Label(
             self.frameSearchURLField,
             text=searchURLEntryHelpTextString,
             font='Helvetica', fg='grey', bg='white', 
             wraplength=380, justify='left', anchor='w')
-        # self.labelSearchURLValidation = Label(
-        #     self.frameSearchURLField,
-        #     text='You must enter a search URL',
-        #     font='Helvetica', fg='red', bg='white', anchor='w')
         self.buttonLoadDatasets = Button(
             self.frameSearchURLField,
             text='Find the datasets',
             bg=appPrimaryGreyColor, fg='white',
-            # width=140, height=30,
             command=lambda: get_datasets_from_collection_or_search_url(
                 rootWindow=self.frameLoadDatasetsProgress,
                 url=self.entrySearchURL.get().strip(),
@@ -297,90 +284,11 @@ class getMetadataAsCSVsFrame(Frame):
 
         # Place frame that holds widgets for indicating progress and showing results
         self.frameLoadDatasetsProgress.grid(sticky='w', row=2, pady=5)
-        # self.textBoxCollectionDatasetPIDs.grid(sticky='w', row=1)
-
-        
-        # # Create Enter dataset URLs or PIDs frame, field label,
-        # # text box, and validation error label
-        # self.frameEnterUrls = Frame(self.frameChooseDatasets, bg='white')
-        # self.labelEnterDatasets = Label(
-        #     self.frameEnterUrls,
-        #     text='Enter dataset PIDs or URLs',
-        #     font='Helvetica', bg='white', anchor='w')
-        # self.textBoxEnterDatasets = ScrolledText(
-        #     self.frameEnterUrls,
-        #     width=45, height=10,
-        #     font='Helvetica')
-        # self.labelEnterDatasetsHelpText = Label(
-        #     self.frameEnterUrls,
-        #     text='Enter each URL or PID on a new line',
-        #     font='Helvetica', bg='white', fg='grey', anchor='w')
-        # self.labelEnterDatasetsValidation = Label(
-        #     self.frameEnterUrls,
-        #     text='You must enter at least one dataset URL or PID',
-        #     font='Helvetica', fg='red', bg='white', anchor='w')
-        # self.buttonLoadDatasets = Button(
-        #     self.frameEnterUrls,
-        #     text='Load datasets',
-        #     bg=appPrimaryBlueColor, fg='white',
-        #     width=110, height=30,
-        #     command=lambda: get_datasets_from_pids_or_urls(
-        #         installationUrl=self.entryInstallationUrl.get().strip(),
-        #         # textBoxEnterDatasets = self.textBoxEnterDatasets,
-        #         textBoxEnterDatasets = self.textBoxEnterDatasets.get('1.0','end-1c'),
-        #         apiKey=self.entryApiToken.get().strip()))
-
-        # # Place Enter dataset URLs or PIDs field label, text box, and validation error label
-        # self.labelEnterDatasets.grid(sticky='w', row=0)
-        # self.textBoxEnterDatasets.grid(sticky='w', row=1)
-        # self.labelEnterDatasetsHelpText.grid(sticky='w', row=2)
-        # self.labelEnterDatasetsValidation.grid(sticky='w', row=3)
-        # self.buttonLoadDatasets.grid(sticky='w', row=4, pady=10)
-
-        # # Create From list of dataset PIDs frame and browse button
-        # self.frameDatasetList = Frame(self.frameChooseDatasets, bg='white')
-        # self.buttonBrowseDatasetList = Button(
-        #     self.frameDatasetList, 
-        #     text='Browse', 
-        #     bg=appPrimaryGreyColor, fg='white', 
-        #     width=100, height=30,
-        #     command=lambda: self.retrieve_csv_directory())
-        # self.csvDirectory = '/Users/juliangautier/Desktop'
-        # self.labelBrowseDatasetListConfirmation = Label(
-        #     self.frameDatasetList,
-        #     text='You chose: ' + self.csvDirectory, anchor='w',
-        #     fg='green', bg='white', wraplength=380, justify='left')
-
-        # # Place From list of dataset PIDs browse button
-        # self.buttonBrowseDatasetList.grid(sticky='w', row=0)
-        # self.labelBrowseDatasetListConfirmation.grid(sticky='w', row=1)
-        
-        # # Create Use local Dataverse JSON metadata files frame, field label, button, and validation error label 
-        # self.frameBrowseJSONFiles = Frame(self.frameChooseDatasets, bg='white')
-        # self.buttonBrowseJSONFiles = Button(
-        #     self.frameBrowseJSONFiles, 
-        #     text='Browse', 
-        #     bg=appPrimaryGreyColor, fg='white', 
-        #     width=100, height=30,
-        #     command=lambda: self.retrieve_csv_directory())
-
-        # self.jsonDirectory = '/Users/juliangautier/Desktop'
-        # self.labelBrowseJSONFilesConfirmation = Label(
-        #     self.frameBrowseJSONFiles,
-        #     text='You chose: ' + self.jsonDirectory, anchor='w',
-        #     fg='green', bg='white', wraplength=380, justify='left')
-
-        # # Place Use local Dataverse JSON metadata files field label, button, and validation error label 
-        # self.buttonBrowseJSONFiles.grid(sticky='w', row=0)
-        # self.labelBrowseJSONFilesConfirmation.grid(sticky='w', row=1)
 
         # Create dropdown for choosing how to get datasets
         self.options = [
             'In a Dataverse Collection',
             'From a Search URL']
-            # 'From dataset URLs or PIDs']
-            # 'From a list of dataset PIDs',
-            # 'From Dataverse JSON export files']
         self.dropdownOptionSelected = StringVar()
         self.dropdownOptionSelected.trace('w', self.get_datasets_method)
         self.dropdownMenuChooseDatasets = OptionMenu(
@@ -389,7 +297,6 @@ class getMetadataAsCSVsFrame(Frame):
             self.options[0], *self.options)
 
         self.ttkStyle.configure('TMenubutton', foreground='black')
-        # self.dropdownMenuChooseDatasets.entryconfigure(index, background='red')
 
         # Place dropdown for menu
         self.dropdownMenuChooseDatasets.grid(sticky='w', row=0, pady=10)
@@ -407,7 +314,6 @@ class getMetadataAsCSVsFrame(Frame):
             self.frameWhichFields,
             text='List metadata field names',
             bg=appPrimaryGreyColor, fg='white',
-            # width=175, height=30,
             command=lambda: get_parent_field_names(
                 metadatablockData=get_metadatablock_data(
                     installationUrl=get_installation_url(self.comboboxInstallationUrl.get().strip()),
@@ -416,11 +322,6 @@ class getMetadataAsCSVsFrame(Frame):
 
         labelSelectFieldNamesHelpTextString = (
             'Only fields in the Citation metadatablock are listed')
-            # '\r\rIf you choose fields that are made up of multiple child fields, '
-            # 'the CSV files will contain what\'s entered in each child field. '
-            # 'For example, if you choose Keyword, the CSV files will contain the '
-            # 'values of the Keyword field\'s three child fields: Term, '
-            # 'Vocabulary and Vocabulary URL')
         self.labelSelectFieldNamesHelpText = Label(
             self.frameWhichFields,
             text=labelSelectFieldNamesHelpTextString,
@@ -532,21 +433,6 @@ class getMetadataAsCSVsFrame(Frame):
         self.buttonGetMetadata.grid(sticky='w', column=0, row=0)
         self.labelFieldsWithNoMetadata.grid(sticky='w', row=1)
 
-        # # Create progress bar and label
-        # self.getMetadataProgressBar = Progressbar(
-        #     self.framebuttonGetMetadata,
-        #     length=200,
-        #     maximum=self.total,
-        #     value=0)
-        # self.getMetadataProgressLabel = Label(
-        #     self.framebuttonGetMetadata,
-        #     text='0 of %s (0%%)' % (self.total),
-        #     bg='white')
-
-        # self.getMetadataProgressBar.grid(sticky='w', row=2)
-        # self.getMetadataProgressLabel.grid(sticky='w', row=3)
-
-
     # def open_url(self, url):
     #     webbrowser.open_new(url)
 
@@ -573,28 +459,3 @@ class getMetadataAsCSVsFrame(Frame):
         elif self.dropdownOptionSelected.get() == 'From a Search URL':
             self.hide_choose_dataset_frames()
             self.frameSearchURL.grid(sticky='w', row=1, pady=0)
-
-        # elif self.dropdownOptionSelected.get() == 'From dataset URLs or PIDs':
-        #     self.hide_choose_dataset_frames()
-        #     self.frameEnterUrls.grid(sticky='w', row=1, pady=0)
-
-        # elif self.dropdownOptionSelected.get() == 'From a list of dataset PIDs':
-        #     self.hide_choose_dataset_frames()
-        #     self.frameDatasetList.grid(sticky='w', row=1, pady=0)
-
-        # elif self.dropdownOptionSelected.get() == 'From Dataverse JSON export files':
-        #     self.hide_choose_dataset_frames()
-        #     self.frameBrowseJSONFiles.grid(sticky='w', row=1, column=0, pady=0)
-
-
-    # def get_stringvar(self, event):
-    #     self.entryDatasetPidsStringvar.set(entryDatasetPids.get('1.0', END))
-
-
-    # def clear_error_message(self, *args):
-    #     self.x = apikey.get()
-    #     self.datasetIds = self.entryDatasetPidsStringvar.get()[:-1]
-    #     # "[:-1]" removes newline character from scrolled text box
-
-    #     if self.x and self.datasetIds and self.datasetIds != '\n':
-    #         self.labelEntriesRequired.grid_forget()
