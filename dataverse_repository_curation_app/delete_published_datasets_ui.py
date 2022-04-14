@@ -29,12 +29,12 @@ class deletePublishedDatasetsFrame(Frame):
         Frame.__init__(self, theWindow, *args, **options)
 
         self.ttkStyle = ttk.Style()
-        self.mainFrame = Frame(self, bg='white')
-        self.mainFrame.grid()
+        self.root = Frame(self, bg='white')
+        self.root.grid()
 
         # Create collapsible panel for information about this task
         self.collapsibleTaskDescription = collapsiblePanel(
-            self.mainFrame,
+            self.root,
             text='What does this do?',
             default='closed', relief='raised', bg='white')
         self.collapsibleTaskDescription.grid(sticky='w', row=1, pady=5)
@@ -71,7 +71,7 @@ class deletePublishedDatasetsFrame(Frame):
 
         # Create collapsible panel for account credentials
         self.collapsibleAccountCredentials = collapsiblePanel(
-            self.mainFrame,
+            self.root,
             text='Account credentials',
             default='open', relief='raised', bg='white')
         self.collapsibleAccountCredentials.grid(sticky='w', row=2, pady=5)
@@ -155,7 +155,7 @@ class deletePublishedDatasetsFrame(Frame):
 
         # Create and place collapsible panel for choosing datasets
         self.collapsiblePanelChooseDatasets = collapsiblePanel(
-            self.mainFrame,
+            self.root,
             text='Which datasets?',
             default='closed', relief='raised', bg='white')
         self.collapsiblePanelChooseDatasets.grid(sticky='w', row=3, pady=5)
@@ -165,7 +165,7 @@ class deletePublishedDatasetsFrame(Frame):
         self.frameChooseDatasets.grid(row=1)
 
         # Create Get Metadata frame, button and validation error message text
-        self.frameDeleteDatasetsButton = Frame(self.mainFrame, bg='white')
+        self.frameDeleteDatasetsButton = Frame(self.root, bg='white')
 
         # When button is pressed, get the list of dataset PIDs from 
         # the textBoxCollectionDatasetPIDs textbox
