@@ -276,11 +276,10 @@ def get_search_api_url(url):
     return apiSearchURL
 
 
-# Function that converts as many html codes as I could find into their human-readable strings
-def convert_html_encoding(string):
+# Function that converts as many common html codes as I could find into their human-readable strings
+def convert_common_html_encoding(string):
     string = (
         string
-            .replace('%C3%8D', 'Í')
             .replace('%20', ' ').replace('%21', '!').replace('%22', '\"').replace('%23', '#')
             .replace('%24', '$').replace('%25', '%').replace('%26', '&').replace('%27', '\'')
             .replace('%28', '(').replace('%29', ')').replace('%2A', '*').replace('%2B', '+')
@@ -382,7 +381,7 @@ def get_params(apiSearchURL):
         if paramValue.startswith('='):
             key = paramValue.replace('=', '').split(':')[0]
             value = paramValue.split(':')[1]
-            value = convert_html_encoding(value)
+            value = convert_common_html_encoding(value)
             value = value.replace('+', ' ')
             paramString = key + ':' + value
             fq.append(paramString)
