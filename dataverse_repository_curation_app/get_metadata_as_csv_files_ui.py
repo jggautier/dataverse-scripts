@@ -555,15 +555,14 @@ class getMetadataAsCSVsFrame(Frame):
     def hide_choose_dataset_frames(self):
         self.frameCollectionURL.grid_forget()
         self.frameSearchURL.grid_forget()
+
         forget_widget(self.labelLoadDatasetsProgressText)
         forget_widget(self.textBoxCollectionDatasetPIDs)
-        # self.textBoxCollectionDatasetPIDs.delete('1.0', END)
 
-
-        self.frameLoadDatasetsProgress.config(height=1)
-        # forget_widget(self.frameLoadDatasetsProgress)
-
-        
+        # When widgets in the frameLoadDatasetsProgress frame are forgetten,
+        # the frame doesn't resize automatically. This sets size of 
+        # frameLoadDatasetsProgress to smallest size possible 
+        self.frameLoadDatasetsProgress.config(height=1)        
         
 
     def get_datasets_method(self, *args):
