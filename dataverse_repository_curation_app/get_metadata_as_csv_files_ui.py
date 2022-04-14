@@ -87,11 +87,11 @@ class getMetadataAsCSVsFrame(Frame):
         self.labelInstallationUrl = Label(
             self.frameInstallationUrl,
             text='Installation URL',
-            font='Helvetica', anchor='w', bg='white')
+            anchor='w', bg='white')
         self.labelInstallationUrlAsterisk = Label(
             self.frameInstallationUrl,
             text='*', fg='red', justify='left',
-            font='Helvetica', anchor='w', bg='white')
+            anchor='w', bg='white')
 
         installationsList = get_installation_list()
         currentVar = StringVar()
@@ -105,8 +105,7 @@ class getMetadataAsCSVsFrame(Frame):
         self.labelInstallationUrlHelp = Label(
             self.frameInstallationUrl,
             text=labelInstallationUrlHelpText,
-            font='Helvetica', anchor='w',
-            wraplength=380, justify='left',
+            anchor='w', wraplength=380, justify='left',
             bg='white', fg='grey')
 
         # Place field label, textbox and help text for installation URL field
@@ -124,8 +123,7 @@ class getMetadataAsCSVsFrame(Frame):
         # Create field label, textbox and help text for API Token field
         self.labelApiToken = Label(
             self.frameApiToken,
-            text='API Token',
-            font='Helvetica', anchor='w', bg='white')
+            text='API Token', anchor='w', bg='white')
         self.entryApiToken = Entry(
             self.frameApiToken, width=40)
         labelApiTokenHelpText = (
@@ -134,8 +132,7 @@ class getMetadataAsCSVsFrame(Frame):
             'versions that your account has permission to access')
         self.labelApiTokenHelp = Label(
             self.frameApiToken,
-            text=labelApiTokenHelpText,
-            font='Helvetica', anchor='w',
+            text=labelApiTokenHelpText, anchor='w',
             wraplength=380, justify='left',
             bg='white', fg='grey')
 
@@ -164,11 +161,11 @@ class getMetadataAsCSVsFrame(Frame):
         self.labelCollectionURL = Label(
             self.frameCollectionURL,
             text='Dataverse Collection URL',
-            font='Helvetica', anchor='w', bg='white')
+            anchor='w', bg='white')
         self.labelCollectionURLAsterisk = Label(
             self.frameCollectionURL,
             text='*', fg='red', justify='left',
-            font='Helvetica', anchor='w', bg='white')
+            anchor='w', bg='white')
         self.entryCollectionURL = Entry(
             self.frameCollectionURL, width=40)
 
@@ -180,7 +177,7 @@ class getMetadataAsCSVsFrame(Frame):
         self.labelEntryCollectionURLHelpText = Label(
             self.frameCollectionURL,
             text=labelEntryCollectionURLHelpTextString,
-            font='Helvetica', fg='grey', bg='white', 
+            fg='grey', bg='white', 
             wraplength=380, justify='left', anchor='w')
         self.getSubdataverses = BooleanVar()
         self.checkboxGetSubdataverses = Checkbutton(
@@ -224,17 +221,17 @@ class getMetadataAsCSVsFrame(Frame):
         self.labelAboutSearchURLHelpText = Label(
             self.frameAboutHelpText,
             text=aboutSearchURLHelpTextString,
-            font='Helvetica', fg='black', bg='white', 
+            fg='black', bg='white', 
             wraplength=385, justify='left', anchor='w')
 
         self.labelSearchURL = Label(
             self.frameSearchURLField,
             text='Search URL',
-            font='Helvetica', bg='white', anchor='w')
+            bg='white', anchor='w')
         self.labelSearchURLAsterisk = Label(
             self.frameSearchURLField,
             text='*', fg='red', justify='left',
-            font='Helvetica', anchor='w', bg='white')
+            anchor='w', bg='white')
         self.entrySearchURL = Entry(
             self.frameSearchURLField, width=40)
 
@@ -243,7 +240,7 @@ class getMetadataAsCSVsFrame(Frame):
         self.labelSearchURLHelpText = Label(
             self.frameSearchURLField,
             text=searchURLEntryHelpTextString,
-            font='Helvetica', fg='grey', bg='white', 
+            fg='grey', bg='white', 
             wraplength=380, justify='left', anchor='w')
         self.buttonLoadDatasets = Button(
             self.frameSearchURLField,
@@ -267,7 +264,6 @@ class getMetadataAsCSVsFrame(Frame):
         self.labelSearchURLAsterisk.grid(sticky='w', column=1, row=1)
         self.entrySearchURL.grid(sticky='w', row=2, columnspan=2)
         self.labelSearchURLHelpText.grid(sticky='w', row=3, columnspan=2)
-        # self.labelSearchURLValidation.grid(sticky='w', row=2)        
         self.buttonLoadDatasets.grid(sticky='w', row=4, columnspan=2, pady=15)
 
         # Create frame and labels for indicating progress and showing results
@@ -279,8 +275,7 @@ class getMetadataAsCSVsFrame(Frame):
             fg='green', bg='white', anchor='w', justify='left')
         self.textBoxCollectionDatasetPIDs = ScrolledText(
             self.frameLoadDatasetsProgress,
-            width=45, height=5,
-            font='Helvetica')
+            width=45, height=5)
 
         # Place frame that holds widgets for indicating progress and showing results
         self.frameLoadDatasetsProgress.grid(sticky='w', row=2, pady=5)
@@ -325,8 +320,7 @@ class getMetadataAsCSVsFrame(Frame):
         self.labelSelectFieldNamesHelpText = Label(
             self.frameWhichFields,
             text=labelSelectFieldNamesHelpTextString,
-            font='Helvetica', anchor='w', 
-            wraplength=380, justify='left', fg='grey', bg='white')
+            anchor='w', wraplength=380, justify='left', fg='grey', bg='white')
         
         # Create frames, label, and listbox for selecting field names
         self.frameSelectFieldNames = Frame(self.frameWhichFields, bg='white')
@@ -336,11 +330,11 @@ class getMetadataAsCSVsFrame(Frame):
         self.labelSelectFieldNames = Label(
             self.frameSelectFieldNames,
             text='Select one or more metadata fields',
-            font='Helvetica', bg='white', anchor='w')
+            bg='white', anchor='w')
         self.labelSelectFieldNamesAsterisk = Label(
             self.frameSelectFieldNames,
             text='*', fg='red', justify='left',
-            font='Helvetica', anchor='w', bg='white')
+            anchor='w', bg='white')
         self.frameListboxSelectFieldNames = Frame(self.frameSelectFieldNames, bg='white')
         values = StringVar()
         self.listboxSelectFieldNames = Listbox(
@@ -396,7 +390,7 @@ class getMetadataAsCSVsFrame(Frame):
             self.framebuttonGetMetadata, 
             text='Get metadata', bg=appPrimaryBlueColor,
             fg='white', width=423, height=40,
-            font=font.Font(family='Helvetica', size=15, weight='bold'),
+            font=font.Font(size=15, weight='bold'),
             command=lambda: get_dataset_metadata(
                     rootWindow=self.framebuttonGetMetadata,
                     progressText=self.progressTextGetMetadata,
@@ -421,8 +415,7 @@ class getMetadataAsCSVsFrame(Frame):
         self.labelFieldsWithNoMetadata = Label(
             self.framebuttonGetMetadata,
             textvariable=self.fieldsWithNoMetadataText,
-            font='Helvetica', anchor='w',
-            wraplength=400, justify='left', fg='red', bg='white')
+            anchor='w', wraplength=400, justify='left', fg='red', bg='white')
 
         # Place Get Metadata frame and button
         self.framebuttonGetMetadata.grid(sticky='w', row=5, pady=15)

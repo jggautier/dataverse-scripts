@@ -88,11 +88,11 @@ class deletePublishedDatasetsFrame(Frame):
         self.labelInstallationUrl = Label(
             self.frameInstallationUrl,
             text='Installation URL',
-            font='Helvetica', anchor='w', bg='white')
+            anchor='w', bg='white')
         self.labelInstallationUrlAsterisk = Label(
             self.frameInstallationUrl,
             text='*', fg='red', justify='left',
-            font='Helvetica', anchor='w', bg='white')
+            anchor='w', bg='white')
 
         installationsList = get_installation_list()
         currentVar = StringVar()
@@ -106,7 +106,7 @@ class deletePublishedDatasetsFrame(Frame):
         self.labelInstallationUrlHelp = Label(
             self.frameInstallationUrl,
             text=labelInstallationUrlHelpText,
-            font='Helvetica', anchor='w',
+            anchor='w',
             wraplength=380, justify='left',
             bg='white', fg='grey')
 
@@ -128,11 +128,11 @@ class deletePublishedDatasetsFrame(Frame):
         self.labelApiToken = Label(
             self.frameApiToken,
             text='API Token',
-            font='Helvetica', anchor='w', bg='white')
+            anchor='w', bg='white')
         self.labelApiTokenAsterisk = Label(
             self.frameApiToken,
             text='*', fg='red', justify='left',
-            font='Helvetica', anchor='w', bg='white')
+            anchor='w', bg='white')
 
         self.entryApiToken = Entry(
             self.frameApiToken, width=40)
@@ -143,8 +143,7 @@ class deletePublishedDatasetsFrame(Frame):
         self.labelApiTokenHelp = Label(
             self.frameApiToken,
             text=labelApiTokenHelpText,
-            font='Helvetica', anchor='w',
-            wraplength=380, justify='left',
+            anchor='w', wraplength=380, justify='left',
             bg='white', fg='grey')
 
         # Place field label, textbox and help text for installation URL field
@@ -173,7 +172,7 @@ class deletePublishedDatasetsFrame(Frame):
             self.frameDeleteDatasetsButton, 
             text='Delete datasets', bg=appPrimaryRedColor,
             fg='white', width=423, height=40,
-            font=font.Font(family='Helvetica', size=15, weight='bold'),
+            font=font.Font(size=15, weight='bold'),
             command=lambda: delete_published_datasets(
                     rootWindow=self.frameDeleteDatasetsButton,
                     progressText=self.progressTextDeleteDatasets,
@@ -199,7 +198,7 @@ class deletePublishedDatasetsFrame(Frame):
         self.labelNotDeletedDatasets = Label(
             self.frameDeleteDatasetsButton,
             textvariable=self.notDeletedText,
-            font='Helvetica', anchor='w', fg='red', bg='white')
+            anchor='w', fg='red', bg='white')
 
         # Place Get Metadata frame and button
         self.frameDeleteDatasetsButton.grid(sticky='w', row=5, pady=15)
@@ -214,11 +213,11 @@ class deletePublishedDatasetsFrame(Frame):
         self.labelCollectionURL = Label(
             self.frameCollectionURL,
             text='Dataverse Collection URL',
-            font='Helvetica', anchor='w', bg='white')
+            anchor='w', bg='white')
         self.labelCollectionURLAsterisk = Label(
             self.frameCollectionURL,
             text='*', fg='red', justify='left',
-            font='Helvetica', anchor='w', bg='white')
+            anchor='w', bg='white')
         self.entryCollectionURL = Entry(
             self.frameCollectionURL, width=40)
 
@@ -230,7 +229,7 @@ class deletePublishedDatasetsFrame(Frame):
         self.labelEntryCollectionURLHelpText = Label(
             self.frameCollectionURL,
             text=labelEntryCollectionURLHelpTextString,
-            font='Helvetica', fg='grey', bg='white', 
+            fg='grey', bg='white', 
             wraplength=380, justify='left', anchor='w')
         self.getSubdataverses = BooleanVar()
         self.checkboxGetSubdataverses = Checkbutton(
@@ -275,17 +274,17 @@ class deletePublishedDatasetsFrame(Frame):
         self.labelAboutSearchURLHelpText = Label(
             self.frameAboutHelpText,
             text=aboutSearchURLHelpTextString,
-            font='Helvetica', fg='black', bg='white', 
+            fg='black', bg='white', 
             wraplength=385, justify='left', anchor='w')
 
         self.labelSearchURL = Label(
             self.frameSearchURLField,
             text='Search URL',
-            font='Helvetica', bg='white', anchor='w')
+            bg='white', anchor='w')
         self.labelSearchURLAsterisk = Label(
             self.frameSearchURLField,
             text='*', fg='red', justify='left',
-            font='Helvetica', anchor='w', bg='white')
+            anchor='w', bg='white')
         self.entrySearchURL = Entry(
             self.frameSearchURLField, width=40)
 
@@ -295,7 +294,7 @@ class deletePublishedDatasetsFrame(Frame):
         self.labelSearchURLHelpText = Label(
             self.frameSearchURLField,
             text=searchURLEntryHelpTextString,
-            font='Helvetica', fg='grey', bg='white', 
+            fg='grey', bg='white', 
             wraplength=380, justify='left', anchor='w')
         self.buttonLoadDatasets = Button(
             self.frameSearchURLField,
@@ -327,8 +326,7 @@ class deletePublishedDatasetsFrame(Frame):
         self.frameEnterUrls = Frame(self.frameChooseDatasets, bg='white')
         self.labelEnterDatasets = Label(
             self.frameEnterUrls,
-            text='Enter dataset URLs or PIDs',
-            font='Helvetica', bg='white', anchor='w')
+            text='Enter dataset URLs or PIDs', bg='white', anchor='w')
 
         # Place Enter dataset URLs or PIDs field label, text box, and validation error label
         self.labelEnterDatasets.grid(sticky='w', row=0)
@@ -390,14 +388,13 @@ class deletePublishedDatasetsFrame(Frame):
 
         self.textBoxCollectionDatasetPIDs = ScrolledText(
             self.frametextBoxCollectionDatasetPIDs,
-            width=45, height=8,
-            font='Helvetica')
+            width=45, height=8)
         self.textBoxCollectionDatasetPIDs.grid(sticky='w', row=1)
 
         self.labelDatasetPidsHelpText = Label(
             self.frametextBoxCollectionDatasetPIDs, 
             text='Enter each dataset URL or PID on a new line', 
-            font='Helvetica', fg='grey', bg='white', 
+            fg='grey', bg='white', 
             wraplength=380, justify='left', anchor='w')
         self.labelDatasetPidsHelpText.grid(row=3)
 
