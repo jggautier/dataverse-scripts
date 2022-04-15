@@ -55,19 +55,8 @@ class deletePublishedDatasetsFrame(Frame):
             wraplength=380, justify='left',
             bg='white', anchor='w')
 
-        # self.labelMoreInformationLink = Label(
-        #     self.collapsibleTaskDescription.subFrame,
-        #     text='See ... for more information.',
-        #     justify='left',
-        #     fg='blue', bg='white', anchor='w',
-        #     cursor='pointinghand')
-
         # Place labels for information about this task
         self.labelTaskDescription.grid(sticky='w', row=0, pady=10)
-        # self.labelMoreInformationLink.grid(sticky='w', row=1, pady=5)
-        # self.labelMoreInformationLink.bind(
-        #     '<Button-1>',
-        #     lambda e: self.open_url('http://www.google.com'))
 
         # Create collapsible panel for account credentials
         self.collapsibleAccountCredentials = collapsiblePanel(
@@ -309,31 +298,22 @@ class deletePublishedDatasetsFrame(Frame):
         self.frameLoadDatasetsProgress = Frame(self.frameChooseDatasets, bg='white')
         self.frameLoadDatasetsProgress.grid(sticky='w', row=4, pady=5)
 
-        # self.framelabelProgressText = Frame(self.frameLoadDatasetsProgress, bg='white')
-
         self.progressText = StringVar()
-        # self.progressText.set('Datasets found: 0')
         self.labelLoadDatasetsProgressText = Label(
             self.frameLoadDatasetsProgress,
             textvariable=self.progressText,
             bg='white', anchor='w', justify='left')
         self.labelLoadDatasetsProgressText.config(fg='white')
-        # self.labelLoadDatasetsProgressText.grid(sticky='w', row=0)
-
-        # self.frametextBoxCollectionDatasetPIDs = Frame(self.frameLoadDatasetsProgress, bg='white')
-        # self.frametextBoxCollectionDatasetPIDs.grid(sticky='w', row=1)
 
         self.textBoxCollectionDatasetPIDs = ScrolledText(
             self.frameLoadDatasetsProgress,
             width=45, height=8)
-        # self.textBoxCollectionDatasetPIDs.grid(sticky='w', row=1)
 
         self.labelDatasetPidsHelpText = Label(
             self.frameLoadDatasetsProgress, 
             text='Enter each dataset URL or PID on a new line', 
             fg='grey', bg='white', 
             wraplength=380, justify='left', anchor='w')
-        # self.labelDatasetPidsHelpText.grid(row=3)
 
         # Create Select datasets label and dropdown for menu
         self.options = [
@@ -431,7 +411,6 @@ class deletePublishedDatasetsFrame(Frame):
             self.textBoxCollectionDatasetPIDs.grid(sticky='w', row=2)
             self.textBoxCollectionDatasetPIDs.configure(state ='normal')
             self.textBoxCollectionDatasetPIDs.delete('1.0', END)
-            # self.framelabelProgressText.grid_forget()
 
             self.labelDatasetPidsHelpText.grid(row=3, sticky='w')
 
