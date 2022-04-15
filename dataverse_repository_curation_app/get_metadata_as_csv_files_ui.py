@@ -15,7 +15,7 @@ try:
     from tkmacosx import Button
 except ImportError:
     from tkinter import Button
-# import webbrowser
+import webbrowser
 
 
 appPrimaryBlueColor = '#286090'
@@ -39,34 +39,41 @@ class getMetadataAsCSVsFrame(Frame):
             default='closed', relief='raised', bg='white')
         self.collapsibleTaskDescription.grid(sticky='w', row=1, pady=5)
 
+        self.frameTaskDescription = Frame(
+            self.collapsibleTaskDescription.subFrame,
+            bg='white', pady=10)
+
         textTaskDescription = (
             'Get the "Citation" metadata of the latest version of each dataset '
             'in a Dataverse Collection or from a search query URL. '
             'Harvested datasets are always excluded and datasets may be excluded if they\'re '
             'linked in but not owned by the given Dataverse Collection.'
             '\r\rThis app will save one CSV file for each metadata field you choose and ' 
-            'one CSV file that contains the metadata for all of the fields you choose.')
+            'one CSV file that contains the metadata for all of the fields you choose.'
+            '\r\rIf you need all dataset metadata from any known Dataverse reposiories, '
+            'please consider downloading the metadata from the following dataset:')
 
         # Create labels for information about this task
         self.labelTaskDescription = Label(
-            self.collapsibleTaskDescription.subFrame,
+            self.frameTaskDescription,
             text=textTaskDescription,
             wraplength=380, justify='left',
             bg='white', anchor='w')
 
-        # self.labelMoreInformationLink = Label(
-        #     self.collapsibleTaskDescription.subFrame,
-        #     text='See ... for more information.',
-        #     justify='left',
-        #     fg='blue', bg='white', anchor='w',
-        #     cursor='pointinghand')
+        self.labelMoreInformationLink = Label(
+            self.frameTaskDescription,
+            text='https://doi.org/10.7910/DVN/DCDKZQ',
+            justify='left',
+            fg='blue', bg='white', anchor='w',
+            cursor='pointinghand')
 
-        # Place labels for information about this task
-        self.labelTaskDescription.grid(sticky='w', row=0, pady=10)
-        # self.labelMoreInformationLink.grid(sticky='w', row=1, pady=5)
-        # self.labelMoreInformationLink.bind(
-        #     '<Button-1>',
-        #     lambda e: self.open_url('http://www.google.com'))
+        # Place frame and labels for information about this task
+        self.frameTaskDescription.grid(sticky='w', row=0)
+        self.labelTaskDescription.grid(sticky='w', row=0)
+        self.labelMoreInformationLink.grid(sticky='w', row=1)
+        self.labelMoreInformationLink.bind(
+            '<Button-1>',
+            lambda e: self.open_url('https://doi.org/10.7910/DVN/DCDKZQ'))
 
         # Create collapsible panel for account credentials
         self.collapsibleAccountCredentials = collapsiblePanel(
@@ -424,8 +431,8 @@ class getMetadataAsCSVsFrame(Frame):
         self.buttonGetMetadata.grid(sticky='w', column=0, row=0)
         self.labelFieldsWithNoMetadata.grid(sticky='w', row=1)
 
-    # def open_url(self, url):
-    #     webbrowser.open_new(url)
+    def open_url(self, url):
+        webbrowser.open_new(url)
 
 
     # Hide all frames function
