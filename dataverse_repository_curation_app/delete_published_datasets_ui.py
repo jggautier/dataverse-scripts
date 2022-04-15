@@ -356,24 +356,29 @@ class deletePublishedDatasetsFrame(Frame):
                     )
                 )
 
+        # Place Get Metadata frame and button
+        self.frameDeleteDatasetsButton.grid(sticky='w', row=5, pady=15)
+        self.buttonDeleteDatasets.grid(sticky='w', column=0, row=0)
+
         self.progressTextDeleteDatasets = StringVar()
+        self.progressTextDeleteDatasets.set('Testing')
         self.labelProgressTextDeleteDatasets = Label(
             self.frameDeleteDatasetsButton,
             textvariable=self.progressTextDeleteDatasets,
             bg='white', anchor='w')
 
-        self.labelProgressTextDeleteDatasets.config(fg='white')
         self.labelProgressTextDeleteDatasets.grid(sticky='w', row=1)
-
+        self.labelProgressTextDeleteDatasets.config(fg='green')
+        
         self.notDeletedText = StringVar()
         self.labelNotDeletedDatasets = Label(
             self.frameDeleteDatasetsButton,
             textvariable=self.notDeletedText,
             anchor='w', fg='red', bg='white')
 
-        # Place Get Metadata frame and button
-        self.frameDeleteDatasetsButton.grid(sticky='w', row=5, pady=15)
-        self.buttonDeleteDatasets.grid(sticky='w', column=0, row=0)
+        # # Place Get Metadata frame and button
+        # self.frameDeleteDatasetsButton.grid(sticky='w', row=5, pady=15)
+        # self.buttonDeleteDatasets.grid(sticky='w', column=0, row=0)
 
     # Hide all frames function
     def hide_choose_dataset_frames(self):
@@ -381,13 +386,13 @@ class deletePublishedDatasetsFrame(Frame):
         self.frameSearchURL.grid_forget()
         self.frameEnterUrls.grid_forget()
 
-        forget_widget(self.labelLoadDatasetsProgressText)
-        forget_widget(self.textBoxCollectionDatasetPIDs)
+        self.labelLoadDatasetsProgressText.grid_forget()
+        self.textBoxCollectionDatasetPIDs.grid_forget()
 
         # When widgets in the frameLoadDatasetsProgress frame are forgetten,
         # the frame doesn't resize automatically. This sets size of 
         # frameLoadDatasetsProgress to smallest size possible 
-        self.frameLoadDatasetsProgress.config(height=1)  
+        self.frameLoadDatasetsProgress.config(height=1)
         
 
     def get_datasets_method(self, *args):
