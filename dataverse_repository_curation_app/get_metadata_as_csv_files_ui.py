@@ -237,6 +237,7 @@ class getMetadataAsCSVsFrame(Frame):
 
         searchURLEntryHelpTextString = (
             'E.g. https://demo.dataverse.org/dataverse/demo/?q=surveys')
+        
         self.labelSearchURLHelpText = Label(
             self.frameSearchURLField,
             text=searchURLEntryHelpTextString,
