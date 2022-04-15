@@ -254,7 +254,7 @@ class deletePublishedDatasetsFrame(Frame):
                 progressText=self.progressText,
                 textBoxCollectionDatasetPIDs=self.textBoxCollectionDatasetPIDs,
                 apiKey=self.entryApiToken.get().strip(),
-                ignoreDeaccessionedDatasets=True))
+                ignoreDeaccessionedDatasets=False))
 
         # Place Enter Search URL field label, text box, and validation error label
         self.frameAboutHelpText.grid(sticky='w', row=0)
