@@ -238,9 +238,8 @@ class deletePublishedDatasetsFrame(Frame):
             variable=self.getSubdataverses, onvalue = True, offvalue = False)
         self.buttonLoadDatasets = Button(
             self.frameCollectionURL,
-            text='Find datasets',
+            text='Find the datasets',
             bg=appPrimaryGreyColor, fg='white',
-            width=140, height=30,
             command=lambda: get_datasets_from_collection_or_search_url(
                 rootWindow=self.framelabelProgressText,
                 url=self.entryCollectionURL.get().strip(),
