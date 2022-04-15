@@ -733,34 +733,6 @@ def get_datasets_from_collection_or_search_url(
         progressText.set(text)
 
 
-# def get_datasets_from_pids_or_urls(installationUrl, textBoxEnterDatasets, apiKey=''):
-
-#     # Convert string to list
-#     datasetPidList = [x.strip() for x in textBoxEnterDatasets.splitlines()]
-    
-#     # Get canonical PIDs for each dataset in datasetPidList
-#     canonicalPidList = get_canonical_pids_list(datasetPidList)
-#     searchApiUrl = get_search_api_url(installationUrl).replace('?q=*', '')
-
-#     # Add each canonical PID to a query string to use in the params for the Search API endpoint
-#     qParamValues = ''
-#     for canonicalPid in canonicalPidList:
-#         qParamValues = qParamValues + 'dsPersistentId:"' + canonicalPid + '" OR '
-#     qParamValues = qParamValues.strip()[:-3] # Remove the last ' OR' from the string
-#     # Add the string to the params dictionary's q key
-#     params = {}
-#     params['q'] = qParamValues
-
-#     datasetInfoDF = get_object_dataframe_from_search_api(
-#         url=searchApiUrl,
-#         params=params, 
-#         objectType='dataset',
-#         apiKey=apiKey)
-
-#     datasetCount = len(datasetInfoDF.index)
-#     print(datasetCount)
-
-
 def get_directory_path():
     directoryPath = filedialog.askdirectory()
     return directoryPath
