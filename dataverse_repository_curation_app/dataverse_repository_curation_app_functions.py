@@ -1209,8 +1209,8 @@ def delete_published_datasets(
     deletedDatasetCount = 0
     datasetTotalCount = len(canonicalPidList)
 
-    # deletedText = 'Datasets deleted: 0 of %s' % (datasetTotalCount)
-    progressText.set('Working...')
+    deletedText = 'Datasets deleted: 0 of %s' % (datasetTotalCount)
+    progressText.set(deletedText)
     progressLabel.config(fg='green')
     progressLabel.grid(sticky='w', row=1)
     notDeletedLabel.config(fg='white')
