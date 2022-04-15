@@ -276,24 +276,6 @@ class deletePublishedDatasetsFrame(Frame):
         # Place Enter dataset URLs or PIDs field label, text box, and validation error label
         self.labelEnterDatasets.grid(sticky='w', row=0)
 
-        # # Create From list of dataset PIDs frame and browse button
-        # self.frameDatasetList = Frame(self.frameChooseDatasets, bg='white')
-        # self.buttonBrowseDatasetList = Button(
-        #     self.frameDatasetList, 
-        #     text='Browse', 
-        #     bg=appPrimaryGreyColor, fg='white', 
-        #     width=100, height=30,
-        #     command=lambda: self.retrieve_csv_directory())
-        # self.csvDirectory = '/Users/juliangautier/Desktop'
-        # self.labelBrowseDatasetListConfirmation = Label(
-        #     self.frameDatasetList,
-        #     text='You chose: ' + self.csvDirectory, anchor='w',
-        #     fg='green', bg='white', wraplength=380, justify='left')
-
-        # # Place From list of dataset PIDs browse button
-        # self.buttonBrowseDatasetList.grid(sticky='w', row=0)
-        # self.labelBrowseDatasetListConfirmation.grid(sticky='w', row=1)
-
         # Create frames and labels for indicating progress and showing results
         self.frameLoadDatasetsProgress = Frame(self.frameChooseDatasets, bg='white')
         self.frameLoadDatasetsProgress.grid(sticky='w', row=4, pady=5)
@@ -320,8 +302,7 @@ class deletePublishedDatasetsFrame(Frame):
             'In a Dataverse Collection',
             'From a Search URL',
             'From dataset URLs or PIDs']
-            # 'From a list of dataset PIDs',
-            # 'From Dataverse JSON export files']
+
         self.dropdownOptionSelected = StringVar()
         self.dropdownOptionSelected.trace('w', self.get_datasets_method)
         self.dropdownMenuChooseDatasets = OptionMenu(
@@ -361,24 +342,16 @@ class deletePublishedDatasetsFrame(Frame):
         self.buttonDeleteDatasets.grid(sticky='w', column=0, row=0)
 
         self.progressTextDeleteDatasets = StringVar()
-        self.progressTextDeleteDatasets.set('Testing')
         self.labelProgressTextDeleteDatasets = Label(
             self.frameDeleteDatasetsButton,
             textvariable=self.progressTextDeleteDatasets,
             bg='white', anchor='w')
-
-        self.labelProgressTextDeleteDatasets.grid(sticky='w', row=1)
-        self.labelProgressTextDeleteDatasets.config(fg='green')
         
         self.notDeletedText = StringVar()
         self.labelNotDeletedDatasets = Label(
             self.frameDeleteDatasetsButton,
             textvariable=self.notDeletedText,
             anchor='w', fg='red', bg='white')
-
-        # # Place Get Metadata frame and button
-        # self.frameDeleteDatasetsButton.grid(sticky='w', row=5, pady=15)
-        # self.buttonDeleteDatasets.grid(sticky='w', column=0, row=0)
 
     # Hide all frames function
     def hide_choose_dataset_frames(self):
@@ -418,12 +391,3 @@ class deletePublishedDatasetsFrame(Frame):
             self.textBoxCollectionDatasetPIDs.delete('1.0', END)
 
             self.labelDatasetPidsHelpText.grid(row=3, sticky='w')
-
-        # elif self.dropdownOptionSelected.get() == 'From a list of dataset PIDs':
-        #     self.hide_choose_dataset_frames()
-        #     self.frameDatasetList.grid(sticky='w', row=1, pady=0)
-
-        # elif self.dropdownOptionSelected.get() == 'From Dataverse JSON export files':
-        #     self.hide_choose_dataset_frames()
-        #     self.frameBrowseJSONFiles.grid(sticky='w', row=1, column=0, pady=0)
-
