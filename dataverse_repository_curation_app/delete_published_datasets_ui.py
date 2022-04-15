@@ -415,36 +415,23 @@ class deletePublishedDatasetsFrame(Frame):
             self.hide_choose_dataset_frames()
             self.frameCollectionURL.grid(sticky='w', row=1, pady=0)
 
-            # self.textBoxCollectionDatasetPIDs.configure(state ='normal')
-            # self.textBoxCollectionDatasetPIDs.delete('1.0', END)
-            # self.textBoxCollectionDatasetPIDs.configure(state ='disabled')
-
-            # self.progressText.set('Datasets found: 0')
-            # self.labelProgressText.config(fg='white')
-            # self.framelabelProgressText.grid(sticky='w', row=0)
-
             self.labelDatasetPidsHelpText.grid_forget()
 
         elif self.dropdownOptionSelected.get() == 'From a Search URL':
             self.hide_choose_dataset_frames()
             self.frameSearchURL.grid(sticky='w', row=1, pady=0)
 
-            # self.textBoxCollectionDatasetPIDs.configure(state ='normal')
-            # self.textBoxCollectionDatasetPIDs.delete('1.0', END)
-            # self.textBoxCollectionDatasetPIDs.configure(state ='disabled')
-
-            # self.labelProgressText.config(fg='white')
-            # self.framelabelProgressText.grid(sticky='w', row=0)
-
             self.labelDatasetPidsHelpText.grid_forget()
 
         elif self.dropdownOptionSelected.get() == 'From dataset URLs or PIDs':
             self.hide_choose_dataset_frames()
-            self.frameEnterUrls.grid(sticky='w', row=1, pady=0)
+            self.frameEnterUrls.grid(sticky='w', row=0, pady=0)
+            self.frameLoadDatasetsProgress.grid(sticky='w', row=1)
 
+            self.textBoxCollectionDatasetPIDs.grid(sticky='w', row=2)
             self.textBoxCollectionDatasetPIDs.configure(state ='normal')
             self.textBoxCollectionDatasetPIDs.delete('1.0', END)
-            self.framelabelProgressText.grid_forget()
+            # self.framelabelProgressText.grid_forget()
 
             self.labelDatasetPidsHelpText.grid(row=3, sticky='w')
 
