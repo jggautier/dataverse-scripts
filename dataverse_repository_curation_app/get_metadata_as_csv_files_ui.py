@@ -436,6 +436,11 @@ class getMetadataAsCSVsFrame(Frame):
         forget_widget(self.labelLoadDatasetsProgressText)
         forget_widget(self.textBoxCollectionDatasetPIDs)
 
+        try:
+            forget_widget(self.labelProgressTextGetMetadata)
+        except AttributeError:
+            pass
+
         # When widgets in the frameLoadDatasetsProgress frame are forgetten,
         # the frame doesn't resize automatically. This sets size of 
         # frameLoadDatasetsProgress to smallest size possible 
