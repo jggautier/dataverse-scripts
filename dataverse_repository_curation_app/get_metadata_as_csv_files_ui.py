@@ -267,7 +267,7 @@ class getMetadataAsCSVsFrame(Frame):
         # Place Enter Search URL field label, text box, and validation error label
         self.frameAboutHelpText.grid(sticky='w', row=0)
         self.frameSearchURLField.grid(sticky='w', row=1, pady=5)
-        self.labelAboutSearchURLHelpText.grid(sticky='w', row=0, pady=5)
+        self.labelAboutSearchURLHelpText.grid(sticky='w', row=0, pady=0)
         self.labelSearchURL.grid(sticky='w', column=0, row=1)
         self.labelSearchURLAsterisk.grid(sticky='w', column=1, row=1)
         self.entrySearchURL.grid(sticky='w', row=2, columnspan=2)
