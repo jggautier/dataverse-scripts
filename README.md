@@ -1,7 +1,7 @@
 # Dataverse repository curation app
 A small software application for automating things in repositories that use the Dataverse software (https://dataverse.org). With this application you can:
 - Get dataset metadata as CSV files
-  - The dataset metadata of most known Dataverse installations is available at https://doi.org/10.7910/DVN/DCDKZQ
+  - If you need all dataset metadata from any known Dataverse reposiories, please consider downloading the metadata from the dataset at https://doi.org/10.7910/DVN/DCDKZQ
 - Delete published datasets
   - This requires the API token of a "super user" account, usually used by administrators of Dataverse installations
 
