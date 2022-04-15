@@ -1213,6 +1213,7 @@ def delete_published_datasets(
     progressText.set(deletedText)
     progressLabel.config(fg='green')
     progressLabel.grid(sticky='w', row=1)
+    notDeletedLabel.config(fg='white')
     notDeletedLabel.grid(sticky='w', row=2)
     rootWindow.update_idletasks()
 
@@ -1231,14 +1232,8 @@ def delete_published_datasets(
             rootWindow.update_idletasks()
 
         elif 'ERROR' in statusMessage:
+            notDeletedLabel.config(fg='red')
             notDestroyedDatasets.append(canonicalPid)
             notDeletedMessage = 'Datasets not deleted: %s' % (len(notDestroyedDatasets))
             notDeletedText.set(notDeletedMessage)
             rootWindow.update_idletasks()
-
-
-    # if len(notDestroyedDatasets) > 0:
-    #     notDeletedMessage = 'Number of datasets not deleted: %s' % (len(notDestroyedDatasets))
-    #     notDeletedText.set(notDeletedMessage)
-    #     rootWindow.update_idletasks()
-
