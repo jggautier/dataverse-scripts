@@ -163,47 +163,6 @@ class deletePublishedDatasetsFrame(Frame):
         self.frameChooseDatasets = Frame(self.collapsiblePanelChooseDatasets.subFrame, bg='white')
         self.frameChooseDatasets.grid(row=1)
 
-        # Create Get Metadata frame, button and validation error message text
-        self.frameDeleteDatasetsButton = Frame(self.root, bg='white')
-
-        # When button is pressed, get the list of dataset PIDs from 
-        # the textBoxCollectionDatasetPIDs textbox
-        self.buttonDeleteDatasets = Button(
-            self.frameDeleteDatasetsButton, 
-            text='Delete datasets', bg=appPrimaryRedColor,
-            fg='white', width=423, height=40,
-            font=font.Font(size=15, weight='bold'),
-            command=lambda: delete_published_datasets(
-                    rootWindow=self.frameDeleteDatasetsButton,
-                    progressText=self.progressTextDeleteDatasets,
-                    progressLabel=self.labelProgressTextDeleteDatasets,
-                    notDeletedText=self.notDeletedText,
-                    notDeletedLabel=self.labelNotDeletedDatasets,
-                    installationUrl=get_installation_url(self.comboboxInstallationUrl.get().strip()),
-                    datasetPidString=self.textBoxCollectionDatasetPIDs.get('1.0', END),
-                    apiKey=self.entryApiToken.get().strip()
-                    )
-                )
-
-        self.progressTextDeleteDatasets = StringVar()
-        self.labelProgressTextDeleteDatasets = Label(
-            self.frameDeleteDatasetsButton,
-            textvariable=self.progressTextDeleteDatasets,
-            bg='white', anchor='w')
-
-        self.labelProgressTextDeleteDatasets.config(fg='white')
-        self.labelProgressTextDeleteDatasets.grid(sticky='w', row=1)
-
-        self.notDeletedText = StringVar()
-        self.labelNotDeletedDatasets = Label(
-            self.frameDeleteDatasetsButton,
-            textvariable=self.notDeletedText,
-            anchor='w', fg='red', bg='white')
-
-        # Place Get Metadata frame and button
-        self.frameDeleteDatasetsButton.grid(sticky='w', row=5, pady=15)
-        self.buttonDeleteDatasets.grid(sticky='w', column=0, row=0)
-
         # Create Enter Dataverse collection URL frame, field label, 
         # text box, load datasets button
         self.frameCollectionURL = Frame(self.frameChooseDatasets, bg='white')
@@ -241,9 +200,9 @@ class deletePublishedDatasetsFrame(Frame):
             text='Find the datasets',
             bg=appPrimaryGreyColor, fg='white',
             command=lambda: get_datasets_from_collection_or_search_url(
-                rootWindow=self.framelabelProgressText,
+                rootWindow=self.frameLoadDatasetsProgress,
                 url=self.entryCollectionURL.get().strip(),
-                progressLabel=self.labelProgressText,
+                progressLabel=self.labelLoadDatasetsProgressText,
                 progressText=self.progressText,
                 textBoxCollectionDatasetPIDs=self.textBoxCollectionDatasetPIDs,
                 ignoreDeaccessionedDatasets=True,
@@ -299,11 +258,10 @@ class deletePublishedDatasetsFrame(Frame):
             self.frameSearchURLField,
             text='Find the datasets',
             bg=appPrimaryGreyColor, fg='white',
-            width=140, height=30,
             command=lambda: get_datasets_from_collection_or_search_url(
-                rootWindow=self.framelabelProgressText,
+                rootWindow=self.frameLoadDatasetsProgress,
                 url=self.entrySearchURL.get().strip(),
-                progressLabel=self.labelProgressText,
+                progressLabel=self.labelLoadDatasetsProgressText,
                 progressText=self.progressText,
                 textBoxCollectionDatasetPIDs=self.textBoxCollectionDatasetPIDs,
                 apiKey=self.entryApiToken.get().strip(),
@@ -348,34 +306,34 @@ class deletePublishedDatasetsFrame(Frame):
         # self.labelBrowseDatasetListConfirmation.grid(sticky='w', row=1)
 
         # Create frames and labels for indicating progress and showing results
-        self.frameLoadDataSets = Frame(self.frameChooseDatasets, bg='white')
-        self.frameLoadDataSets.grid(sticky='w', row=4, pady=5)
+        self.frameLoadDatasetsProgress = Frame(self.frameChooseDatasets, bg='white')
+        self.frameLoadDatasetsProgress.grid(sticky='w', row=4, pady=5)
 
-        self.framelabelProgressText = Frame(self.frameLoadDataSets, bg='white')
+        # self.framelabelProgressText = Frame(self.frameLoadDatasetsProgress, bg='white')
 
         self.progressText = StringVar()
-        self.progressText.set('Datasets found: 0')
-        self.labelProgressText = Label(
-            self.framelabelProgressText,
+        # self.progressText.set('Datasets found: 0')
+        self.labelLoadDatasetsProgressText = Label(
+            self.frameLoadDatasetsProgress,
             textvariable=self.progressText,
             bg='white', anchor='w', justify='left')
-        self.labelProgressText.config(fg='white')
-        self.labelProgressText.grid(sticky='w', row=0)
+        self.labelLoadDatasetsProgressText.config(fg='white')
+        # self.labelLoadDatasetsProgressText.grid(sticky='w', row=0)
 
-        self.frametextBoxCollectionDatasetPIDs = Frame(self.frameLoadDataSets, bg='white')
+        # self.frametextBoxCollectionDatasetPIDs = Frame(self.frameLoadDatasetsProgress, bg='white')
         # self.frametextBoxCollectionDatasetPIDs.grid(sticky='w', row=1)
 
         self.textBoxCollectionDatasetPIDs = ScrolledText(
-            self.frametextBoxCollectionDatasetPIDs,
+            self.frameLoadDatasetsProgress,
             width=45, height=8)
-        self.textBoxCollectionDatasetPIDs.grid(sticky='w', row=1)
+        # self.textBoxCollectionDatasetPIDs.grid(sticky='w', row=1)
 
         self.labelDatasetPidsHelpText = Label(
-            self.frametextBoxCollectionDatasetPIDs, 
+            self.frameLoadDatasetsProgress, 
             text='Enter each dataset URL or PID on a new line', 
             fg='grey', bg='white', 
             wraplength=380, justify='left', anchor='w')
-        self.labelDatasetPidsHelpText.grid(row=3)
+        # self.labelDatasetPidsHelpText.grid(row=3)
 
         # Create Select datasets label and dropdown for menu
         self.options = [
@@ -396,16 +354,60 @@ class deletePublishedDatasetsFrame(Frame):
         # Place dropdown for menu
         self.dropdownMenuChooseDatasets.grid(sticky='w', row=0, pady=10)
 
+        # Create Get Metadata frame, button and validation error message text
+        self.frameDeleteDatasetsButton = Frame(self.root, bg='white')
+
+        # When button is pressed, get the list of dataset PIDs from 
+        # the textBoxCollectionDatasetPIDs textbox
+        self.buttonDeleteDatasets = Button(
+            self.frameDeleteDatasetsButton, 
+            text='Delete datasets', bg=appPrimaryRedColor,
+            fg='white', width=423, height=40,
+            font=font.Font(size=15, weight='bold'),
+            command=lambda: delete_published_datasets(
+                    rootWindow=self.frameDeleteDatasetsButton,
+                    progressText=self.progressTextDeleteDatasets,
+                    progressLabel=self.labelProgressTextDeleteDatasets,
+                    notDeletedText=self.notDeletedText,
+                    notDeletedLabel=self.labelNotDeletedDatasets,
+                    installationUrl=get_installation_url(self.comboboxInstallationUrl.get().strip()),
+                    datasetPidString=self.textBoxCollectionDatasetPIDs.get('1.0', END),
+                    apiKey=self.entryApiToken.get().strip()
+                    )
+                )
+
+        self.progressTextDeleteDatasets = StringVar()
+        self.labelProgressTextDeleteDatasets = Label(
+            self.frameDeleteDatasetsButton,
+            textvariable=self.progressTextDeleteDatasets,
+            bg='white', anchor='w')
+
+        self.labelProgressTextDeleteDatasets.config(fg='white')
+        self.labelProgressTextDeleteDatasets.grid(sticky='w', row=1)
+
+        self.notDeletedText = StringVar()
+        self.labelNotDeletedDatasets = Label(
+            self.frameDeleteDatasetsButton,
+            textvariable=self.notDeletedText,
+            anchor='w', fg='red', bg='white')
+
+        # Place Get Metadata frame and button
+        self.frameDeleteDatasetsButton.grid(sticky='w', row=5, pady=15)
+        self.buttonDeleteDatasets.grid(sticky='w', column=0, row=0)
+
     # Hide all frames function
     def hide_choose_dataset_frames(self):
         self.frameCollectionURL.grid_forget()
         self.frameSearchURL.grid_forget()
         self.frameEnterUrls.grid_forget()
-        # self.frameDatasetList.grid_forget()
-        # self.frameBrowseJSONFiles.grid_forget()
-        # self.labelProgressTextDeleteDatasets.grid_forget()
 
-        self.labelProgressTextDeleteDatasets.config(fg='white')
+        forget_widget(self.labelLoadDatasetsProgressText)
+        forget_widget(self.textBoxCollectionDatasetPIDs)
+
+        # When widgets in the frameLoadDatasetsProgress frame are forgetten,
+        # the frame doesn't resize automatically. This sets size of 
+        # frameLoadDatasetsProgress to smallest size possible 
+        self.frameLoadDatasetsProgress.config(height=1)  
         
 
     def get_datasets_method(self, *args):
@@ -413,13 +415,13 @@ class deletePublishedDatasetsFrame(Frame):
             self.hide_choose_dataset_frames()
             self.frameCollectionURL.grid(sticky='w', row=1, pady=0)
 
-            self.textBoxCollectionDatasetPIDs.configure(state ='normal')
-            self.textBoxCollectionDatasetPIDs.delete('1.0', END)
-            self.textBoxCollectionDatasetPIDs.configure(state ='disabled')
+            # self.textBoxCollectionDatasetPIDs.configure(state ='normal')
+            # self.textBoxCollectionDatasetPIDs.delete('1.0', END)
+            # self.textBoxCollectionDatasetPIDs.configure(state ='disabled')
 
             # self.progressText.set('Datasets found: 0')
-            self.labelProgressText.config(fg='white')
-            self.framelabelProgressText.grid(sticky='w', row=0)
+            # self.labelProgressText.config(fg='white')
+            # self.framelabelProgressText.grid(sticky='w', row=0)
 
             self.labelDatasetPidsHelpText.grid_forget()
 
@@ -427,12 +429,12 @@ class deletePublishedDatasetsFrame(Frame):
             self.hide_choose_dataset_frames()
             self.frameSearchURL.grid(sticky='w', row=1, pady=0)
 
-            self.textBoxCollectionDatasetPIDs.configure(state ='normal')
-            self.textBoxCollectionDatasetPIDs.delete('1.0', END)
-            self.textBoxCollectionDatasetPIDs.configure(state ='disabled')
+            # self.textBoxCollectionDatasetPIDs.configure(state ='normal')
+            # self.textBoxCollectionDatasetPIDs.delete('1.0', END)
+            # self.textBoxCollectionDatasetPIDs.configure(state ='disabled')
 
-            self.labelProgressText.config(fg='white')
-            self.framelabelProgressText.grid(sticky='w', row=0)
+            # self.labelProgressText.config(fg='white')
+            # self.framelabelProgressText.grid(sticky='w', row=0)
 
             self.labelDatasetPidsHelpText.grid_forget()
 
