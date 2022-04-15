@@ -362,6 +362,12 @@ class deletePublishedDatasetsFrame(Frame):
         self.labelLoadDatasetsProgressText.grid_forget()
         self.textBoxCollectionDatasetPIDs.grid_forget()
 
+        try:
+            forget_widget(self.labelProgressTextDeleteDatasets)
+            forget_widget(self.labelNotDeletedDatasets)
+        except AttributeError:
+            pass
+
         # When widgets in the frameLoadDatasetsProgress frame are forgetten,
         # the frame doesn't resize automatically. This sets size of 
         # frameLoadDatasetsProgress to smallest size possible 
