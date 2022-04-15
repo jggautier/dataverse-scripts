@@ -317,7 +317,6 @@ class deletePublishedDatasetsFrame(Frame):
         self.labelSearchURLAsterisk.grid(sticky='w', column=1, row=1)
         self.entrySearchURL.grid(sticky='w', row=2, columnspan=2)
         self.labelSearchURLHelpText.grid(sticky='w', row=3, columnspan=2)
-        # self.labelSearchURLValidation.grid(sticky='w', row=2)        
         self.buttonLoadDatasets.grid(sticky='w', row=4, columnspan=2, pady=10)
         
         # Create Enter dataset URLs or PIDs frame and field label,
@@ -347,25 +346,6 @@ class deletePublishedDatasetsFrame(Frame):
         # # Place From list of dataset PIDs browse button
         # self.buttonBrowseDatasetList.grid(sticky='w', row=0)
         # self.labelBrowseDatasetListConfirmation.grid(sticky='w', row=1)
-        
-        # # Create Use local Dataverse JSON metadata files frame, field label, button, and validation error label 
-        # self.frameBrowseJSONFiles = Frame(self.frameChooseDatasets, bg='white')
-        # self.buttonBrowseJSONFiles = Button(
-        #     self.frameBrowseJSONFiles, 
-        #     text='Browse', 
-        #     bg=appPrimaryGreyColor, fg='white', 
-        #     width=100, height=30,
-        #     command=lambda: self.retrieve_csv_directory())
-
-        # self.jsonDirectory = '/Users/juliangautier/Desktop'
-        # self.labelBrowseJSONFilesConfirmation = Label(
-        #     self.frameBrowseJSONFiles,
-        #     text='You chose: ' + self.jsonDirectory, anchor='w',
-        #     fg='green', bg='white', wraplength=380, justify='left')
-
-        # # Place Use local Dataverse JSON metadata files field label, button, and validation error label 
-        # self.buttonBrowseJSONFiles.grid(sticky='w', row=0)
-        # self.labelBrowseJSONFilesConfirmation.grid(sticky='w', row=1)
 
         # Create frames and labels for indicating progress and showing results
         self.frameLoadDataSets = Frame(self.frameChooseDatasets, bg='white')
@@ -383,7 +363,7 @@ class deletePublishedDatasetsFrame(Frame):
         self.labelProgressText.grid(sticky='w', row=0)
 
         self.frametextBoxCollectionDatasetPIDs = Frame(self.frameLoadDataSets, bg='white')
-        self.frametextBoxCollectionDatasetPIDs.grid(sticky='w', row=1)
+        # self.frametextBoxCollectionDatasetPIDs.grid(sticky='w', row=1)
 
         self.textBoxCollectionDatasetPIDs = ScrolledText(
             self.frametextBoxCollectionDatasetPIDs,
