@@ -194,8 +194,8 @@ class deletePublishedDatasetsFrame(Frame):
                 progressLabel=self.labelLoadDatasetsProgressText,
                 progressText=self.progressText,
                 textBoxCollectionDatasetPIDs=self.textBoxCollectionDatasetPIDs,
-                ignoreDeaccessionedDatasets=True,
                 apiKey=self.entryApiToken.get().strip(),
+                ignoreDeaccessionedDatasets=False,
                 subdataverses=self.getSubdataverses.get()))
         
         # Place Enter Dataverse collection URL field label, text box, and validation error label 
