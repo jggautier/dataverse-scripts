@@ -406,7 +406,7 @@ class deletePublishedDatasetsFrame(Frame):
         elif self.dropdownOptionSelected.get() == 'From dataset URLs or PIDs':
             self.hide_choose_dataset_frames()
             self.frameEnterUrls.grid(sticky='w', row=0, pady=0)
-            self.frameLoadDatasetsProgress.grid(sticky='w', row=1)
+            self.frameLoadDatasetsProgress.grid(sticky='w', row=2)
 
             self.textBoxCollectionDatasetPIDs.grid(sticky='w', row=2)
             self.textBoxCollectionDatasetPIDs.configure(state ='normal')
