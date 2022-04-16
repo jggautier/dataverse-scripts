@@ -1,4 +1,4 @@
-# App for getting the metadata of datasets as CSV files
+# Class for the getMetadataAsCSVsFrame frame
 
 from dataverse_repository_curation_app_functions import *
 import json
@@ -6,7 +6,7 @@ import os
 import requests
 import sys
 import time
-from tkinter import Tk, ttk, Frame, Label, IntVar, StringVar, BooleanVar, font
+from tkinter import Tk, ttk, Frame, Label, StringVar, BooleanVar, font
 from tkinter import Checkbutton, Listbox, MULTIPLE, filedialog, END, INSERT, N, E, S, W
 from tkinter.scrolledtext import ScrolledText
 from ttkthemes import ThemedTk

@@ -1,4 +1,4 @@
-# App for getting the metadata of datasets as CSV files
+# Class for the deletePublishedDatasetsFrame frame
 
 from dataverse_repository_curation_app_functions import *
 import json
@@ -15,8 +15,6 @@ try:
     from tkmacosx import Button
 except ImportError:
     from tkinter import Button
-# import webbrowser
-
 
 appPrimaryBlueColor = '#286090'
 appPrimaryRedColor = '#BF0000'

@@ -1,12 +1,9 @@
-from dataverse_repository_curation_app_functions import *
+# from dataverse_repository_curation_app_functions import *
 from get_metadata_as_csv_files_ui import *
 from delete_published_datasets_ui import *
-# from PIL import ImageTk, Image
-from tkinter import Tk, ttk, Frame, Label, IntVar, StringVar
+from tkinter import Tk, ttk, Frame, Label, StringVar
 from tkinter.ttk import OptionMenu
-# from tkmacosx import Button
 from ttkthemes import ThemedTk
-# import webbrowser
 
 def hide_choose_dataset_frames():
     getMetadataAsCSVsFrame.grid_forget()
