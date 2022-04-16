@@ -27,7 +27,7 @@ def show_task_frame(*args):
 
 
 root = ThemedTk(theme='arc')
-root.title('Dataverse repository curation app')
+root.title('Dataverse repository curation assistant')
 root.configure(background='white')
 root.resizable(False, True)
 
@@ -42,7 +42,7 @@ frameAppHeading.grid(row=0, sticky='w', padx=20, pady=10)
 
 labelAppHeading = Label(
     frameAppHeading, 
-    text='Dataverse repository curation app',
+    text='Dataverse repository curation assistant',
     bg='white', font=('Arial', 20, 'bold'),
     anchor='w')
 labelAppHeading.grid(row=0, sticky='w')
