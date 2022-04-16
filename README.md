@@ -16,7 +16,7 @@ Work in progress: Usability testing, fixing UI bugs, adding more documentation
 ## Opening the software application...
 ### By downloading and clicking on an application file
 The file works only on MacOS and may work only on macOS Monterey (12) and later MacOS versions. To use it:
-* [Visit the releases page](https://github.com/jggautier/dataverse-scripts/releases) to download the latest version of the ZIP file (Dataverse repository curation assistant.zip ). If you're using Google Chrome when you download the ZIP file, keep an eye out for the browser warning you about downloading the ZIP file. You might have to tell Google Chrome that the download is safe
+* [Visit the releases page](https://github.com/jggautier/dataverse-scripts/releases) to download the latest version of the ZIP file (Dataverse.repository.curation.assistant.zip). If you're using Google Chrome when you download the ZIP file, keep an eye out for the browser warning you about downloading the ZIP file. You might have to tell Google Chrome that the download is safe
 * Extract the ZIP file's "Dataverse repository curation assistant" file
 * Right click on the application file and choose Open. MacOS may display a warning that “Dataverse repository curation assistant” can’t be opened because Apple cannot check it for malicious software. This is because the application is not in Apple's App Store. (See [Apple's support article](https://support.apple.com/guide/mac-help/apple-cant-check-app-for-malicious-software-mchleab3a043/mac) for more info about this warning.)
 * Click "Open" and wait for the application to appear
