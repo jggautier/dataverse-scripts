@@ -1,6 +1,6 @@
 # Class for the deletePublishedDatasetsFrame frame
 
-from dataverse_repository_curation_app_functions import *
+from dataverse_repository_curation_assistant_functions import *
 import json
 import os
 import requests
