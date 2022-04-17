@@ -20,16 +20,16 @@ def convert_to_local_tz(timestamp, shortDate=False):
 
 
 # From user get installation URL, apiToken, directory to save CSV file
-installationUrl = ''
-apiToken = ''
-directoryPath = ''
+installationUrl = 'https://dataverse.harvard.edu'
+apiToken = '10c5fc1d-9022-4cdc-ab64-fc49d7f9da2f'
+directoryPath = '/Users/juliangautier/Desktop'
 
 # List lock types. See https://guides.dataverse.org/en/5.10/api/native-api.html?highlight=locks#list-locks-across-all-datasets
 lockTypesList = ['Ingest', 'finalizePublication']
 
 # Create csvFilePath
 currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
-fileName = 'datasetlocks_%s.csv' %(currentTime)
+fileName = f'locked_datasets_{currentTime}.csv'
 csvFilePath = '%s/%s' %(directoryPath, fileName)
 
 # Create CSV file and header row
@@ -44,15 +44,15 @@ with open(csvFilePath, mode='a', newline='', encoding='utf-8') as f:
 
     for lockType in lockTypesList:
 
-        datasetLocksApiEndpoint = '%s/api/datasets/locks?type=%s' % (installationUrl, lockType)
-        req = requests.get(
+        datasetLocksApiEndpoint = f'{installationUrl}/api/datasets/locks?type={lockType}'
+        response = requests.get(
             datasetLocksApiEndpoint,
             headers={'X-Dataverse-key': apiToken})
-        data = req.json()
+        data = response.json()
         if data['status'] == 'OK':
             for lock in data['data']:
                 datasetPid = lock['dataset']
-                datasetUrl = 'https://dataverse.harvard.edu/dataset.xhtml?persistentId=%s' % (datasetPid)
+                datasetUrl = f'{installationUrl}/dataset.xhtml?persistentId={datasetPid}'
                 lockType = lock['lockType']
                 date = convert_to_local_tz(lock['date'], shortDate=True)
                 user = lock['user']
