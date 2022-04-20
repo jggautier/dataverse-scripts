@@ -20,9 +20,9 @@ def convert_to_local_tz(timestamp, shortDate=False):
 
 
 # From user get installation URL, apiToken, directory to save CSV file
-installationUrl = 'https://dataverse.harvard.edu'
-apiToken = '10c5fc1d-9022-4cdc-ab64-fc49d7f9da2f'
-directoryPath = '/Users/juliangautier/Desktop'
+installationUrl = ''
+apiToken = ''
+directoryPath = ''
 
 # List lock types. See https://guides.dataverse.org/en/5.10/api/native-api.html?highlight=locks#list-locks-across-all-datasets
 lockTypesList = ['Ingest', 'finalizePublication']
