@@ -473,7 +473,7 @@ def get_value_row_from_search_api_object(item, installationUrl):
 # Uses Search API to return dataframe containing info about datasets in a Dataverse installation
 # Write progress and results to the tkinter window
 def get_object_dataframe_from_search_api(
-    url, params, objectType, rootWindow, progressText, progressLabel, apiKey=''):
+    url, params, objectType, rootWindow=None, progressText=None, progressLabel=None, apiKey=''):
 
     installationUrl = get_installation_url(url)
 
@@ -505,11 +505,12 @@ def get_object_dataframe_from_search_api(
     condition = True
     params['start'] = 0
 
-    text = 'Looking for datasets...'
-    progressText.set(text)
-    progressLabel.config(fg='green')
-    progressLabel = progressLabel.grid(sticky='w', row=0)
-    rootWindow.update_idletasks()
+    if None not in [rootWindow, progressText, progressLabel]:
+        text = 'Looking for datasets...'
+        progressText.set(text)
+        progressLabel.config(fg='green')
+        progressLabel = progressLabel.grid(sticky='w', row=0)
+        rootWindow.update_idletasks()
     
     while condition:
         try:
@@ -638,7 +639,7 @@ def get_canonical_pid(pidOrUrl):
 
 
 def get_datasets_from_collection_or_search_url(
-    url, rootWindow, progressLabel, progressText, textBoxCollectionDatasetPIDs, 
+    url, rootWindow, progressLabel=None, progressText=None, textBoxCollectionDatasetPIDs=None, 
     apiKey='', ignoreDeaccessionedDatasets=False, subdataverses=False):
 
     # Hide the textBoxCollectionDatasetPIDs scrollbox if it exists
@@ -705,9 +706,6 @@ def get_datasets_from_collection_or_search_url(
                 datasetInfoDF = datasetInfoDF[datasetInfoDF['dataverse_alias'].isin([alias])]
 
                 uniqueDatasetCount = len(datasetInfoDF)
-
-            # Set state of textbox with dataset PIDs to readonly (disabled)
-            # textBoxCollectionDatasetPIDs.configure(state ='disabled')
 
         # If the url is a search URL, get all datasetPids from datasetInfoDF 
         elif 'q=' in url:
