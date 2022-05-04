@@ -48,7 +48,7 @@ for lockType in lockTypesList:
             datasetPid = lock['dataset']
             datasetPids.append(datasetPid)
 
-# Use set function to deduplicate datasetPids list
+# Use set function to deduplicate datasetPids list and convert set to a list again
 datasetPids = list(set(datasetPids))
 
 total = len(datasetPids)
@@ -68,18 +68,20 @@ elif total > 0:
         f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         f.writerow(['dataset_pid', 'dataset_url', 'lock_reason', 'locked_date', 'user_name'])
 
-        # For each dataset, write locked info to the CSV file
+        # For each dataset, write to the CSV file info about each lock the dataset has
         for datasetPid in datasetPids:
             url = f'{installationUrl}/api/datasets/:persistentId/locks?persistentId={datasetPid}'
             data = requests.get(url).json()
 
             count += 1
 
-            # Get the dataset's title metadata and use the Search API to see if any datasets with
-            # the same title have already been created. Save any matches as a list of dataset PIDs
+            # Use an API endpoint to get the dataset's title metadata and contact email 
 
-            # Get the dataset contact email and check RT to see if the depositor has emailed
-            # support. They might have already emailed support about the locked dataset
+            # Use the Search API to see if any different datasets with the same title have already been created. 
+            # Save any matches as a list of dataset PIDs
+
+            # Use the RT python module to check RT to see if the depositor has ever emailed
+            # support. The depositor might have already emailed support about the locked dataset
             # Save any matches as a list of RT ticket IDs
 
             for lock in data['data']:
@@ -90,5 +92,3 @@ elif total > 0:
                 f.writerow([datasetPid, datasetUrl, reason, lockedDate, userName])
 
             print('%s of %s datasets: %s' % (count, total, datasetPid))
-
-# 
