@@ -2,8 +2,18 @@ import csv
 from dateutil import tz
 from dateutil.parser import parse
 import json
+import os
 import requests
 import time
+
+
+# From user get installation URL, apiToken, directory to save CSV file
+installationUrl = ''
+apiToken = ''
+directoryPath = ''
+
+# List lock types. See https://guides.dataverse.org/en/5.10/api/native-api.html?highlight=locks#list-locks-across-all-datasets
+lockTypesList = ['Ingest', 'finalizePublication']
 
 
 def convert_to_local_tz(timestamp, shortDate=False):
@@ -19,46 +29,55 @@ def convert_to_local_tz(timestamp, shortDate=False):
     return timestamp
 
 
-# From user get installation URL, apiToken, directory to save CSV file
-installationUrl = ''
-apiToken = ''
-directoryPath = ''
-
-# List lock types. See https://guides.dataverse.org/en/5.10/api/native-api.html?highlight=locks#list-locks-across-all-datasets
-lockTypesList = ['Ingest', 'finalizePublication']
-
-# Create csvFilePath
 currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
-fileName = f'locked_datasets_{currentTime}.csv'
-csvFilePath = '%s/%s' %(directoryPath, fileName)
 
-# Create CSV file and header row
-headerRow = ['dataset_pid', 'dataset_url', 'lock_type', 'lock_date', 'user', 'message']
-with open(csvFilePath, mode='w', newline='') as f:
-    writer = csv.writer(f)
-    writer.writerow(headerRow)
+datasetPids = []
 
-# Add dataset lock info to CSV file
-with open(csvFilePath, mode='a', newline='', encoding='utf-8') as f:
-    writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+# Get dataset PIDs of datasets that have any of the lock types in lockTypesList
+for lockType in lockTypesList:
 
-    for lockType in lockTypesList:
+    datasetLocksApiEndpoint = f'{installationUrl}/api/datasets/locks?type={lockType}'
+    response = requests.get(
+        datasetLocksApiEndpoint,
+        headers={'X-Dataverse-key': apiToken})
+    data = response.json()
 
-        datasetLocksApiEndpoint = f'{installationUrl}/api/datasets/locks?type={lockType}'
-        response = requests.get(
-            datasetLocksApiEndpoint,
-            headers={'X-Dataverse-key': apiToken})
-        data = response.json()
-        if data['status'] == 'OK':
+    if data['status'] == 'OK':
+        for lock in data['data']:
+            datasetPid = lock['dataset']
+            datasetPids.append(datasetPid)
+
+# Use set function to deduplicate datasetPids list
+datasetPids = list(set(datasetPids))
+
+total = len(datasetPids)
+
+if total == 0:
+    print('No locked datasets found.')
+
+elif total > 0:
+
+    count = 0
+
+    # Create CSV file and header row
+    csvOutputFile = 'dataset_locked_status_%s.csv' % (currentTime)
+    csvOutputFilePath = os.path.join(directoryPath, csvOutputFile)
+
+    with open(csvOutputFilePath, mode='w', newline='') as f:
+        f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        f.writerow(['dataset_pid', 'lock_reason', 'locked_date', 'user_name'])
+
+        # For each dataset, write locked info to the CSV file
+        for datasetPid in datasetPids:
+            url = f'{installationUrl}/api/datasets/:persistentId/locks?persistentId={datasetPid}'
+            data = requests.get(url).json()
+
+            count += 1
+
             for lock in data['data']:
-                datasetPid = lock['dataset']
-                datasetUrl = f'{installationUrl}/dataset.xhtml?persistentId={datasetPid}'
-                lockType = lock['lockType']
-                date = convert_to_local_tz(lock['date'], shortDate=True)
-                user = lock['user']
-                message = lock['message']
+                reason = lock['lockType']
+                lockedDate = convert_to_local_tz(lock['date'], shortDate=True)
+                userName = lock['user']
+                f.writerow([datasetPid, reason, lockedDate, userName])
 
-                writer.writerow([datasetPid, datasetUrl, lockType, date, user, message]) 
-            
-
-
+            print('%s of %s datasets: %s' % (count, total, datasetPid))
