@@ -65,7 +65,7 @@ elif total > 0:
 
     with open(csvOutputFilePath, mode='w', newline='') as f:
         f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        f.writerow(['dataset_pid', 'lock_reason', 'locked_date', 'user_name'])
+        f.writerow(['dataset_pid', 'dataset_url', 'lock_reason', 'locked_date', 'user_name'])
 
         # For each dataset, write locked info to the CSV file
         for datasetPid in datasetPids:
@@ -75,9 +75,10 @@ elif total > 0:
             count += 1
 
             for lock in data['data']:
+                datasetUrl = f'{installationUrl}/dataset.xhtml?persistentId={datasetPid}'
                 reason = lock['lockType']
                 lockedDate = convert_to_local_tz(lock['date'], shortDate=True)
                 userName = lock['user']
-                f.writerow([datasetPid, reason, lockedDate, userName])
+                f.writerow([datasetPid, datasetUrl, reason, lockedDate, userName])
 
             print('%s of %s datasets: %s' % (count, total, datasetPid))
