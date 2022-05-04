@@ -5,6 +5,7 @@ import json
 import os
 import requests
 import time
+# Import RT python module to get info from emails
 
 
 # From user get installation URL, apiToken, directory to save CSV file
@@ -74,6 +75,13 @@ elif total > 0:
 
             count += 1
 
+            # Get the dataset's title metadata and use the Search API to see if any datasets with
+            # the same title have already been created. Save any matches as a list of dataset PIDs
+
+            # Get the dataset contact email and check RT to see if the depositor has emailed
+            # support. They might have already emailed support about the locked dataset
+            # Save any matches as a list of RT ticket IDs
+
             for lock in data['data']:
                 datasetUrl = f'{installationUrl}/dataset.xhtml?persistentId={datasetPid}'
                 reason = lock['lockType']
@@ -82,3 +90,5 @@ elif total > 0:
                 f.writerow([datasetPid, datasetUrl, reason, lockedDate, userName])
 
             print('%s of %s datasets: %s' % (count, total, datasetPid))
+
+# 
