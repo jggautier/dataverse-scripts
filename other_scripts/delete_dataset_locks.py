@@ -13,7 +13,7 @@ if '.csv' in file:
     with open(file, mode='r', encoding='utf-8') as f:
         csvDictReader = DictReader(f, delimiter=',')
         for row in csvDictReader:
-            datasetPIDs.append(row['persistent_id'].rstrip())
+            datasetPIDs.append(row['dataset_pid'].rstrip())
 
 elif '.txt' in file:
     file = open(file)
