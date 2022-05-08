@@ -907,10 +907,13 @@ def get_metadata_values_lists(
         datasetPersistentUrl = datasetMetadata['data']['persistentUrl']
         datasetPid = get_canonical_pid(datasetPersistentUrl)
         datasetUrl = installationUrl + '/dataset.xhtml?persistentId=' + datasetPid
+        if 'versionNumber' in datasetMetadata['data'][versions]:
 
-        majorVersionNumber = datasetMetadata['data'][versions]['versionNumber']
-        minorVersionNumber = datasetMetadata['data'][versions]['versionMinorNumber']
-        datasetVersionNumber = f'{majorVersionNumber}.{minorVersionNumber}'
+            majorVersionNumber = datasetMetadata['data'][versions]['versionNumber']
+            minorVersionNumber = datasetMetadata['data'][versions]['versionMinorNumber']
+            datasetVersionNumber = f'{majorVersionNumber}.{minorVersionNumber}'
+        else:
+            datasetVersionNumber = 'DRAFT'
 
         for fields in datasetMetadata['data'][versions]['metadataBlocks'][metadatablockName]['fields']:
             if fields['typeName'] == chosenTitleDBName:
