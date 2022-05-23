@@ -198,7 +198,7 @@ def is_root_collection(url):
 
 
 # Function that turns Dataverse installation URL, instalation URL or search URL into a Search API URL
-def get_search_api_url(url):
+def get_search_api_url(url, apiKey=None):
 
     # If URL is not a search url (doesn't contain 'q=') and contains /dataverse/, it's a Dataverse collection URL
     if 'q=' not in url and '/dataverse/' in url:
@@ -639,11 +639,14 @@ def get_canonical_pid(pidOrUrl):
 
 
 def get_datasets_from_collection_or_search_url(
-    url, rootWindow, progressLabel=None, progressText=None, textBoxCollectionDatasetPIDs=None, 
+    url, rootWindow=None, progressLabel=None, progressText=None, textBoxCollectionDatasetPIDs=None, 
     apiKey='', ignoreDeaccessionedDatasets=False, subdataverses=False):
 
+
+    if textBoxCollectionDatasetPIDs is not None:
+    # if None not in [rootWindow, progressLabel, progressText, textBoxCollectionDatasetPIDs]:
     # Hide the textBoxCollectionDatasetPIDs scrollbox if it exists
-    forget_widget(textBoxCollectionDatasetPIDs)
+        forget_widget(textBoxCollectionDatasetPIDs)
     
     # Use the Search API to get dataset info from the given search url or Dataverse collection URL
     searchApiUrl = get_search_api_url(url)
@@ -657,7 +660,11 @@ def get_datasets_from_collection_or_search_url(
 
     if datasetCount == 0:
         text = 'Datasets found: 0'
-        progressText.set(text)
+
+        if progressText is not None:
+            progressText.set(text)
+        else:
+            print(text)
     
     elif datasetCount > 0:
 
@@ -711,24 +718,29 @@ def get_datasets_from_collection_or_search_url(
         elif 'q=' in url:
             uniqueDatasetCount = len(datasetInfoDF)
 
-        # Place textbox with list of dataset PIDs and set state to read/write (normal) 
-        textBoxCollectionDatasetPIDs.grid(sticky='w', row=2, pady=5)
-        textBoxCollectionDatasetPIDs.configure(state ='normal')
-        
-        # Clear whatever's in the textBoxCollectionDatasetPIDs textbox
-        textBoxCollectionDatasetPIDs.delete('1.0', END)
+        if textBoxCollectionDatasetPIDs is not None:
+            # Place textbox with list of dataset PIDs and set state to read/write (normal) 
+            textBoxCollectionDatasetPIDs.grid(sticky='w', row=2, pady=5)
+            textBoxCollectionDatasetPIDs.configure(state ='normal')
+            
+            # Clear whatever's in the textBoxCollectionDatasetPIDs textbox
+            textBoxCollectionDatasetPIDs.delete('1.0', END)
 
-        # Insert the dataset PIDs into the textBoxCollectionDatasetPIDs scrollbox
-        for dfIndex, dfRow in datasetInfoDF.iterrows():
-            datasetPid = dfRow['dataset_pid'] + '\n'
-            textBoxCollectionDatasetPIDs.insert('end', datasetPid)
+            # Insert the dataset PIDs into the textBoxCollectionDatasetPIDs scrollbox
+            for dfIndex, dfRow in datasetInfoDF.iterrows():
+                datasetPid = dfRow['dataset_pid'] + '\n'
+                textBoxCollectionDatasetPIDs.insert('end', datasetPid)
 
         # Create and place result text with uniqueDatasetCount
         if deaccessionedDatasetCount == 0:
             text = 'Datasets found: %s' % (str(uniqueDatasetCount))
         if deaccessionedDatasetCount > 0:
             text = 'Datasets found: %s\rDeaccessioned datasets ignored: %s' % (str(uniqueDatasetCount), str(deaccessionedDatasetCount))
-        progressText.set(text)
+
+        if progressText is not None:
+            progressText.set(text)
+        else:
+            print(text)
 
 
 def get_directory_path():
