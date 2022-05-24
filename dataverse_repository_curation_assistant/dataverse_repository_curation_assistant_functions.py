@@ -399,6 +399,9 @@ def get_params(apiSearchURL):
 
         # Add query to params dict
         if paramValue.startswith('q='):
+            paramValue = convert_utf8bytes_to_characters(paramValue)
+            paramValue = convert_common_html_encoding(paramValue)
+            paramValue = paramValue.replace('+', ' ')
             params['params']['q'] = paramValue.replace('q=', '')
 
         # Add non-fq queries to params dict
@@ -407,14 +410,12 @@ def get_params(apiSearchURL):
             if paramValue.split('=')[1] != '':
                 params['params'][key] = paramValue.split('=')[1]
 
-        # Add values of each type param to a
+        # Add values of each type param to typeParamList
         if paramValue.startswith('type'):
-            # Convert types value in string
             valueString = paramValue.split('=')[1]
             typeParamList.append(valueString)
 
-        # Add fq queries to fq dict ignoring any dvObjectType params
-        # if paramValue.startswith('=') and 'dvObjectType' not in paramValue:
+        # Add fq queries to fq dict if paramValue.startswith('='):
         if paramValue.startswith('='):
             key = paramValue.replace('=', '').split(':')[0]
             value = paramValue.split(':')[1]
@@ -466,14 +467,13 @@ def get_value_row_from_search_api_object(item, installationUrl):
             'file_name': item['name'],
             'dataset_pid': item['dataset_persistent_id']
         }
-
     return newRow
 
 
 # Uses Search API to return dataframe containing info about datasets in a Dataverse installation
 # Write progress and results to the tkinter window
 def get_object_dataframe_from_search_api(
-    url, params, objectType, rootWindow=None, progressText=None, progressLabel=None, apiKey=''):
+    url, params, objectType, rootWindow=None, progressText=None, progressLabel=None, apiKey=None):
 
     installationUrl = get_installation_url(url)
 
