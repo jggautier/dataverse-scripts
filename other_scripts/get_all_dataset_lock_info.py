@@ -75,13 +75,16 @@ elif total > 0:
 
             count += 1
 
-            # Use an API endpoint to get the dataset's title metadata and contact email 
+            # Use an API endpoint to get the title metadata and contact email of the dataset's latest version
 
             # Use the Search API to see if any different datasets with the same title have already been created. 
-            # Save any matches as a list of dataset PIDs
+            # Add to the CSV file any matches as a list of dataset PIDs
+
+            # Add to the CSV file the list of contact email addresses
 
             # Use the RT python module to check RT to see if the depositor has ever emailed
-            # support. The depositor might have already emailed support about the locked dataset
+            # support, based on dataset contact email. The depositor might have already emailed 
+            # support about the locked dataset
             # Save any matches as a list of RT ticket IDs
 
             for lock in data['data']:
