@@ -5,7 +5,7 @@ import json
 import os
 import requests
 import time
-# Import RT python module to get info from emails
+import rt
 
 
 # From user get installation URL, apiToken, directory to save CSV file
