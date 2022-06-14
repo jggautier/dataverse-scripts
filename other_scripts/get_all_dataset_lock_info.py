@@ -66,36 +66,43 @@ elif total > 0:
 
     with open(csvOutputFilePath, mode='w', newline='') as f:
         f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        f.writerow(['dataset_pid', 'dataset_url', 'lock_reason', 'locked_date', 'user_name', 'rtticket_urls'])
+        f.writerow(['dataset_pid', 'dataset_url', 'lock_reason', 'locked_date', 'user_name', 'contact_email', 'rtticket_urls'])
 
         # For each dataset, write to the CSV file info about each lock the dataset has
         for datasetPid in datasetPids:
 
-            # If RT username and password is provided, get contact email addresses of the dataset
-            # to use to search for support emails from the dataset owner
+            # Get contact email addresses of the dataset
+            contactEmailsList = []
+
+            for field in datasetMetadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
+                if field['typeName'] == 'datasetContact':
+                    for contact in field['value']:
+                        contactEmail = contact['datasetContactEmail']['value']
+
+            contactEmailsString = list_to_string(contactEmailsList)
+
+            # If RT username and password is provided, log into RT and use the contact email addresses to
+            # search for support emails from the dataset owner
             if rtUserLogin and rtUserPassword != '':
                 datasetMetadata = get_dataset_metadata_export(
                     installationUrl=installationUrl, datasetPid=datasetPid, 
                     exportFormat='dataverse_json', header={}, apiKey=apiKey)
 
                 rtTicketUrlsList = []
+                for contactEmail in contactEmailsList:
 
-                for field in datasetMetadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
-                    if field['typeName'] == 'datasetContact':
-                        for contact in field['value']:
-                            contactEmail = contact['datasetContactEmail']['value']
+                    # Search RT system for emails sent from the contact email address
+                    searchResults = tracker.search(
+                        Queue='dataverse_support', 
+                        raw_query=f'Requestor.EmailAddress="{contactEmail}"')
 
-                            # Search RT system for emails sent from the contact email address
-                            searchResults = tracker.search(
-                                Queue='dataverse_support', 
-                                raw_query=f'Requestor.EmailAddress="{contactEmail}"')
-
-                            # If there are any RT tickets found, save the ticket URL
-                            if len(searchResults) > 0:
-                                for rtTicket in searchResults:
-                                    rtTicketID = rtTicket['numerical_id']
-                                    rtTicketUrl = f'https://help.hmdc.harvard.edu/Ticket/Display.html?id={rtTicketID}'
-                                    rtTicketUrlsList.append(rtTicketUrl)
+                    # If there are any RT tickets found, save the ticket URL
+                    if len(searchResults) > 0:
+                        for rtTicket in searchResults:
+                            rtTicketID = rtTicket['numerical_id']
+                            rtTicketUrl = f'https://help.hmdc.harvard.edu/Ticket/Display.html?id={rtTicketID}'
+                            rtTicketUrlsList.append(rtTicketUrl)
+                    contactEmailsList.append(contactEmail)
 
                 # Use set function to deduplicate rtTicketUrlsList list and convert set to a list again
                 rtTicketUrlsList = list(set(rtTicketUrlsList))
@@ -118,6 +125,6 @@ elif total > 0:
                 reason = lock['lockType']
                 lockedDate = convert_to_local_tz(lock['date'], shortDate=True)
                 userName = lock['user']
-                f.writerow([datasetPid, datasetUrl, reason, lockedDate, userName, rtTicketUrlsString])
+                f.writerow([datasetPid, datasetUrl, reason, lockedDate, userName, contactEmailsString, rtTicketUrlsString])
 
             print(f'Recording information about {count} of {total} datasets: {datasetPid}')
