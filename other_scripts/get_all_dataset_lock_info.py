@@ -6,29 +6,24 @@ import os
 import requests
 import time
 import rt
+import sys
 
+sys.path.append('/Users/juliangautier/dataverse-scripts/dataverse_repository_curation_assistant')
+
+from dataverse_repository_curation_assistant_functions import *
 
 # From user get installation URL, apiToken, directory to save CSV file
 installationUrl = ''
-apiToken = ''
+apiKey = ''
 directoryPath = ''
+
+# To search RT system for emails that locked dataset owners have sent to Dataverse support,
+# include your RT username and password
+rtUserLogin = ''
+rtUserPassword = ''
 
 # List lock types. See https://guides.dataverse.org/en/5.10/api/native-api.html?highlight=locks#list-locks-across-all-datasets
 lockTypesList = ['Ingest', 'finalizePublication']
-
-
-def convert_to_local_tz(timestamp, shortDate=False):
-    # Save local timezone to localTimezone variable
-    localTimezone = tz.tzlocal()
-    # Convert string to datetime object
-    timestamp = parse(timestamp)
-    # Convert timestamp to local timezone
-    timestamp = timestamp.astimezone(localTimezone)
-    if shortDate is True:
-        # Return timestamp in YYYY-MM-DD format
-        timestamp = timestamp.strftime('%Y-%m-%d')
-    return timestamp
-
 
 currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
 
@@ -40,7 +35,7 @@ for lockType in lockTypesList:
     datasetLocksApiEndpoint = f'{installationUrl}/api/datasets/locks?type={lockType}'
     response = requests.get(
         datasetLocksApiEndpoint,
-        headers={'X-Dataverse-key': apiToken})
+        headers={'X-Dataverse-key': apiKey})
     data = response.json()
 
     if data['status'] == 'OK':
@@ -58,40 +53,71 @@ if total == 0:
 
 elif total > 0:
 
+    # Log in to RT to search for support emails from the dataset depositors
+    tracker = rt.Rt('https://help.hmdc.harvard.edu/REST/1.0/', rtUserLogin, rtUserPassword)
+    tracker.login()
+    print('Logged into RT support email system')
+
     count = 0
 
     # Create CSV file and header row
-    csvOutputFile = 'dataset_locked_status_%s.csv' % (currentTime)
+    csvOutputFile = f'dataset_locked_status_{currentTime}.csv'
     csvOutputFilePath = os.path.join(directoryPath, csvOutputFile)
 
     with open(csvOutputFilePath, mode='w', newline='') as f:
         f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        f.writerow(['dataset_pid', 'dataset_url', 'lock_reason', 'locked_date', 'user_name'])
+        f.writerow(['dataset_pid', 'dataset_url', 'lock_reason', 'locked_date', 'user_name', 'rtticket_urls'])
 
         # For each dataset, write to the CSV file info about each lock the dataset has
         for datasetPid in datasetPids:
+
+            # If RT username and password is provided, get contact email addresses of the dataset
+            # to use to search for support emails from the dataset owner
+            if rtUserLogin and rtUserPassword != '':
+                datasetMetadata = get_dataset_metadata_export(
+                    installationUrl=installationUrl, datasetPid=datasetPid, 
+                    exportFormat='dataverse_json', header={}, apiKey=apiKey)
+
+                rtTicketUrlsList = []
+
+                for field in datasetMetadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
+                    if field['typeName'] == 'datasetContact':
+                        for contact in field['value']:
+                            contactEmail = contact['datasetContactEmail']['value']
+
+                            # Search RT system for emails sent from the contact email address
+                            searchResults = tracker.search(
+                                Queue='dataverse_support', 
+                                raw_query=f'Requestor.EmailAddress="{contactEmail}"')
+
+                            # If there are any RT tickets found, save the ticket URL
+                            if len(searchResults) > 0:
+                                for rtTicket in searchResults:
+                                    rtTicketID = rtTicket['numerical_id']
+                                    rtTicketUrl = f'https://help.hmdc.harvard.edu/Ticket/Display.html?id={rtTicketID}'
+                                    rtTicketUrlsList.append(rtTicketUrl)
+
+                # Use set function to deduplicate rtTicketUrlsList list and convert set to a list again
+                rtTicketUrlsList = list(set(rtTicketUrlsList))
+
+                # Convert list of ticket URLs to a string (to add to CSV file later)
+                rtTicketUrlsString = list_to_string(rtTicketUrlsList)
+
+            # If no RT username or password are provided...
+            elif rtUserLogin or rtUserPassword == '':
+                rtTicketUrlsString = 'Not logged into RT. Provide RT username and password)'
+
+            # Get all data about locks on the dataset
             url = f'{installationUrl}/api/datasets/:persistentId/locks?persistentId={datasetPid}'
-            data = requests.get(url).json()
+            allLockData = requests.get(url).json()
 
             count += 1
 
-            # Use an API endpoint to get the title metadata and contact email of the dataset's latest version
-
-            # Use the Search API to see if any different datasets with the same title have already been created. 
-            # Add to the CSV file any matches as a list of dataset PIDs
-
-            # Add to the CSV file the list of contact email addresses
-
-            # Use the RT python module to check RT to see if the depositor has ever emailed
-            # support, based on dataset contact email. The depositor might have already emailed 
-            # support about the locked dataset
-            # Save any matches as a list of RT ticket IDs
-
-            for lock in data['data']:
+            for lock in allLockData['data']:
                 datasetUrl = f'{installationUrl}/dataset.xhtml?persistentId={datasetPid}'
                 reason = lock['lockType']
                 lockedDate = convert_to_local_tz(lock['date'], shortDate=True)
                 userName = lock['user']
-                f.writerow([datasetPid, datasetUrl, reason, lockedDate, userName])
+                f.writerow([datasetPid, datasetUrl, reason, lockedDate, userName, rtTicketUrlsString])
 
-            print('%s of %s datasets: %s' % (count, total, datasetPid))
+            print(f'Recording information about {count} of {total} datasets: {datasetPid}')
