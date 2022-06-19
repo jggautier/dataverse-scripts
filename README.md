@@ -10,8 +10,7 @@ A small software application for automating things in repositories that use the 
 The application is written using the [Dataverse software's APIs](https://guides.dataverse.org/en/5.10/api/index.html), Python 3, and Python's [tkinter library](https://docs.python.org/3/library/tkinter.html) (for creating the user interface), and made into an executable file using [pyInstaller](https://pyinstaller.readthedocs.io/).
 
 ## Status
-[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)  
-Work in progress: Usability testing, fixing UI bugs, adding more documentation 
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 ## Opening the software application...
 ### By downloading and clicking on an application file
@@ -46,7 +45,7 @@ Note: The tkinter library comes with most installations of Python 3, so pip does
 
 ## Upcoming changes
 
-I plan to add more functionality to the application over time, including:
+More functionality can be added to the application, depending on how useful it would be for its maintainers or others, including:
 - Merging user accounts in a Dataverse repository
 - Getting information about locked datasets in a Dataverse repository
 - Deleting dataset locks
