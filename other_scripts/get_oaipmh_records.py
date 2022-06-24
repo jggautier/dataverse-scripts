@@ -1,7 +1,7 @@
 import csv
 import os
-import time
 import requests
+import time
 from tkinter import filedialog
 from tkinter import ttk
 from tkinter import *
@@ -25,7 +25,7 @@ def retrieve_directory():
 
     # Show user which directory she chose
     label_showChosenDirectory = Label(window, text='You chose: ' + directory, anchor='w', foreground='green', wraplength=500, justify='left')
-    label_showChosenDirectory.grid(sticky='w', column=0, row=13, padx=20)
+    label_showChosenDirectory.grid(sticky='w', column=0, row=14, padx=20)
 
 
 # Function called when Start button is pressed
@@ -109,12 +109,12 @@ currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
 metadataPrefix = 'oai_dc'
 
 if oaiSet:
-    oaiUrl = '%s?verb=ListIdentifiers&set=%s&metadataPrefix=%s' % (baseUrl, oaiSet, metadataPrefix)
+    oaiUrl = f'{baseUrl}?verb=ListIdentifiers&set={oaiSet}&metadataPrefix={metadataPrefix}'
 else:
     oaiSet = 'no_set'
-    oaiUrl = '%s?verb=ListIdentifiers&metadataPrefix=%s' % (baseUrl, metadataPrefix)
+    oaiUrl = f'{baseUrl}?verb=ListIdentifiers&metadataPrefix={metadataPrefix}'
 
-csvFile = 'harvested_records_%s_%s.csv' % (oaiSet, currentTime)
+csvFile = f'harvested_records_{oaiSet}_{currentTime}.csv'
 csvFilePath = os.path.join(directory, csvFile)
 
 print('Counting current and deleted records:')
@@ -141,12 +141,12 @@ with open(csvFilePath, mode='w', encoding='utf-8', newline='') as f:
 
             f.writerow([recordIdentifier, recordStatus])
 
-        print('Record count in %s set: %s' % (oaiSet, recordCount))
-        print('Count of deleted records: %s' % (deletedRecordCount))
+        print(f'Record count in {oaiSet} set: {recordCount}')
+        print(f'Count of deleted records: {deletedRecordCount}')
 
     elif 'resumptionToken' in dictData['OAI-PMH']['ListIdentifiers']:
         pageCount = 1
-        print('Counting records in page %s' % (pageCount), end='\r', flush=True)
+        print(f'Counting records in page {pageCount}', end='\r', flush=True)
 
         resumptionToken = improved_get(dictData, 'OAI-PMH.ListIdentifiers.resumptionToken.#text')
 
@@ -165,9 +165,9 @@ with open(csvFilePath, mode='w', encoding='utf-8', newline='') as f:
 
         while resumptionToken is not None:
             pageCount += 1
-            print('Counting records in page %s' % (pageCount), end='\r', flush=True)
+            print(f'Counting records in page {pageCount}', end='\r', flush=True)
 
-            oaiUrlResume = '%s?verb=ListIdentifiers&resumptionToken=%s' % (baseUrl, resumptionToken)
+            oaiUrlResume = f'{baseUrl}?verb=ListIdentifiers&resumptionToken={resumptionToken}'
             response = requests.get(oaiUrlResume)
             dictData = xmltodict.parse(response.content)
 
@@ -184,6 +184,9 @@ with open(csvFilePath, mode='w', encoding='utf-8', newline='') as f:
 
             resumptionToken = improved_get(dictData, 'OAI-PMH.ListIdentifiers.resumptionToken.#text')
 
-        print('\nRecord count in %s set: %s' % (oaiSet, recordCount))
-        print('Count of deleted records: %s' % (deletedRecordCount))
-        print('Record identifiers saved to %s' % (csvFilePath))
+        if oaiSet != 'no_set':
+            print(f'\nRecord count in {oaiSet} set: {recordCount}')
+        else:
+            print(f'\nRecord count: {recordCount}')
+        print(f'Count of deleted records: {deletedRecordCount}')
+        print(f'Record identifiers saved to {csvFilePath}')
