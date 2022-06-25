@@ -22,6 +22,14 @@ directoryPath = ''
 rtUserLogin = ''
 rtUserPassword = ''
 
+# List PIDs of datasets whose problematic locks have already been reported
+# e.g. in the Harvard Dataverse Repository GitHub repo issue at https://github.com/IQSS/dataverse.harvard.edu/issues/150)
+ignorePIDs = [
+    'doi:10.7910/DVN/GLMW3X', 
+    'doi:10.7910/DVN/A3NWA7',
+    'doi:10.7910/DVN/VYNLON'
+    ]
+
 # List lock types. See https://guides.dataverse.org/en/5.10/api/native-api.html?highlight=locks#list-locks-across-all-datasets
 lockTypesList = ['Ingest', 'finalizePublication']
 
@@ -43,8 +51,12 @@ for lockType in lockTypesList:
             datasetPid = lock['dataset']
             datasetPids.append(datasetPid)
 
+# Remove PIDs in ignorePIDs
+datasetPids = [x for x in datasetPids if x not in ignorePIDs]
+
 # Use set function to deduplicate datasetPids list and convert set to a list again
 datasetPids = list(set(datasetPids))
+
 
 total = len(datasetPids)
 
@@ -53,12 +65,13 @@ if total == 0:
 
 elif total > 0:
 
-    # Log in to RT to search for support emails from the dataset depositors
-    tracker = rt.Rt('https://help.hmdc.harvard.edu/REST/1.0/', rtUserLogin, rtUserPassword)
-    tracker.login()
-    print('Logged into RT support email system')
+    if rtUserLogin and rtUserPassword != '':
+        # Log in to RT to search for support emails from the dataset depositors
+        tracker = rt.Rt('https://help.hmdc.harvard.edu/REST/1.0/', rtUserLogin, rtUserPassword)
+        tracker.login()
+        print('Logged into RT support email system')
 
-    count = 0
+    datasetCount = 0
 
     # Create CSV file and header row
     csvOutputFile = f'dataset_locked_status_{currentTime}.csv'
@@ -71,6 +84,10 @@ elif total > 0:
         # For each dataset, write to the CSV file info about each lock the dataset has
         for datasetPid in datasetPids:
 
+            datasetMetadata = get_dataset_metadata_export(
+                installationUrl=installationUrl, datasetPid=datasetPid, 
+                exportFormat='dataverse_json', header={}, apiKey=apiKey)
+
             # Get contact email addresses of the dataset
             contactEmailsList = []
 
@@ -78,16 +95,13 @@ elif total > 0:
                 if field['typeName'] == 'datasetContact':
                     for contact in field['value']:
                         contactEmail = contact['datasetContactEmail']['value']
-
+            contactEmailsList.append(contactEmail)
             contactEmailsString = list_to_string(contactEmailsList)
 
             # If RT username and password is provided, log into RT and use the contact email addresses to
             # search for support emails from the dataset owner
             if rtUserLogin and rtUserPassword != '':
-                datasetMetadata = get_dataset_metadata_export(
-                    installationUrl=installationUrl, datasetPid=datasetPid, 
-                    exportFormat='dataverse_json', header={}, apiKey=apiKey)
-
+                
                 rtTicketUrlsList = []
                 for contactEmail in contactEmailsList:
 
@@ -102,23 +116,25 @@ elif total > 0:
                             rtTicketID = rtTicket['numerical_id']
                             rtTicketUrl = f'https://help.hmdc.harvard.edu/Ticket/Display.html?id={rtTicketID}'
                             rtTicketUrlsList.append(rtTicketUrl)
-                    contactEmailsList.append(contactEmail)
+                        # contactEmailsList.append(contactEmail)
 
-                # Use set function to deduplicate rtTicketUrlsList list and convert set to a list again
-                rtTicketUrlsList = list(set(rtTicketUrlsList))
+                        # Use set function to deduplicate rtTicketUrlsList list and convert set to a list again
+                        rtTicketUrlsList = list(set(rtTicketUrlsList))
 
-                # Convert list of ticket URLs to a string (to add to CSV file later)
-                rtTicketUrlsString = list_to_string(rtTicketUrlsList)
+                        # Convert list of ticket URLs to a string (to add to CSV file later)
+                        rtTicketUrlsString = list_to_string(rtTicketUrlsList)
+                    if len(searchResults) == 0:
+                        rtTicketUrlsString = 'No RT tickets found'
 
             # If no RT username or password are provided...
             elif rtUserLogin or rtUserPassword == '':
-                rtTicketUrlsString = 'Not logged into RT. Provide RT username and password)'
+                rtTicketUrlsString = 'Not logged into RT. Provide RT username and password'
 
             # Get all data about locks on the dataset
             url = f'{installationUrl}/api/datasets/:persistentId/locks?persistentId={datasetPid}'
             allLockData = requests.get(url).json()
 
-            count += 1
+            datasetCount += 1
 
             for lock in allLockData['data']:
                 datasetUrl = f'{installationUrl}/dataset.xhtml?persistentId={datasetPid}'
@@ -127,4 +143,4 @@ elif total > 0:
                 userName = lock['user']
                 f.writerow([datasetPid, datasetUrl, reason, lockedDate, userName, contactEmailsString, rtTicketUrlsString])
 
-            print(f'Recording information about {count} of {total} datasets: {datasetPid}')
+            print(f'Recording information about {datasetCount} of {total} datasets: {datasetPid}')
