@@ -527,6 +527,8 @@ def get_object_dataframe_from_search_api(
                 newRow = get_value_row_from_search_api_object(item, installationUrl)
                 objectInfoDict.append(dict(newRow))
                 datasetCount = len(objectInfoDict)
+
+            print(f'Dataset PIDs found: {datasetCount} of {total}')
                 
             # Update variables to paginate through the search results
             params['start'] = params['start'] + params['per_page']
@@ -547,6 +549,9 @@ def get_object_dataframe_from_search_api(
                 for item in data['data']['items']:
                     newRow = get_value_row_from_search_api_object(item, installationUrl)
                     objectInfoDict.append(dict(newRow))
+                    datasetCount = len(objectInfoDict)
+
+                print(f'Dataset PIDs found: {datasetCount} of {total}')
 
                 # Update variables to paginate through the search results
                 params['start'] = params['start'] + params['per_page']
@@ -643,10 +648,9 @@ def get_datasets_from_collection_or_search_url(
     url, rootWindow=None, progressLabel=None, progressText=None, textBoxCollectionDatasetPIDs=None, 
     apiKey='', ignoreDeaccessionedDatasets=False, subdataverses=False):
 
-
+    # Hide the textBoxCollectionDatasetPIDs scrollbox if it exists
     if textBoxCollectionDatasetPIDs is not None:
     # if None not in [rootWindow, progressLabel, progressText, textBoxCollectionDatasetPIDs]:
-    # Hide the textBoxCollectionDatasetPIDs scrollbox if it exists
         forget_widget(textBoxCollectionDatasetPIDs)
     
     # Use the Search API to get dataset info from the given search url or Dataverse collection URL
