@@ -27,7 +27,8 @@ rtUserPassword = ''
 ignorePIDs = [
     'doi:10.7910/DVN/GLMW3X', 
     'doi:10.7910/DVN/A3NWA7',
-    'doi:10.7910/DVN/VYNLON'
+    'doi:10.7910/DVN/VYNLON',
+    'doi:10.7910/DVN/RC0WLY'
     ]
 
 # List lock types. See https://guides.dataverse.org/en/5.10/api/native-api.html?highlight=locks#list-locks-across-all-datasets
@@ -51,12 +52,11 @@ for lockType in lockTypesList:
             datasetPid = lock['dataset']
             datasetPids.append(datasetPid)
 
-# Remove PIDs in ignorePIDs
-datasetPids = [x for x in datasetPids if x not in ignorePIDs]
+# Remove PIDs in ignorePIDs list from datasetPids list
+datasetPids = [datasetPid for datasetPid in datasetPids if datasetPid not in ignorePIDs]
 
 # Use set function to deduplicate datasetPids list and convert set to a list again
 datasetPids = list(set(datasetPids))
-
 
 total = len(datasetPids)
 
@@ -95,7 +95,7 @@ elif total > 0:
                 if field['typeName'] == 'datasetContact':
                     for contact in field['value']:
                         contactEmail = contact['datasetContactEmail']['value']
-            contactEmailsList.append(contactEmail)
+                        contactEmailsList.append(contactEmail)
             contactEmailsString = list_to_string(contactEmailsList)
 
             # If RT username and password is provided, log into RT and use the contact email addresses to
