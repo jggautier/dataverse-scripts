@@ -26,7 +26,7 @@ total = len(datasetPIDs)
 count = 0
 
 for datasetPID in datasetPIDs:
-    url = '%s/api/datasets/:persistentId/locks?persistentId=%s' % (repositoryURL, datasetPID)
+    url = f'{repositoryURL}/api/datasets/:persistentId/locks?persistentId={datasetPID}'
     req = requests.delete(
         url,
         headers={
@@ -36,6 +36,6 @@ for datasetPID in datasetPIDs:
     count += 1
 
     if req.status_code == 200:
-        print('Success!: %s %s of %s' % (datasetPID, count, total))
+        print(f'Success!: {datasetPID} {count} of {total}')
     else:
-        print('Failure: %s %s of %s' % (datasetPID, count, total))
+        print(f'Failure: {datasetPID} {count} of {total}')
