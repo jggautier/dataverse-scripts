@@ -61,7 +61,7 @@ datasetPids = list(set(datasetPids))
 total = len(datasetPids)
 
 if total == 0:
-    print('No locked datasets found.')
+    print(f'No locked datasets found (not including the {len(ignorePIDs)} datasets being ignored).')
 
 elif total > 0:
 
