@@ -57,4 +57,4 @@ More functionality can be added to the application, depending on how useful it w
 - Removing dataset links in Dataverse Collections
 
 ## Other scripts
-The [other_scripts directory](https://github.com/jggautier/dataverse-scripts/tree/main/other_scripts) contains Python scripts I've written over the years for automating some common curation and research-related tasks. Some of these scripts do what the Dataverse repository curation assistant already does or will do. I'll remove each script from the directory as the script's functionality gets added to the application.
+The [other_scripts directory](https://github.com/jggautier/dataverse-scripts/tree/main/other_scripts) contains Python scripts I've written over the years for automating some common curation and research-related tasks. Some of these scripts do things that the Dataverse repository curation assistant application may be updated to do. I'll remove each script from the directory as the script's functionality gets added to the application.
