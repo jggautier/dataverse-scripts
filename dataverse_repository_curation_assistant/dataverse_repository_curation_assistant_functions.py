@@ -57,14 +57,17 @@ class collapsiblePanel(Frame):
 
 
 # Insert the installation URL and API Token from a YAML file 
-def import_credentials(rootWindow, installationURLField, apiKeyField, directoryPath):
-    with open(directoryPath, 'r') as file:
+def import_credentials(installationURLField, apiKeyField, filePath):
+    print(filePath)
+    with open(filePath, 'r') as file:
         creds = yaml.safe_load(file)
 
+        # Clear installationURLField and insert installationURL from YAML file
         installationURLField.set('')
         installationURLField.set(creds['installationURL'])
 
-        apiKeyField.delete('1.0', END)
+        # Clear apiKeyField and insert apiKey from YAML file
+        apiKeyField.delete(0, END)
         apiKeyField.insert(END, creds['apiToken'])
 
 
@@ -765,6 +768,10 @@ def get_directory_path():
     directoryPath = filedialog.askdirectory()
     return directoryPath
 
+
+def get_file_path():
+    filePath = filedialog.askopenfilename()
+    return filePath
 
 def get_dataset_metadata_export(installationUrl, datasetPid, exportFormat, header={}, apiKey=''):
     if apiKey:
