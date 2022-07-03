@@ -3,6 +3,7 @@
 from dataverse_repository_curation_assistant_functions import *
 import json
 import os
+import yaml
 import requests
 import sys
 import time
@@ -94,8 +95,14 @@ class getMetadataAsCSVsFrame(Frame):
             text='Import credentials',
             bg=appPrimaryGreyColor, fg='white',
             command=lambda: print('Importing credentials'))
+
+            command=lambda: import_credentials(
+                    rootWindow=self.frameImportCredntials,
+                    directoryPath=get_directory_path(), # function that asks user for directory
+                    )
+
         labelImportCredentialsHelpText = (
-            'Select or type in the homepage of a Dataverse repository, '
+            'Select a Select or type in the homepage of a Dataverse repository, '
             'e.g. https://demo.dataverse.org')
         self.labelImportCredentials = Label(
             self.frameImportCredntials,
