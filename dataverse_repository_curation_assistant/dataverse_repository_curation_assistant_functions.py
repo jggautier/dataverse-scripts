@@ -16,6 +16,7 @@ from tkinter import Tk, ttk, Frame, Label, IntVar, Checkbutton, filedialog, NORM
 from tkinter import Listbox, MULTIPLE, StringVar, END, INSERT, N, E, S, W
 from tkinter.ttk import Entry, Progressbar, OptionMenu, Combobox
 from urllib.parse import urlparse
+import yaml
 
 
 # Class for custom collapsiblePanel frame using tkinter widgets
@@ -53,6 +54,18 @@ class collapsiblePanel(Frame):
         else:
             self.subFrame.forget()
             self.toggleButton.configure(text='▲')
+
+
+# Insert the installation URL and API Token from a YAML file 
+def import_credentials(rootWindow, directoryPath):
+    with open(directoryPath, 'r') as file:
+        creds = yaml.safe_load(file)
+
+        installationUrl = creds['installationURL']
+        apiKey = creds['apiToken']
+
+        print(installationUrl)
+        print(apiKey)
 
 
 def forget_widget(widget):
@@ -1141,8 +1154,6 @@ def get_dataset_metadata(
         text = 'Dataset metadata retrieved: %s of %s' % (count, datasetTotalCount)
         progressText.set(text)
         rootWindow.update_idletasks()
-
-        
 
     fieldsWithNoMetadata = delete_empty_csv_files(mainDirectoryPath)
 
