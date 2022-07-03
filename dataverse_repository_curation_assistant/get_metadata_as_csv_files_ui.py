@@ -101,8 +101,8 @@ class getMetadataAsCSVsFrame(Frame):
                     ))
 
         labelImportCredentialsHelpText = (
-            'Select a Select or type in the homepage of a Dataverse repository, '
-            'e.g. https://demo.dataverse.org')
+            'Select a YAML file from your computer to fill the Installation URL '
+            ' and API Token fields, ')
         self.labelImportCredentials = Label(
             self.frameImportCredntials,
             text=labelImportCredentialsHelpText,
