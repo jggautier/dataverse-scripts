@@ -94,12 +94,15 @@ class getMetadataAsCSVsFrame(Frame):
             self.frameImportCredntials,
             text='Import credentials',
             bg=appPrimaryGreyColor, fg='white',
-            command=lambda: print('Importing credentials'))
+            # command=lambda: print('Importing credentials'))
 
-            command=lambda: import_credentials(
-                    rootWindow=self.frameImportCredntials,
-                    directoryPath=get_directory_path(), # function that asks user for directory
-                    )
+            command=lambda: self.entryApiToken.insert(END, 'lol'))
+
+            # command=lambda: import_credentials(
+            #         installationURLField=self.comboboxInstallationUrl,
+            #         apiKeyField=self.entryApiToken,
+            #         directoryPath=get_directory_path(), # function that asks user for directory
+            #         )
 
         labelImportCredentialsHelpText = (
             'Select a Select or type in the homepage of a Dataverse repository, '
