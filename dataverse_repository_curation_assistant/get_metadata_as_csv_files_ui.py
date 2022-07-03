@@ -82,11 +82,36 @@ class getMetadataAsCSVsFrame(Frame):
             default='open', relief='raised', bg='white')
         self.collapsibleAccountCredentials.grid(sticky='w', row=2, pady=5)
 
+        # Create and place frame for button and helptext for importing account credentials
+        self.frameImportCredntials = Frame(
+            self.collapsibleAccountCredentials.subFrame, 
+            bg='white', pady=10)
+        self.frameImportCredntials.grid(sticky='w', row=0)
+
+        # Create button and helptext for importing account credentials
+        self.buttonImportCredentials = Button(
+            self.frameImportCredntials,
+            text='Import credentials',
+            bg=appPrimaryGreyColor, fg='white',
+            command=lambda: print('Importing credentials'))
+        labelImportCredentialsHelpText = (
+            'Select or type in the homepage of a Dataverse repository, '
+            'e.g. https://demo.dataverse.org')
+        self.labelImportCredentials = Label(
+            self.frameImportCredntials,
+            text=labelImportCredentialsHelpText,
+            anchor='w', wraplength=380, justify='left',
+            bg='white', fg='grey')
+
+        # Place button and help text for importing account credentials
+        self.buttonImportCredentials.grid(sticky='w', column=0, row=0)
+        self.labelImportCredentials.grid(sticky='w', column=0, row=1)        
+
         # Create and place frame for installation URL field label, textbox, and help text
         self.frameInstallationUrl = Frame(
             self.collapsibleAccountCredentials.subFrame, 
             bg='white', pady=10)
-        self.frameInstallationUrl.grid(sticky='w', row=0)
+        self.frameInstallationUrl.grid(sticky='w', row=1)
         self.frameInstallationUrl.columnconfigure(0, weight=1)
         self.frameInstallationUrl.columnconfigure(1, weight=180)
 
@@ -125,7 +150,7 @@ class getMetadataAsCSVsFrame(Frame):
         self.frameApiToken = Frame(
             self.collapsibleAccountCredentials.subFrame, 
             bg='white', pady=10)
-        self.frameApiToken.grid(sticky='w', row=1)
+        self.frameApiToken.grid(sticky='w', row=2)
 
         # Create field label, textbox and help text for API Token field
         self.labelApiToken = Label(
