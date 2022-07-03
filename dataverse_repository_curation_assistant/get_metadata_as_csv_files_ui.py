@@ -3,7 +3,6 @@
 from dataverse_repository_curation_assistant_functions import *
 import json
 import os
-import yaml
 import requests
 import sys
 import time
@@ -97,7 +96,7 @@ class getMetadataAsCSVsFrame(Frame):
             command=lambda: import_credentials(
                     installationURLField=self.comboboxInstallationUrl,
                     apiKeyField=self.entryApiToken,
-                    filePath=get_file_path(), # function that asks user for directory
+                    filePath=get_file_path(fileTypes=['yaml']), # function that asks user for directory
                     ))
 
         labelImportCredentialsHelpText = (

@@ -768,8 +768,10 @@ def get_directory_path():
     return directoryPath
 
 
-def get_file_path():
-    filePath = filedialog.askopenfilename()
+def get_file_path(fileTypes):
+    if 'yaml' in fileTypes:
+        filePath = filedialog.askopenfilename(
+            filetypes=[('YAML','*.yaml'), ('YAML', '*.yml')])
     return filePath
 
 def get_dataset_metadata_export(installationUrl, datasetPid, exportFormat, header={}, apiKey=''):
