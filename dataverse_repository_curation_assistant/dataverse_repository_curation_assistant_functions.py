@@ -16,6 +16,7 @@ from tkinter import Tk, ttk, Frame, Label, IntVar, Checkbutton, filedialog, NORM
 from tkinter import Listbox, MULTIPLE, StringVar, END, INSERT, N, E, S, W
 from tkinter.ttk import Entry, Progressbar, OptionMenu, Combobox
 from urllib.parse import urlparse
+import yaml
 
 
 # Class for custom collapsiblePanel frame using tkinter widgets
@@ -53,6 +54,23 @@ class collapsiblePanel(Frame):
         else:
             self.subFrame.forget()
             self.toggleButton.configure(text='▲')
+
+
+# Insert the installation URL and API Token from a YAML file 
+def import_credentials(installationURLField, apiKeyField, filePath):
+    if filePath:
+        with open(filePath, 'r') as file:
+            creds = yaml.safe_load(file)
+
+            # Clear installationURLField and insert installationURL from YAML file
+            installationURLField.set('')
+            installationURLField.set(creds['installationURL'])
+
+            # Clear apiKeyField and insert apiKey from YAML file
+            apiKeyField.delete(0, END)
+            apiKeyField.insert(END, creds['apiToken'])
+    else:
+        pass
 
 
 def forget_widget(widget):
@@ -753,6 +771,12 @@ def get_directory_path():
     return directoryPath
 
 
+def get_file_path(fileTypes):
+    if 'yaml' in fileTypes:
+        filePath = filedialog.askopenfilename(
+            filetypes=[('YAML','*.yaml'), ('YAML', '*.yml')])
+    return filePath
+
 def get_dataset_metadata_export(installationUrl, datasetPid, exportFormat, header={}, apiKey=''):
     if apiKey:
         header['X-Dataverse-key'] = apiKey
@@ -1141,8 +1165,6 @@ def get_dataset_metadata(
         text = 'Dataset metadata retrieved: %s of %s' % (count, datasetTotalCount)
         progressText.set(text)
         rootWindow.update_idletasks()
-
-        
 
     fieldsWithNoMetadata = delete_empty_csv_files(mainDirectoryPath)
 
