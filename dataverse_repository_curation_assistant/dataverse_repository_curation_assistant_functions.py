@@ -58,16 +58,19 @@ class collapsiblePanel(Frame):
 
 # Insert the installation URL and API Token from a YAML file 
 def import_credentials(installationURLField, apiKeyField, filePath):
-    with open(filePath, 'r') as file:
-        creds = yaml.safe_load(file)
+    if filePath:
+        with open(filePath, 'r') as file:
+            creds = yaml.safe_load(file)
 
-        # Clear installationURLField and insert installationURL from YAML file
-        installationURLField.set('')
-        installationURLField.set(creds['installationURL'])
+            # Clear installationURLField and insert installationURL from YAML file
+            installationURLField.set('')
+            installationURLField.set(creds['installationURL'])
 
-        # Clear apiKeyField and insert apiKey from YAML file
-        apiKeyField.delete(0, END)
-        apiKeyField.insert(END, creds['apiToken'])
+            # Clear apiKeyField and insert apiKey from YAML file
+            apiKeyField.delete(0, END)
+            apiKeyField.insert(END, creds['apiToken'])
+    else:
+        pass
 
 
 def forget_widget(widget):
