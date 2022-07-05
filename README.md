@@ -5,7 +5,7 @@ A small software application for automating things in repositories that use the 
 - Delete published datasets
   - This requires the API token of a "super user" account, usually used by administrators of Dataverse installations
 
-<img width="967" alt="screenshot" src="https://user-images.githubusercontent.com/18374574/177401767-ba4dee85-68fe-4d9d-b8a4-a8c874fa61b6.png">
+<img width="964" alt="screenshot" src="https://user-images.githubusercontent.com/18374574/177402806-48d258bc-9fb0-4f8b-a8a2-e48a2d00f307.png">
 
 You can import your credentials from a a Dataverse repository by clicking the "Import credentials" button and choosing a YAML file from your computer. The Installation URL and API Token fields will be filled with the URL and token from the selected YAML file. You can download [the sample YAML file](https://github.com/jggautier/dataverse-scripts/blob/main/dataverse_repository_curation_assistant/credentials.yaml) and add your credentials.
 
