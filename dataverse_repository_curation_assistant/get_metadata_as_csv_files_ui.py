@@ -101,7 +101,7 @@ class getMetadataAsCSVsFrame(Frame):
 
         labelImportCredentialsHelpText = (
             'Select a YAML file from your computer to fill the Installation URL '
-            ' and API Token fields, ')
+            'and API Token fields, ')
         self.labelImportCredentials = Label(
             self.frameImportCredntials,
             text=labelImportCredentialsHelpText,
