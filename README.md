@@ -7,7 +7,7 @@ A small software application for automating things in repositories that use the 
 
 <img width="967" alt="screenshot" src="https://user-images.githubusercontent.com/18374574/177401767-ba4dee85-68fe-4d9d-b8a4-a8c874fa61b6.png">
 
-You can import your credentials from a a Dataverse repository by clicking the "Import credentials" button and choosing a YAML file from your computer. The Installation URL and API Token fields will be filled with the URL and token from the selected YAML file. You can download the sample YAML file at ___ and add your credentials.
+You can import your credentials from a a Dataverse repository by clicking the "Import credentials" button and choosing a YAML file from your computer. The Installation URL and API Token fields will be filled with the URL and token from the selected YAML file. You can download [the sample YAML file](https://github.com/jggautier/dataverse-scripts/blob/main/dataverse_repository_curation_assistant/credentials.yaml) and add your credentials.
 
 The application is written using the [Dataverse software's APIs](https://guides.dataverse.org/en/5.10/api/index.html), Python 3, and Python's [tkinter library](https://docs.python.org/3/library/tkinter.html) (for creating the user interface), and made into an executable file using [pyInstaller](https://pyinstaller.readthedocs.io/).
 
