@@ -217,7 +217,7 @@ def is_root_collection(url):
 
 
 # Function that turns Dataverse installation URL, instalation URL or search URL into a Search API URL
-def get_search_api_url(url, apiKey=None):
+def get_search_api_url(url):
 
     # If URL is not a search url (doesn't contain 'q=') and contains /dataverse/, it's a Dataverse collection URL
     if 'q=' not in url and '/dataverse/' in url:
@@ -403,7 +403,7 @@ def get_params(apiSearchURL):
     fq = []
 
     # Split apiSearchURL to create list of params
-    splitSearchURLList = re.split('\?|&fq|&', apiSearchURL)
+    splitSearchURLList = re.split('\?q|&fq|&', apiSearchURL)
 
     # Remove base search API URL from list
     params['baseUrl'] = splitSearchURLList[0]
@@ -411,6 +411,9 @@ def get_params(apiSearchURL):
 
     # Remove any empty items from the splitSearchURLList
     splitSearchURLList = list(filter(None, splitSearchURLList))
+
+    # Re-add the q that starts the query paramters
+    splitSearchURLList[0] = 'q' + splitSearchURLList[0]
 
     typeParamList = []
 
