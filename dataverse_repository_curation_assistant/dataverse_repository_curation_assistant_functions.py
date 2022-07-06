@@ -495,7 +495,8 @@ def get_value_row_from_search_api_object(item, installationUrl):
 # Uses Search API to return dataframe containing info about datasets in a Dataverse installation
 # Write progress and results to the tkinter window
 def get_object_dataframe_from_search_api(
-    url, params, objectType, rootWindow=None, progressText=None, progressLabel=None, apiKey=None):
+    url, params, objectType, printProgress=False,
+    rootWindow=None, progressText=None, progressLabel=None, apiKey=None):
 
     installationUrl = get_installation_url(url)
 
@@ -549,7 +550,8 @@ def get_object_dataframe_from_search_api(
                 objectInfoDict.append(dict(newRow))
                 datasetCount = len(objectInfoDict)
 
-            print(f'Dataset PIDs found: {datasetCount} of {total}')
+            if printProgress == True:
+                print(f'Dataset PIDs found: {datasetCount} of {total}')
                 
             # Update variables to paginate through the search results
             params['start'] = params['start'] + params['per_page']
