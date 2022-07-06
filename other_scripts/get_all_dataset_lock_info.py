@@ -64,12 +64,13 @@ if total == 0:
     print(f'No locked datasets found (not including the {len(ignorePIDs)} datasets being ignored).')
 
 elif total > 0:
+    print(f'Locked datasets found: {total}\r\r')
 
     if rtUserLogin and rtUserPassword != '':
         # Log in to RT to search for support emails from the dataset depositors
+        print('Logging into RT support email system\r\r')
         tracker = rt.Rt('https://help.hmdc.harvard.edu/REST/1.0/', rtUserLogin, rtUserPassword)
         tracker.login()
-        print('Logged into RT support email system')
 
     datasetCount = 0
 
@@ -79,7 +80,9 @@ elif total > 0:
 
     with open(csvOutputFilePath, mode='w', newline='') as f:
         f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        f.writerow(['dataset_url', 'dataset_title', 'lock_reason', 'locked_date', 'user_name', 'contact_email', 'rtticket_urls'])
+        f.writerow([
+            'dataset_url', 'dataset_title', 'lock_reason', 'locked_date', 'user_name',
+            'contact_email', 'possible_duplicate_datasets', 'rtticket_urls'])
 
         # For each dataset, write to the CSV file info about each lock the dataset has
         for datasetPid in datasetPids:
@@ -105,31 +108,30 @@ elif total > 0:
 
             # Search for and return the DOIs of any other datasets with the same title
 
+            # get_params function splits the searchApiURL on ampersands to find params,
+            # so any ampersands in the title need to be replaced
+            datasetTitle2 = datasetTitle.replace('&', '%26')
+
             rootAlias = get_root_alias_name(installationUrl)
-            baseUrl = installationUrl + '/dataverse/' + rootAlias
-            searchURL = f'{baseUrl}?q=title:"{datasetTitle}"'
-            searchApiUrl = get_search_api_url(searchURL, apiKey=apiKey)
+            searchURL = f'{installationUrl}/dataverse/{rootAlias}?q=title:"{datasetTitle2}"'
+            searchApiUrl = get_search_api_url(searchURL)
 
             requestsGetProperties = get_params(searchApiUrl)
             baseUrl = requestsGetProperties['baseUrl']
             params = requestsGetProperties['params']
             datasetInfoDF = get_object_dataframe_from_search_api(
-                url=baseUrl, params=params, objectType='dataset')
-            datasetCount = len(datasetInfoDF.index)
+                url=baseUrl, params=params, objectType='dataset', apiKey=apiKey)
+            duplicateDatasetCount = len(datasetInfoDF.index)
 
-            if datasetCount == 0:
-                possibleDuplicateDatasets = 'No duplicate datasets found'
-            elif datasetCount > 0:
-                datasetPids = []
+            if duplicateDatasetCount <= 1:
+                duplicateDatasetPidsString = 'No duplicate datasets found'
+            elif duplicateDatasetCount >= 1:
+                duplicateDatasetPidsList = []
                 for dfIndex, dfRow in datasetInfoDF.iterrows():
-                    datasetPid = dfRow['dataset_pid']
-                    datasetPids.append(datasetPid)
-
-            # Convert datasetPids list to string
-
-            # Save string to possibleDuplicateDatasets variable
-
-            # Add column for possibleDuplicateDatasets
+                    duplicateDatasetPid = dfRow['dataset_pid']
+                    if duplicateDatasetPid != datasetPid:
+                        duplicateDatasetPidsList.append(duplicateDatasetPid)
+                duplicateDatasetPidsString = list_to_string(duplicateDatasetPidsList)
 
             # If RT username and password is provided, log into RT and use the contact email addresses to
             # search for support emails from the dataset owner
@@ -149,7 +151,6 @@ elif total > 0:
                             rtTicketID = rtTicket['numerical_id']
                             rtTicketUrl = f'https://help.hmdc.harvard.edu/Ticket/Display.html?id={rtTicketID}'
                             rtTicketUrlsList.append(rtTicketUrl)
-                        # contactEmailsList.append(contactEmail)
 
                         # Use set function to deduplicate rtTicketUrlsList list and convert set to a list again
                         rtTicketUrlsList = list(set(rtTicketUrlsList))
@@ -174,6 +175,8 @@ elif total > 0:
                 reason = lock['lockType']
                 lockedDate = convert_to_local_tz(lock['date'], shortDate=True)
                 userName = lock['user']
-                f.writerow([datasetUrl, datasetTitle, reason, lockedDate, userName, contactEmailsString, rtTicketUrlsString])
+                f.writerow([
+                    datasetUrl, datasetTitle, reason, lockedDate, userName,
+                    contactEmailsString, duplicateDatasetPidsString, rtTicketUrlsString])
 
-            print(f'Recording information about {datasetCount} of {total} datasets: {datasetPid}')
+                print(f'Recording information about {datasetCount} of {total} datasets: {datasetPid}')
