@@ -5,7 +5,6 @@ import json
 import os
 import requests
 import time
-import rt
 import sys
 
 sys.path.append('/Users/juliangautier/dataverse-scripts/dataverse_repository_curation_assistant')
@@ -67,6 +66,7 @@ elif total > 0:
     print(f'Locked datasets found: {total}\r\r')
 
     if rtUserLogin and rtUserPassword != '':
+        import rt
         # Log in to RT to search for support emails from the dataset depositors
         print('Logging into RT support email system\r\r')
         tracker = rt.Rt('https://help.hmdc.harvard.edu/REST/1.0/', rtUserLogin, rtUserPassword)
