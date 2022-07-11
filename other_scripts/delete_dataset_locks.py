@@ -3,8 +3,8 @@
 from csv import DictReader
 import requests
 
-repositoryURL = ''
-apikey = ''  # API key of superuser account
+installationUrl = ''
+apiKey = ''
 file = ''  # Path to .txt or .csv file with database IDs of dataverses to be deleted
 
 datasetPIDs = []
@@ -26,11 +26,11 @@ total = len(datasetPIDs)
 count = 0
 
 for datasetPID in datasetPIDs:
-    url = f'{repositoryURL}/api/datasets/:persistentId/locks?persistentId={datasetPID}'
+    url = f'{installationUrl}/api/datasets/:persistentId/locks?persistentId={datasetPID}'
     req = requests.delete(
         url,
         headers={
-            'X-Dataverse-key': apikey
+            'X-Dataverse-key': apiKey
         })
 
     count += 1
