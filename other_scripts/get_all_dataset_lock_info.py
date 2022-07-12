@@ -36,8 +36,10 @@ lockTypesList = ['Ingest', 'finalizePublication']
 currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
 
 datasetPids = []
-
+lockTypesString = list_to_string(lockTypesList)
 # Get dataset PIDs of datasets that have any of the lock types in lockTypesList
+
+print(f'Getting information datasets with the lock types: {lockTypesString}')
 for lockType in lockTypesList:
 
     datasetLocksApiEndpoint = f'{installationUrl}/api/datasets/locks?type={lockType}'
@@ -68,7 +70,7 @@ elif total > 0:
     if rtUserLogin and rtUserPassword != '':
         import rt
         # Log in to RT to search for support emails from the dataset depositors
-        print('Logging into RT support email system\r\r')
+        print('Logging into RT support email system')
         tracker = rt.Rt('https://help.hmdc.harvard.edu/REST/1.0/', rtUserLogin, rtUserPassword)
         tracker.login()
 
@@ -86,7 +88,11 @@ elif total > 0:
 
         # For each dataset, write to the CSV file info about each lock the dataset has
         for datasetPid in datasetPids:
+            datasetCount += 1
 
+            print(f'\rGetting information about {datasetCount} of {total} datasets: {datasetPid}')
+
+            print('\tGetting dataset title and contact information')
             datasetMetadata = get_dataset_metadata_export(
                 installationUrl=installationUrl, datasetPid=datasetPid, 
                 exportFormat='dataverse_json', header={}, apiKey=apiKey)
@@ -107,10 +113,10 @@ elif total > 0:
             contactEmailsString = list_to_string(contactEmailsList)
 
             # Search for and return the DOIs of any other datasets with the same title
-
+            print('\tSearching for duplicate datasets')
             # get_params function splits the searchApiURL on ampersands to find params,
-            # so any ampersands in the title need to be replaced
-            datasetTitle2 = datasetTitle.replace('&', '%26')
+            # so any ampersands in the dataset title need to be replaced
+            datasetTitle2 = datasetTitle.replace('&', '%26').replace('"', '\\"')
 
             rootAlias = get_root_alias_name(installationUrl)
             searchURL = f'{installationUrl}/dataverse/{rootAlias}?q=title:"{datasetTitle2}"'
@@ -125,7 +131,7 @@ elif total > 0:
 
             if duplicateDatasetCount <= 1:
                 duplicateDatasetPidsString = 'No duplicate datasets found'
-            elif duplicateDatasetCount >= 1:
+            elif duplicateDatasetCount > 1:
                 duplicateDatasetPidsList = []
                 for dfIndex, dfRow in datasetInfoDF.iterrows():
                     duplicateDatasetPid = dfRow['dataset_pid']
@@ -137,6 +143,7 @@ elif total > 0:
             # search for support emails from the dataset owner
             if rtUserLogin and rtUserPassword != '':
                 
+                print('\tSearhcing for related emails in the RT support email system')
                 rtTicketUrlsList = []
                 for contactEmail in contactEmailsList:
 
@@ -167,8 +174,7 @@ elif total > 0:
             # Get all data about locks on the dataset
             url = f'{installationUrl}/api/datasets/:persistentId/locks?persistentId={datasetPid}'
             allLockData = requests.get(url).json()
-
-            datasetCount += 1
+            print('\tGetting information about all locks on the dataset')
 
             for lock in allLockData['data']:
                 datasetUrl = f'{installationUrl}/dataset.xhtml?persistentId={datasetPid}'
@@ -179,4 +185,4 @@ elif total > 0:
                     datasetUrl, datasetTitle, reason, lockedDate, userName,
                     contactEmailsString, duplicateDatasetPidsString, rtTicketUrlsString])
 
-                print(f'Recording information about {datasetCount} of {total} datasets: {datasetPid}')
+                print('\tInformation added to CSV file')
