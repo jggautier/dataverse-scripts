@@ -39,7 +39,7 @@ datasetPids = []
 lockTypesString = list_to_string(lockTypesList)
 # Get dataset PIDs of datasets that have any of the lock types in lockTypesList
 
-print(f'Getting information datasets with the lock types: {lockTypesString}')
+print(f'Getting information about datasets with the lock types: {lockTypesString}')
 for lockType in lockTypesList:
 
     datasetLocksApiEndpoint = f'{installationUrl}/api/datasets/locks?type={lockType}'
