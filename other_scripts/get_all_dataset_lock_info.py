@@ -133,25 +133,20 @@ elif total > 0:
 
 
             # Get list of PIDs of datasets with the same title
-            duplicateDatasetsList = datasetInfoDF.iloc[:, 0].tolist()
+            duplicateDatasetPidsList = datasetInfoDF.iloc[:, 0].tolist()
 
             # Deduplicate list of dataset PIDs (Search API returns the published and draft version of a dataset as two items)
-            duplicateDatasetsList = list(set(duplicateDatasetsList))
+            duplicateDatasetPidsList = list(set(duplicateDatasetPidsList))
 
             # Remove the locked dataset's PID from the list
-            duplicateDatasetsList.remove(datasetPid)
+            duplicateDatasetPidsList.remove(datasetPid)
 
             # Get count of remaining dataset PIDs
-            duplicateDatasetCount = len(duplicateDatasetsList)
+            duplicateDatasetCount = len(duplicateDatasetPidsList)
 
             if duplicateDatasetCount <= 1:
                 duplicateDatasetPidsString = 'No duplicate datasets found'
             elif duplicateDatasetCount > 1:
-                duplicateDatasetPidsList = []
-                for dfIndex, dfRow in datasetInfoDF.iterrows():
-                    duplicateDatasetPid = dfRow['dataset_pid']
-                    if duplicateDatasetPid != datasetPid:
-                        duplicateDatasetPidsList.append(duplicateDatasetPid)
                 duplicateDatasetPidsString = list_to_string(duplicateDatasetPidsList)
 
             # If RT username and password is provided, log into RT and use the contact email addresses to
