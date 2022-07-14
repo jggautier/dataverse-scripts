@@ -116,6 +116,9 @@ elif total > 0:
             print('\tSearching for duplicate datasets')
             # get_params function splits the searchApiURL on ampersands to find params,
             # so any ampersands in the dataset title need to be replaced
+
+            # To-do: Escape other characters that SOLR considers as special
+
             datasetTitle2 = datasetTitle.replace('&', '%26').replace('"', '\\"')
 
             rootAlias = get_root_alias_name(installationUrl)
@@ -127,7 +130,19 @@ elif total > 0:
             params = requestsGetProperties['params']
             datasetInfoDF = get_object_dataframe_from_search_api(
                 url=baseUrl, params=params, objectType='dataset', apiKey=apiKey)
-            duplicateDatasetCount = len(datasetInfoDF.index)
+
+
+            # Get list of PIDs of datasets with the same title
+            duplicateDatasetsList = datasetInfoDF.iloc[:, 0].tolist()
+
+            # Deduplicate list of dataset PIDs (Search API returns the published and draft version of a dataset as two items)
+            duplicateDatasetsList = list(set(duplicateDatasetsList))
+
+            # Remove the locked dataset's PID from the list
+            duplicateDatasetsList.remove(datasetPid)
+
+            # Get count of remaining dataset PIDs
+            duplicateDatasetCount = len(duplicateDatasetsList)
 
             if duplicateDatasetCount <= 1:
                 duplicateDatasetPidsString = 'No duplicate datasets found'
