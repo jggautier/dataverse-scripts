@@ -187,7 +187,7 @@ elif total > 0:
             print('\tGetting information about all locks on the dataset')
 
             for lock in allLockData['data']:
-                datasetUrl = f'{installationUrl}/dataset.xhtml?persistentId={datasetPid}'
+                datasetUrl = f'{installationUrl}/dataset.xhtml?persistentId={datasetPid}&version=DRAFT'
                 reason = lock['lockType']
                 lockedDate = convert_to_local_tz(lock['date'], shortDate=True)
                 userName = lock['user']
