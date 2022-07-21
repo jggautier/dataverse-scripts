@@ -118,6 +118,12 @@ elif total > 0:
             # so any ampersands in the dataset title need to be replaced
 
             # To-do: Escape other characters that SOLR considers as special
+            # To-do: Use user traces endpoint to get titles of other datasets deposited by the 
+            # the depositor
+            '''
+            curl -H "X-Dataverse-key:$API_TOKEN" -X GET $SERVER_URL/api/users/$USERNAME/traces
+
+            '''
 
             datasetTitle2 = datasetTitle.replace('&', '%26').replace('"', '\\"')
 
