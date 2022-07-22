@@ -1,6 +1,8 @@
 import csv
 from dateutil import tz
 from dateutil.parser import parse
+from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
 import json
 import os
 import requests
@@ -35,10 +37,10 @@ lockTypesList = ['Ingest', 'finalizePublication']
 
 currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
 
-datasetPids = []
+lockedDatasetPids = []
 lockTypesString = list_to_string(lockTypesList)
-# Get dataset PIDs of datasets that have any of the lock types in lockTypesList
 
+# Get dataset PIDs of datasets that have any of the lock types in lockTypesList
 print(f'Getting information about datasets with the lock types: {lockTypesString}')
 for lockType in lockTypesList:
 
@@ -50,16 +52,16 @@ for lockType in lockTypesList:
 
     if data['status'] == 'OK':
         for lock in data['data']:
-            datasetPid = lock['dataset']
-            datasetPids.append(datasetPid)
+            lockedDatasetPid = lock['dataset']
+            lockedDatasetPids.append(lockedDatasetPid)
 
-# Remove PIDs in ignorePIDs list from datasetPids list
-datasetPids = [datasetPid for datasetPid in datasetPids if datasetPid not in ignorePIDs]
+# Remove PIDs in ignorePIDs list from lockedDatasetPids list
+lockedDatasetPids = [lockedDatasetPid for lockedDatasetPid in lockedDatasetPids if lockedDatasetPid not in ignorePIDs]
 
-# Use set function to deduplicate datasetPids list and convert set to a list again
-datasetPids = list(set(datasetPids))
+# Use set function to deduplicate lockedDatasetPids list and convert set to a list again
+lockedDatasetPids = list(set(lockedDatasetPids))
 
-total = len(datasetPids)
+total = len(lockedDatasetPids)
 
 if total == 0:
     print(f'No locked datasets found (not including the {len(ignorePIDs)} datasets being ignored).')
@@ -74,7 +76,7 @@ elif total > 0:
         tracker = rt.Rt('https://help.hmdc.harvard.edu/REST/1.0/', rtUserLogin, rtUserPassword)
         tracker.login()
 
-    datasetCount = 0
+    lockedDatasetCount = 0
 
     # Create CSV file and header row
     csvOutputFile = f'dataset_locked_status_{currentTime}.csv'
@@ -87,20 +89,20 @@ elif total > 0:
             'contact_email', 'possible_duplicate_datasets', 'rtticket_urls'])
 
         # For each dataset, write to the CSV file info about each lock the dataset has
-        for datasetPid in datasetPids:
-            datasetCount += 1
+        for lockedDatasetPid in lockedDatasetPids:
+            lockedDatasetCount += 1
 
-            print(f'\rGetting information about {datasetCount} of {total} datasets: {datasetPid}')
+            print(f'\rGetting information about {lockedDatasetCount} of {total} datasets: {lockedDatasetPid}')
 
             print('\tGetting dataset title and contact information')
             datasetMetadata = get_dataset_metadata_export(
-                installationUrl=installationUrl, datasetPid=datasetPid, 
+                installationUrl=installationUrl, datasetPid=lockedDatasetPid, 
                 exportFormat='dataverse_json', header={}, apiKey=apiKey)
 
             # Get title of latest version of the dataset
             for field in datasetMetadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
                 if field['typeName'] == 'title':
-                    datasetTitle = field['value']
+                    lockedDatasetTitle = field['value']
 
             # Get contact email addresses of the dataset
             contactEmailsList = []
@@ -112,54 +114,11 @@ elif total > 0:
                         contactEmailsList.append(contactEmail)
             contactEmailsString = list_to_string(contactEmailsList)
 
-            # Search for and return the DOIs of any other datasets with the same title
-            print('\tSearching for duplicate datasets')
-            # get_params function splits the searchApiURL on ampersands to find params,
-            # so any ampersands in the dataset title need to be replaced
-
-            # To-do: Escape other characters that SOLR considers as special
-            # To-do: Use user traces endpoint to get titles of other datasets deposited by the 
-            # the depositor
-            '''
-            curl -H "X-Dataverse-key:$API_TOKEN" -X GET $SERVER_URL/api/users/$USERNAME/traces
-
-            '''
-
-            datasetTitle2 = datasetTitle.replace('&', '%26').replace('"', '\\"')
-
-            rootAlias = get_root_alias_name(installationUrl)
-            searchURL = f'{installationUrl}/dataverse/{rootAlias}?q=title:"{datasetTitle2}"'
-            searchApiUrl = get_search_api_url(searchURL)
-
-            requestsGetProperties = get_params(searchApiUrl)
-            baseUrl = requestsGetProperties['baseUrl']
-            params = requestsGetProperties['params']
-            datasetInfoDF = get_object_dataframe_from_search_api(
-                url=baseUrl, params=params, objectType='dataset', apiKey=apiKey)
-
-
-            # Get list of PIDs of datasets with the same title
-            duplicateDatasetPidsList = datasetInfoDF.iloc[:, 0].tolist()
-
-            # Deduplicate list of dataset PIDs (Search API returns the published and draft version of a dataset as two items)
-            duplicateDatasetPidsList = list(set(duplicateDatasetPidsList))
-
-            # Remove the locked dataset's PID from the list
-            duplicateDatasetPidsList.remove(datasetPid)
-
-            # Get count of remaining dataset PIDs
-            duplicateDatasetCount = len(duplicateDatasetPidsList)
-
-            if duplicateDatasetCount <= 1:
-                duplicateDatasetPidsString = 'No duplicate datasets found'
-            elif duplicateDatasetCount > 1:
-                duplicateDatasetPidsString = list_to_string(duplicateDatasetPidsList)
-
             # If RT username and password is provided, log into RT and use the contact email addresses to
             # search for support emails from the dataset owner
             if rtUserLogin and rtUserPassword != '':
                 
-                print('\tSearhcing for related emails in the RT support email system')
+                print('\tSearching for related emails in the RT support email system')
                 rtTicketUrlsList = []
                 for contactEmail in contactEmailsList:
 
@@ -188,17 +147,57 @@ elif total > 0:
                 rtTicketUrlsString = 'Not logged into RT. Provide RT username and password'
 
             # Get all data about locks on the dataset
-            url = f'{installationUrl}/api/datasets/:persistentId/locks?persistentId={datasetPid}'
+            url = f'{installationUrl}/api/datasets/:persistentId/locks?persistentId={lockedDatasetPid}'
             allLockData = requests.get(url).json()
             print('\tGetting information about all locks on the dataset')
 
             for lock in allLockData['data']:
-                datasetUrl = f'{installationUrl}/dataset.xhtml?persistentId={datasetPid}&version=DRAFT'
+                datasetUrl = f'{installationUrl}/dataset.xhtml?persistentId={lockedDatasetPid}&version=DRAFT'
                 reason = lock['lockType']
                 lockedDate = convert_to_local_tz(lock['date'], shortDate=True)
                 userName = lock['user']
+
+                # Search for and return the DOIs of the depositor's datasets with similar titles
+                print('\tSearching for duplicate datasets')
+
+                userTracesApiEndpointUrl = f'{installationUrl}/api/users/{userName}/traces'
+
+                response = requests.get(
+                    userTracesApiEndpointUrl,
+                    headers={'X-Dataverse-key': apiKey})
+                userTracesData = response.json()
+
+                createdDatasetPidsList = []
+                if 'datasetCreator' in userTracesData['data']['traces'] and userTracesData['data']['traces']['datasetCreator']['count'] > 1:
+                    for item in userTracesData['data']['traces']['datasetCreator']['items']:
+                        createdDatasetPid = item['pid']
+                        if createdDatasetPid != lockedDatasetPid:
+                            createdDatasetPidsList.append(createdDatasetPid)
+
+                datasetTitles = []
+                potentialDuplicateDatasetsList = []
+
+                for createdDatasetPid in createdDatasetPidsList:
+                    datasetMetadata = get_dataset_metadata_export(
+                        installationUrl=installationUrl, datasetPid=createdDatasetPid, 
+                        exportFormat='dataverse_json', header={}, apiKey=apiKey)
+
+                    # Get title of latest version of the dataset
+                    if 'latestVersion' in datasetMetadata['data']:
+                        for field in datasetMetadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
+                            if field['typeName'] == 'title':
+                                datasetTitle = field['value']
+                                datasetTitles.append(datasetTitle)
+                                tokenSetScore = fuzz.token_set_ratio(lockedDatasetTitle, datasetTitle)
+                                if tokenSetScore >= 80:
+                                    potentialDuplicateDatasetsList.append(createdDatasetPid)
+                if len(potentialDuplicateDatasetsList) == 0:
+                    potentialDuplicateDatasetsString = 'No duplicate datasets found'
+                elif len(potentialDuplicateDatasetsList) > 0:
+                    potentialDuplicateDatasetsString = list_to_string(potentialDuplicateDatasetsList)
+
                 f.writerow([
-                    datasetUrl, datasetTitle, reason, lockedDate, userName,
-                    contactEmailsString, duplicateDatasetPidsString, rtTicketUrlsString])
+                    datasetUrl, lockedDatasetTitle, reason, lockedDate, userName,
+                    contactEmailsString, potentialDuplicateDatasetsString, rtTicketUrlsString])
 
                 print('\tInformation added to CSV file')
