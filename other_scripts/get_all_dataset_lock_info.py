@@ -1,3 +1,20 @@
+'''
+This script uses one API endpoint to get information about datasets that have
+Ingest and finalizePublication locks, then uses another endpoint to get
+information about all locks on those datasets. It also returns the title and
+contact email address metadata of each dataset and tries to find duplicate
+datasets deposited by the depositors of the locked datasets.
+
+If you use the RT software to track emails sent to your repository support team
+and you include your RT user login and password, the script will also use the
+Python library rt (version 2.1.1) to search in your RT system for conversations
+with the depositors of the locked datasets (where the RT requestor email 
+address equals the dataset contact email address). You must have rt version
+2.1.1 installed, otherwise script won't work if you include your RT login
+and password.
+'''
+
+
 import csv
 from dateutil import tz
 from dateutil.parser import parse
@@ -70,6 +87,8 @@ elif total > 0:
     print(f'Locked datasets found: {total}\r\r')
 
     if rtUserLogin and rtUserPassword != '':
+        import pkg_resources
+        pkg_resources.require('rt==2.1.1')
         import rt
         # Log in to RT to search for support emails from the dataset depositors
         print('Logging into RT support email system')
