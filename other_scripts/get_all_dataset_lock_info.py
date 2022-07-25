@@ -1,17 +1,20 @@
 '''
+Find datasets that have been locked for a longer than usual
+
 This script uses one API endpoint to get information about datasets that have
 Ingest and finalizePublication locks, then uses another endpoint to get
 information about all locks on those datasets. It also returns the title and
 contact email address metadata of each dataset and tries to find duplicate
-datasets deposited by the depositors of the locked datasets.
+datasets deposited by the depositors of the locked datasets. It puts this
+information in a CSV file on your computer.
 
 If you use the RT software to track emails sent to your repository support team
 and you include your RT user login and password, the script will also use the
 Python library rt (version 2.1.1) to search in your RT system for conversations
 with the depositors of the locked datasets (where the RT requestor email 
-address equals the dataset contact email address). You must have rt version
-2.1.1 installed, otherwise script won't work if you include your RT login
-and password.
+address equals the dataset's contact email address). If you include your RT login
+and password, you must have version 2.1.1 of the rt package installed, 
+(https://python-rt.readthedocs.io/en/latest) otherwise the script won't work.
 '''
 
 
@@ -41,7 +44,7 @@ rtUserLogin = ''
 rtUserPassword = ''
 
 # List PIDs of datasets whose problematic locks have already been reported
-# e.g. in the Harvard Dataverse Repository GitHub repo issue at https://github.com/IQSS/dataverse.harvard.edu/issues/150)
+# e.g. in the Harvard Dataverse Repository GitHub repo issue at https://github.com/IQSS/dataverse.harvard.edu/issues/150
 ignorePIDs = [
     'doi:10.7910/DVN/GLMW3X', 
     'doi:10.7910/DVN/A3NWA7',
