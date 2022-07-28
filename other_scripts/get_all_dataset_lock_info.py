@@ -179,7 +179,8 @@ elif total > 0:
                 lockedDate = convert_to_local_tz(lock['date'], shortDate=True)
                 userName = lock['user']
 
-                # Search for and return the DOIs of the depositor's datasets with similar titles
+                # Search for and return the DOIs of the depositor's datasets
+                # with titles that are similar to the locked dataset's title
                 print('\tSearching for duplicate datasets')
 
                 userTracesApiEndpointUrl = f'{installationUrl}/api/users/{userName}/traces'
@@ -190,33 +191,38 @@ elif total > 0:
                 userTracesData = response.json()
 
                 createdDatasetPidsList = []
-                if 'datasetCreator' in userTracesData['data']['traces'] and userTracesData['data']['traces']['datasetCreator']['count'] > 1:
+                potentialDuplicateDatasetsList = []
+
+                if userTracesData['status'] == 'ERROR':
+                    errorMessage = userTracesData['message']
+                    potentialDuplicateDatasetsString = f'Unable to find depositor\'s datasets. User traces API endpoint failed: {errorMessage}'
+
+                elif userTracesData['status'] == 'OK' and 'datasetCreator' in userTracesData['data']['traces'] and userTracesData['data']['traces']['datasetCreator']['count'] > 1:
                     for item in userTracesData['data']['traces']['datasetCreator']['items']:
                         createdDatasetPid = item['pid']
                         if createdDatasetPid != lockedDatasetPid:
                             createdDatasetPidsList.append(createdDatasetPid)
 
-                datasetTitles = []
-                potentialDuplicateDatasetsList = []
+                    datasetTitles = []
+                    
+                    for createdDatasetPid in createdDatasetPidsList:
+                        datasetMetadata = get_dataset_metadata_export(
+                            installationUrl=installationUrl, datasetPid=createdDatasetPid, 
+                            exportFormat='dataverse_json', header={}, apiKey=apiKey)
 
-                for createdDatasetPid in createdDatasetPidsList:
-                    datasetMetadata = get_dataset_metadata_export(
-                        installationUrl=installationUrl, datasetPid=createdDatasetPid, 
-                        exportFormat='dataverse_json', header={}, apiKey=apiKey)
-
-                    # Get title of latest version of the dataset
-                    if 'latestVersion' in datasetMetadata['data']:
-                        for field in datasetMetadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
-                            if field['typeName'] == 'title':
-                                datasetTitle = field['value']
-                                datasetTitles.append(datasetTitle)
-                                tokenSetScore = fuzz.token_set_ratio(lockedDatasetTitle, datasetTitle)
-                                if tokenSetScore >= 80:
-                                    potentialDuplicateDatasetsList.append(createdDatasetPid)
-                if len(potentialDuplicateDatasetsList) == 0:
-                    potentialDuplicateDatasetsString = 'No duplicate datasets found'
-                elif len(potentialDuplicateDatasetsList) > 0:
-                    potentialDuplicateDatasetsString = list_to_string(potentialDuplicateDatasetsList)
+                        # Get title of latest version of the dataset
+                        if 'latestVersion' in datasetMetadata['data']:
+                            for field in datasetMetadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
+                                if field['typeName'] == 'title':
+                                    datasetTitle = field['value']
+                                    datasetTitles.append(datasetTitle)
+                                    tokenSetScore = fuzz.token_set_ratio(lockedDatasetTitle, datasetTitle)
+                                    if tokenSetScore >= 80:
+                                        potentialDuplicateDatasetsList.append(createdDatasetPid)
+                    if len(potentialDuplicateDatasetsList) == 0:
+                        potentialDuplicateDatasetsString = 'No duplicate datasets found'
+                    elif len(potentialDuplicateDatasetsList) > 0:
+                        potentialDuplicateDatasetsString = list_to_string(potentialDuplicateDatasetsList)
 
                 f.writerow([
                     datasetUrl, lockedDatasetTitle, reason, lockedDate, userName,
