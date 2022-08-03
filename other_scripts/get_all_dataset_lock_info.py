@@ -108,7 +108,7 @@ elif total > 0:
         f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         f.writerow([
             'dataset_url', 'dataset_title', 'lock_reason', 'locked_date', 'user_name',
-            'contact_email', 'possible_duplicate_datasets', 'rtticket_urls'])
+            'contact_email', 'possible_duplicate_datasets', 'rt_ticket_urls'])
 
         # For each dataset, write to the CSV file info about each lock the dataset has
         for lockedDatasetPid in lockedDatasetPids:
