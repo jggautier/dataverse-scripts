@@ -193,10 +193,19 @@ elif total > 0:
                 createdDatasetPidsList = []
                 potentialDuplicateDatasetsList = []
 
+                # If API endpoint fails, report failure in potentialDuplicateDatasetsString variable
                 if userTracesData['status'] == 'ERROR':
                     errorMessage = userTracesData['message']
                     potentialDuplicateDatasetsString = f'Unable to find depositor\'s datasets. User traces API endpoint failed: {errorMessage}'
 
+                # If API endpoint works but only one dataset is found, then that's the locked dataset
+                # and there are no duplicate datasets. Report that.
+                elif userTracesData['status'] == 'OK' and 'datasetCreator' in userTracesData['data']['traces'] and userTracesData['data']['traces']['datasetCreator']['count'] == 1:
+                    potentialDuplicateDatasetsString = 'No duplicate datasets found'
+
+                # If API endpoint works and more than one dataset is found, then get the titles of
+                # those datasets, use fuzzywuzzy library to return any titles that are close to
+                # the title of the locked dataset
                 elif userTracesData['status'] == 'OK' and 'datasetCreator' in userTracesData['data']['traces'] and userTracesData['data']['traces']['datasetCreator']['count'] > 1:
                     for item in userTracesData['data']['traces']['datasetCreator']['items']:
                         createdDatasetPid = item['pid']
@@ -224,6 +233,7 @@ elif total > 0:
                     elif len(potentialDuplicateDatasetsList) > 0:
                         potentialDuplicateDatasetsString = list_to_string(potentialDuplicateDatasetsList)
 
+                # Write information to the CSV file
                 f.writerow([
                     datasetUrl, lockedDatasetTitle, reason, lockedDate, userName,
                     contactEmailsString, potentialDuplicateDatasetsString, rtTicketUrlsString])
