@@ -204,11 +204,6 @@ mapDataUrl = 'https://raw.githubusercontent.com/IQSS/dataverse-installations/mas
 response = requests.get(mapDataUrl, headers=headers)
 mapdata = response.json()
 
-mapdataFilePath = str(Path(currrentWorkingDirectory + '/' + 'mapdata1.json'))
-with open(mapdataFilePath, 'r') as f1:
-    mapdata = f1.read()  # Copy content to mapdata variable
-    mapdata = json.loads(mapdata)  # Load content in variable as a json object
-
 countOfInstallations = len(mapdata['installations'])
 
 installationProgressCount = 1
