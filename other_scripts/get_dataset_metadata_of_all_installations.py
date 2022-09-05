@@ -461,7 +461,7 @@ for installation in mapdata['installations']:
             dataverseJsonMetadataNotDownloaded = []
 
             with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=datasetCount)) as progress_bar:
-                Parallel(n_jobs=-1, backend='threading')(delayed(download_dataset_metadata_export)(datasetPid) for datasetPid in datasetPids)
+                Parallel(n_jobs=4, backend='threading')(delayed(download_dataset_metadata_export)(datasetPid) for datasetPid in datasetPids)
 
             # Create a dataframe that lists each dataset PID and if its metadata was or wasn't downloaded
 
