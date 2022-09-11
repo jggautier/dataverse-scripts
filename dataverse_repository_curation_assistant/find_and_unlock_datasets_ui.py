@@ -20,6 +20,7 @@ import webbrowser
 
 appPrimaryBlueColor = '#286090'
 appPrimaryRedColor = '#BF0000'
+appPrimaryGreenColor = '#218000'
 appPrimaryGreyColor = '#6E6E6E'
 
 
@@ -44,14 +45,14 @@ class findAndUnlockDatasetsFrame(Frame):
             bg='white', pady=10)
 
         textTaskDescription = (
-            'Get the "Citation" metadata of the latest version of each dataset '
-            'in a Dataverse Collection or from a search query URL. '
-            'Harvested datasets are always excluded and datasets may be excluded if they\'re '
-            'linked in but not owned by the given Dataverse Collection.'
-            '\r\rThis app will save one CSV file for each metadata field you choose and ' 
-            'one CSV file that contains the metadata for all of the fields you choose.'
-            '\r\rIf you need all dataset metadata from any known Dataverse reposiories, '
-            'please consider downloading the metadata from the following dataset:')
+            'Get information about datasets that are stuck in the publishing process and remove all locks '
+            'from datasets you specify.'
+            '\r\rInformation about datasets that have the "finalizePublication" or "Ingest" locks are added '
+            'to a CSV file you can save and review. The CSV file includes each locked dataset\'s '
+            'URL, title, and contact email address; the type of lock, when it occured, and the username '
+            'of the account that attempted to publish the dataset; and the DOIs of any other datasets that '
+            'the depositor deposited with titles that are similar to the locked dataset, helpful for '
+            'determining if the depositor has already published the same data in another dataset.')
 
         # Create labels for information about this task
         self.labelTaskDescription = Label(
@@ -62,8 +63,8 @@ class findAndUnlockDatasetsFrame(Frame):
 
         self.labelMoreInformationLink = Label(
             self.frameTaskDescription,
-            text='https://doi.org/10.7910/DVN/DCDKZQ',
-            justify='left',
+            text='For more information about dataset locks, see the API Guides page',
+            wraplength=380, justify='left',
             fg='blue', bg='white', anchor='w',
             cursor='pointinghand')
 
@@ -73,7 +74,7 @@ class findAndUnlockDatasetsFrame(Frame):
         self.labelMoreInformationLink.grid(sticky='w', row=1)
         self.labelMoreInformationLink.bind(
             '<Button-1>',
-            lambda e: self.open_url('https://doi.org/10.7910/DVN/DCDKZQ'))
+            lambda e: self.open_url('https://guides.dataverse.org/en/latest/api/native-api.html?highlight=locks#list-locks-across-all-datasets'))
 
         # Create collapsible panel for account credentials
         self.collapsibleAccountCredentials = collapsiblePanel(
