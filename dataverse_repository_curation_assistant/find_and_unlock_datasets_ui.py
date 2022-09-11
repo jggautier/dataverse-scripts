@@ -195,7 +195,7 @@ class findAndUnlockDatasetsFrame(Frame):
         # Create and place collapsible panel for getting locked datasets report
         self.collapsiblePanelLockedDatasetReport = collapsiblePanel(
             self.root,
-            text='Get locked datasets report',
+            text='Save report',
             default='closed', relief='raised', bg='white')
         self.collapsiblePanelLockedDatasetReport.grid(sticky='w', row=3, pady=5)
         
