@@ -111,8 +111,8 @@ class findAndUnlockDatasetsFrame(Frame):
 
         # Place button and help text for importing account credentials
         self.buttonImportCredentials.grid(sticky='w', column=0, row=0)
-        self.labelImportCredentials.grid(sticky='w', column=0, row=1)        
-
+        self.labelImportCredentials.grid(sticky='w', column=0, row=1)  
+        
         # Create and place frame for installation URL field label, textbox, and help text
         self.frameInstallationUrl = Frame(
             self.collapsibleAccountCredentials.subFrame, 
@@ -143,7 +143,8 @@ class findAndUnlockDatasetsFrame(Frame):
         self.labelInstallationUrlHelp = Label(
             self.frameInstallationUrl,
             text=labelInstallationUrlHelpText,
-            anchor='w', wraplength=380, justify='left',
+            anchor='w',
+            wraplength=380, justify='left',
             bg='white', fg='grey')
 
         # Place field label, textbox and help text for installation URL field
@@ -157,27 +158,36 @@ class findAndUnlockDatasetsFrame(Frame):
             self.collapsibleAccountCredentials.subFrame, 
             bg='white', pady=10)
         self.frameApiToken.grid(sticky='w', row=2)
+        self.frameApiToken.columnconfigure(0, weight=1)
+        self.frameApiToken.columnconfigure(1, weight=180)
 
         # Create field label, textbox and help text for API Token field
         self.labelApiToken = Label(
             self.frameApiToken,
-            text='API Token', anchor='w', bg='white')
+            text='API Token',
+            anchor='w', bg='white')
+        self.labelApiTokenAsterisk = Label(
+            self.frameApiToken,
+            text='*', fg='red', justify='left',
+            anchor='w', bg='white')
+
         self.entryApiToken = Entry(
             self.frameApiToken, width=40)
+
         labelApiTokenHelpText = (
-            'The repository may require an API Token. You\'ll also need to '
-            'enter an API Token to get the metadata of unpublished dataset '
-            'versions that your account has permission to access')
+            'A "super user" API Token of an installation administrator '
+            'is required')
         self.labelApiTokenHelp = Label(
             self.frameApiToken,
-            text=labelApiTokenHelpText, anchor='w',
-            wraplength=380, justify='left',
+            text=labelApiTokenHelpText,
+            anchor='w', wraplength=380, justify='left',
             bg='white', fg='grey')
 
         # Place field label, textbox and help text for installation URL field
-        self.labelApiToken.grid(sticky='w', row=0)
-        self.entryApiToken.grid(sticky='w', row=1)
-        self.labelApiTokenHelp.grid(sticky='w', row=2)
+        self.labelApiToken.grid(sticky='w', column=0, row=0)
+        self.labelApiTokenAsterisk.grid(sticky='w', column=1, row=0)
+        self.entryApiToken.grid(sticky='w', row=1, columnspan=2)
+        self.labelApiTokenHelp.grid(sticky='w', row=2, columnspan=2)
 
         # Create and place collapsible panel for choosing datasets
         self.collapsiblePanelChooseDatasets = collapsiblePanel(
