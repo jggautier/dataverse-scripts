@@ -195,16 +195,36 @@ class findAndUnlockDatasetsFrame(Frame):
         # Create and place collapsible panel for getting locked datasets report
         self.collapsiblePanelLockedDatasetReport = collapsiblePanel(
             self.root,
-            text='Find locked datasets',
+            text='Get locked datasets report',
             default='closed', relief='raised', bg='white')
         self.collapsiblePanelLockedDatasetReport.grid(sticky='w', row=3, pady=5)
         
-
-        # Create and place frame for all "Choose dataset option frames
+        # Create and place frame for all "Locked dataset report" frames
         self.frameLockedDatasetsReport = Frame(self.collapsiblePanelLockedDatasetReport.subFrame, bg='white')
-        self.frameLockedDatasetsReport.grid(row=1)
+        self.frameLockedDatasetsReport.grid(row=1, pady=10)
 
+        # Create button and helptext for getting locked datasets report
+        self.buttonLockedDatasetsReport = Button(
+            self.frameLockedDatasetsReport,
+            text='Get locked datasets report',
+            bg=appPrimaryGreyColor, fg='white',
+            command=lambda: import_credentials(
+                    installationURLField=self.comboboxInstallationUrl,
+                    apiKeyField=self.entryApiToken,
+                    filePath=get_file_path(fileTypes=['yaml']), # function that asks user for directory
+                    ))
 
+        labelframeLockedDatasetsReportHelpText = (
+            'Save a CSV file with information about locked datasets')
+        self.labelImportCredentials = Label(
+            self.frameLockedDatasetsReport,
+            text=labelframeLockedDatasetsReportHelpText,
+            anchor='w', wraplength=380, justify='left',
+            bg='white', fg='grey')
+
+        # Place button and help text for importing account credentials
+        self.buttonLockedDatasetsReport.grid(sticky='w', column=0, row=0)
+        self.labelImportCredentials.grid(sticky='w', column=0, row=1)
 
 
         ##############
@@ -218,7 +238,7 @@ class findAndUnlockDatasetsFrame(Frame):
             default='closed', relief='raised', bg='white')
         self.collapsiblePanelChooseDatasets.grid(sticky='w', row=4, pady=5)
 
-        # Create and place frame for all "Choose dataset option frames
+        # Create and place frame for all "Choose dataset option" frames
         self.frameChooseDatasets = Frame(self.collapsiblePanelChooseDatasets.subFrame, bg='white')
         self.frameChooseDatasets.grid(row=1)
 
