@@ -189,12 +189,34 @@ class findAndUnlockDatasetsFrame(Frame):
         self.entryApiToken.grid(sticky='w', row=1, columnspan=2)
         self.labelApiTokenHelp.grid(sticky='w', row=2, columnspan=2)
 
+
+        ##############        
+
+        # Create and place collapsible panel for getting locked datasets report
+        self.collapsiblePanelLockedDatasetReport = collapsiblePanel(
+            self.root,
+            text='Find locked datasets',
+            default='closed', relief='raised', bg='white')
+        self.collapsiblePanelLockedDatasetReport.grid(sticky='w', row=3, pady=5)
+        
+
+        # Create and place frame for all "Choose dataset option frames
+        self.frameLockedDatasetsReport = Frame(self.collapsiblePanelLockedDatasetReport.subFrame, bg='white')
+        self.frameLockedDatasetsReport.grid(row=1)
+
+
+
+
+        ##############
+
+
+
         # Create and place collapsible panel for choosing datasets
         self.collapsiblePanelChooseDatasets = collapsiblePanel(
             self.root,
             text='Which datasets?',
             default='closed', relief='raised', bg='white')
-        self.collapsiblePanelChooseDatasets.grid(sticky='w', row=3, pady=5)
+        self.collapsiblePanelChooseDatasets.grid(sticky='w', row=4, pady=5)
 
         # Create and place frame for all "Choose dataset option frames
         self.frameChooseDatasets = Frame(self.collapsiblePanelChooseDatasets.subFrame, bg='white')
@@ -350,7 +372,7 @@ class findAndUnlockDatasetsFrame(Frame):
             self.root,
             text='Which metadata fields?',
             default='closed', relief='raised', bg='white')
-        self.collapsiblePanelWhichFields.grid(sticky='w', row=4, pady=5)
+        self.collapsiblePanelWhichFields.grid(sticky='w', row=5, pady=5)
 
         # Create Select metadata fields frame, Get Fields button and help text
         self.frameWhichFields = Frame(self.collapsiblePanelWhichFields.subFrame, bg='white')
@@ -438,7 +460,7 @@ class findAndUnlockDatasetsFrame(Frame):
         # the get_datasets_from_search_url command that was run
         self.buttonGetMetadata = Button(
             self.framebuttonGetMetadata, 
-            text='Get metadata', bg=appPrimaryBlueColor,
+            text='Unlock datasets', bg=appPrimaryGreenColor,
             fg='white', width=423, height=40,
             font=font.Font(size=15, weight='bold'),
             command=lambda: get_dataset_metadata(
@@ -468,7 +490,7 @@ class findAndUnlockDatasetsFrame(Frame):
             anchor='w', wraplength=400, justify='left', fg='red', bg='white')
 
         # Place Get Metadata frame and button
-        self.framebuttonGetMetadata.grid(sticky='w', row=5, pady=15)
+        self.framebuttonGetMetadata.grid(sticky='w', row=6, pady=15)
         self.buttonGetMetadata.grid(sticky='w', column=0, row=0)
         self.labelFieldsWithNoMetadata.grid(sticky='w', row=1)
 
