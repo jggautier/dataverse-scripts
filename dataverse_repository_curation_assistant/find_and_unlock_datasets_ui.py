@@ -17,7 +17,6 @@ except ImportError:
     from tkinter import Button
 import webbrowser
 
-
 appPrimaryBlueColor = '#286090'
 appPrimaryRedColor = '#BF0000'
 appPrimaryGreenColor = '#218000'
