@@ -248,14 +248,6 @@ class findAndUnlockDatasetsFrame(Frame):
 
         self.frameAboutHelpText = Frame(self.frameEnterDatasets, bg='white')
 
-        # aboutSearchURLHelpTextString = (
-        #     'Enter the PIDs or URLs of datasets')
-        # self.labelAboutSearchURLHelpText = Label(
-        #     self.frameAboutHelpText,
-        #     text=aboutSearchURLHelpTextString,
-        #     fg='black', bg='white', 
-        #     wraplength=385, justify='left', anchor='w')
-
         self.labelSearchURL = Label(
             self.frameSearchURLField,
             text='Enter dataset PIDs or URLs',
@@ -268,11 +260,6 @@ class findAndUnlockDatasetsFrame(Frame):
             self.frameSearchURLField, 
             width=45, height=8)
 
-
-        # self.textBoxCollectionDatasetPIDs = ScrolledText(
-        #     self.frameLoadDatasetsProgress,
-        #     width=45, height=8)
-
         searchURLEntryHelpTextString = (
             'Enter each dataset URL or PID on a new line')
         
@@ -281,29 +268,14 @@ class findAndUnlockDatasetsFrame(Frame):
             text=searchURLEntryHelpTextString,
             fg='grey', bg='white', 
             wraplength=380, justify='left', anchor='w')
-        # self.buttonLoadDatasets = Button(
-        #     self.frameSearchURLField,
-        #     text='Find the datasets',
-        #     bg=appPrimaryGreyColor, fg='white',
-        #     command=lambda: get_datasets_from_collection_or_search_url(
-        #         rootWindow=self.frameLoadDatasetsProgress,
-        #         url=self.entrySearchURL.get().strip(),
-        #         progressLabel=self.labelLoadDatasetsProgressText,
-        #         progressText=self.loadDatasetsProgressText,
-        #         textBoxCollectionDatasetPIDs=self.textBoxCollectionDatasetPIDs,
-        #         apiKey=self.entryApiToken.get().strip(),
-        #         ignoreDeaccessionedDatasets=True,
-        #         subdataverses=self.getSubdataverses.get()))
 
         # Place Enter Search URL field label, text box, and validation error label
         self.frameAboutHelpText.grid(sticky='w', row=0)
         self.frameSearchURLField.grid(sticky='w', row=1, pady=5)
-        # self.labelAboutSearchURLHelpText.grid(sticky='w', row=0, pady=0)
         self.labelSearchURL.grid(sticky='w', column=0, row=1)
         self.labelSearchURLAsterisk.grid(sticky='w', column=1, row=1)
         self.entrySearchURL.grid(sticky='w', row=2, columnspan=2)
         self.labelSearchURLHelpText.grid(sticky='w', row=3, columnspan=2)
-        # self.buttonLoadDatasets.grid(sticky='w', row=4, columnspan=2, pady=15)
 
         # Create Get Metadata frame, button and validation error message text
         self.framebuttonGetMetadata = Frame(self.root, bg='white')
@@ -348,32 +320,3 @@ class findAndUnlockDatasetsFrame(Frame):
 
     def open_url(self, url):
         webbrowser.open_new(url)
-
-
-    # Hide all frames function
-    def hide_choose_dataset_frames(self):
-        self.frameCollectionURL.grid_forget()
-        self.frameEnterDatasets.grid_forget()
-
-        forget_widget(self.labelLoadDatasetsProgressText)
-        forget_widget(self.textBoxCollectionDatasetPIDs)
-
-        try:
-            forget_widget(self.labelProgressTextGetMetadata)
-        except AttributeError:
-            pass
-
-        # When widgets in the frameLoadDatasetsProgress frame are forgetten,
-        # the frame doesn't resize automatically. This sets size of 
-        # frameLoadDatasetsProgress to smallest size possible 
-        self.frameLoadDatasetsProgress.config(height=1)        
-        
-
-    def get_datasets_method(self, *args):
-        if self.dropdownOptionSelected.get()  == 'In a Dataverse Collection':
-            self.hide_choose_dataset_frames()
-            self.frameCollectionURL.grid(sticky='w', row=1, pady=0)
-
-        elif self.dropdownOptionSelected.get() == 'From a Search URL':
-            self.hide_choose_dataset_frames()
-            self.frameSearchURL.grid(sticky='w', row=1, pady=0)
