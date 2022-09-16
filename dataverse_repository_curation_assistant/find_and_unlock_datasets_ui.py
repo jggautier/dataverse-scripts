@@ -49,10 +49,7 @@ class findAndUnlockDatasetsFrame(Frame):
             'from datasets you specify.'
             '\r\rInformation about datasets that have the "finalizePublication" or "Ingest" locks are added '
             'to a CSV file you can save and review. The CSV file includes each locked dataset\'s '
-            'URL, title, and contact email address; the type of lock, when it occured, and the username '
-            'of the account that attempted to publish the dataset; and the DOIs of any other datasets that '
-            'the depositor deposited with titles that are similar to the locked dataset, helpful for '
-            'determining if the depositor has already published the same data in another dataset.')
+            'contact email address and the DOIs of any other datasets that might be duplicate datasets.')
 
         # Create labels for information about this task
         self.labelTaskDescription = Label(
@@ -215,7 +212,12 @@ class findAndUnlockDatasetsFrame(Frame):
                     ))
 
         labelframeLockedDatasetsReportHelpText = (
-            'Save a CSV file with information about locked datasets')
+            'Save a CSV file that includes each locked dataset\'s '
+            'URL, title, and contact email address; the type of lock, when it occured, and the username '
+            'of the account that attempted to publish the dataset; and the DOIs of any other datasets that '
+            'the depositor deposited with titles that are similar to the locked dataset, helpful for '
+            'determining if the depositor has already published the same data in another dataset.')
+
         self.labelImportCredentials = Label(
             self.frameLockedDatasetsReport,
             text=labelframeLockedDatasetsReportHelpText,
