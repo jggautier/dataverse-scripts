@@ -1256,9 +1256,18 @@ def delete_published_datasets(
             notDeletedText.set(notDeletedMessage)
             rootWindow.update_idletasks()
 
-def save_locked_dataset_report(installationUrl, apiKey, directoryPath):
+def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
     # List lock types. See https://guides.dataverse.org/en/5.10/api/native-api.html?highlight=locks#list-locks-across-all-datasets
     lockTypesList = ['Ingest', 'finalizePublication']
+
+    # List PIDs of datasets whose problematic locks have already been reported
+    # e.g. in the Harvard Dataverse Repository GitHub repo issue at https://github.com/IQSS/dataverse.harvard.edu/issues/150
+    ignorePIDs = [
+        'doi:10.7910/DVN/GLMW3X', 
+        'doi:10.7910/DVN/A3NWA7',
+        'doi:10.7910/DVN/VYNLON',
+        'doi:10.7910/DVN/RC0WLY'
+        ]
 
     currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
 
@@ -1268,7 +1277,6 @@ def save_locked_dataset_report(installationUrl, apiKey, directoryPath):
     # Get dataset PIDs of datasets that have any of the lock types in lockTypesList
     # print(f'Getting information about datasets with the lock types: {lockTypesString}')
     for lockType in lockTypesList:
-
         datasetLocksApiEndpoint = f'{installationUrl}/api/datasets/locks?type={lockType}'
         response = requests.get(
             datasetLocksApiEndpoint,
