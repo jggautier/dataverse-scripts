@@ -204,11 +204,11 @@ class findAndUnlockDatasetsFrame(Frame):
             self.frameLockedDatasetsReport,
             text='Get locked datasets report',
             bg=appPrimaryGreyColor, fg='white',
-            command=lambda: import_credentials(
-                    installationURLField=self.comboboxInstallationUrl,
-                    apiKeyField=self.entryApiToken,
-                    filePath=get_file_path(fileTypes=['yaml']), # function that asks user for directory
-                    ))
+            command=lambda: save_locked_dataset_report(
+                    installationURL=self.comboboxInstallationUrl,
+                    apiKey=self.entryApiToken,
+                    directoryPath=get_directory_path()) # function that asks user for directory
+            )
 
         labelframeLockedDatasetsReportHelpText = (
             'Save a CSV file that includes each locked dataset\'s '
@@ -230,7 +230,7 @@ class findAndUnlockDatasetsFrame(Frame):
 
         ##############
 
-        # Create and place collapsible panel for choosing datasets
+        # Create and place collapsible panel for entering datasets
         self.collapsiblePanelChooseDatasets = collapsiblePanel(
             self.root,
             text='Which datasets?',
@@ -286,7 +286,7 @@ class findAndUnlockDatasetsFrame(Frame):
             text='Unlock datasets', bg=appPrimaryGreenColor,
             fg='white', width=423, height=40,
             font=font.Font(size=15, weight='bold'),
-            command=lambda: get_dataset_metadata(
+            command=lambda: unlock_datasets(
                     rootWindow=self.framebuttonGetMetadata,
                     progressText=self.progressTextGetMetadata,
                     progressLabel=self.labelProgressTextGetMetadata,
