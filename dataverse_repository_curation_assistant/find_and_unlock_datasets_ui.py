@@ -205,8 +205,9 @@ class findAndUnlockDatasetsFrame(Frame):
             text='Get locked datasets report',
             bg=appPrimaryGreyColor, fg='white',
             command=lambda: save_locked_dataset_report(
-                    installationURL=self.comboboxInstallationUrl,
-                    apiKey=self.entryApiToken,
+                    installationUrl=get_installation_url(self.comboboxInstallationUrl.get().strip()),
+                    apiKey=self.entryApiToken.get().strip(),
+                    # self.entryApiToken.get().strip()
                     directoryPath=get_directory_path()) # function that asks user for directory
             )
 
