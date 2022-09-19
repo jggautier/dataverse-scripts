@@ -256,7 +256,7 @@ class findAndUnlockDatasetsFrame(Frame):
             self.frameSearchURLField,
             text='*', fg='red', justify='left',
             anchor='w', bg='white')
-        self.entrySearchURL = ScrolledText(
+        self.textBoxCollectionDatasetPIDs = ScrolledText(
             self.frameSearchURLField, 
             width=45, height=8)
 
@@ -274,7 +274,7 @@ class findAndUnlockDatasetsFrame(Frame):
         self.frameSearchURLField.grid(sticky='w', row=1, pady=5)
         self.labelSearchURL.grid(sticky='w', column=0, row=1)
         self.labelSearchURLAsterisk.grid(sticky='w', column=1, row=1)
-        self.entrySearchURL.grid(sticky='w', row=2, columnspan=2)
+        self.textBoxCollectionDatasetPIDs.grid(sticky='w', row=2, columnspan=2)
         self.labelSearchURLHelpText.grid(sticky='w', row=3, columnspan=2)
 
         # Create Get Metadata frame, button and validation error message text
@@ -291,12 +291,12 @@ class findAndUnlockDatasetsFrame(Frame):
                     rootWindow=self.framebuttonGetMetadata,
                     progressText=self.progressTextGetMetadata,
                     progressLabel=self.labelProgressTextGetMetadata,
-                    noMetadataText=self.fieldsWithNoMetadataText,
-                    noMetadataLabel=self.labelFieldsWithNoMetadata,
+                    notUnlockedText=self.fieldsWithNoMetadataText,
+                    notUnlockedLabel=self.labelFieldsWithNoMetadata,
                     installationUrl=get_installation_url(self.comboboxInstallationUrl.get().strip()),
                     datasetPidString=self.textBoxCollectionDatasetPIDs.get('1.0', END),
-                    parentFieldTitleList=get_listbox_values(self.listboxSelectFieldNames),
-                    directoryPath=get_directory_path(), # function that asks user for directory
+                    # parentFieldTitleList=get_listbox_values(self.listboxSelectFieldNames),
+                    # directoryPath=get_directory_path(), # function that asks user for directory
                     apiKey=self.entryApiToken.get().strip()
                     )
                 )
