@@ -1466,9 +1466,9 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
 
 
 def unlock_dataset(installationUrl, datasetPid, apiKey):
-    unlockDatasetApiEndpointUrl = f'{installationUrl}/api/datasets/:persistentId/locks?persistentId={datasetPID}'
+    unlockDatasetApiEndpointUrl = f'{installationUrl}/api/datasets/:persistentId/locks?persistentId={datasetPid}'
     req = requests.delete(
-        destroyDatasetApiEndpointUrl,
+        unlockDatasetApiEndpointUrl,
         headers={'X-Dataverse-key': apiKey})
     data = req.json()
 
