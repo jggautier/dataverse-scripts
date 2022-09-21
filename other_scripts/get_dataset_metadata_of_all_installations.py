@@ -155,10 +155,12 @@ def download_dataset_metadata_export(datasetPid):
 
                 majorversion = str(datasetVersion['data']['datasetVersion']['versionNumber'])
                 minorversion = str(datasetVersion['data']['datasetVersion']['versionMinorNumber'])
-                versionNumber = majorversion + '.' + minorversion
+                # versionNumber = majorversion + '.' + minorversion
+                versionNumber = f'{majorversion}.{minorversion}'
 
                 datasetPidForFile = datasetPid.replace(':', '_').replace('/', '_')
-                metadataFile = dataverseJsonMetadataDirectory + '/' + f'{datasetPidForFile}_v{versionNumber}.json'
+                # metadataFile = dataverseJsonMetadataDirectory + '/' + f'{datasetPidForFile}_v{versionNumber}.json'
+                metadataFile = f'{dataverseJsonMetadataDirectory}/{datasetPidForFile}_v{versionNumber}.json'
 
                 # Write the JSON to the new file
                 with open(metadataFile, mode='w') as f3:
@@ -351,7 +353,8 @@ for installation in mapdata['installations']:
                     # If the metadatablock has fields, download the metadatablock data into a JSON file
                     if len(metadata['data']['fields']) > 0:
 
-                        metadatablockFile = str(Path(metadatablockFileDirectoryPath)) + '/' f'{metadatablockName}_v{dataverseVersion}.json'
+                        # metadatablockFile = str(Path(metadatablockFileDirectoryPath)) + '/' f'{metadatablockName}_v{dataverseVersion}.json'
+                        metadatablockFile = f'{str(Path(metadatablockFileDirectoryPath))}/{metadatablockName}_v{dataverseVersion}.json'
 
                         with open(metadatablockFile, mode='w') as f:
                             f.write(json.dumps(response.json(), indent=4))
@@ -361,7 +364,8 @@ for installation in mapdata['installations']:
             # endpoint to get those datasets' metadata
 
             # Create CSV file
-            datasetPidsFile = installationDirectory + '/' + f'dataset_pids_{installationName}_{currentTime}.csv'
+            # datasetPidsFile = installationDirectory + '/' + f'dataset_pids_{installationName}_{currentTime}.csv'
+            datasetPidsFile = f'{installationDirectory}/dataset_pids_{installationName}_{currentTime}.csv'
 
             with open(datasetPidsFile, mode='w', newline='') as f:
                 f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -506,7 +510,8 @@ for installation in mapdata['installations']:
 
             mergedFileDF = pd.merge(dataverseJsonExportSavedDF, datasetPidsFileDF, left_index=True, right_index=True).reset_index()
 
-            mergedFile = installationDirectory + '/' + f'dataset_pids_{installationName}_merged_file.csv'
+            # mergedFile = installationDirectory + '/' + f'dataset_pids_{installationName}_merged_file.csv'
+            mergedFile = f'{installationDirectory}/dataset_pids_{installationName}_merged_file.csv'
             columnOrderList = [
                 'persistent_id', 'persistent_url', 'dataverse_name', 'dataverse_alias',
                 'dataverse_json_export_saved']
