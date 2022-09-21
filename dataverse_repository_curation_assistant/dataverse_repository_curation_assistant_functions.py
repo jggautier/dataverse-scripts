@@ -1266,8 +1266,9 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
         'doi:10.7910/DVN/GLMW3X', 
         'doi:10.7910/DVN/A3NWA7',
         'doi:10.7910/DVN/VYNLON',
-        'doi:10.7910/DVN/RC0WLY'
-        ]
+        'doi:10.7910/DVN/RC0WLY',
+        'doi:10.7910/DVN/1EKMTZ'
+    ]
 
     currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
 
@@ -1307,14 +1308,9 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
             'contact_email', 'possible_duplicate_datasets', 'rt_ticket_urls'])
 
         if total == 0:
-            datasetUrl='No locked datasets found', 
-            lockedDatasetTitle = 'N/A' 
-            reason = 'N/A' 
-            lockedDate = 'N/A' 
-            userName = 'N/A'
-            contactEmailsString = 'N/A' 
-            potentialDuplicateDatasetsString = 'N/A' 
-            # rtTicketUrlsString='N/A'
+            datasetUrl = 'No locked datasets found'
+            lockedDatasetTitle = reason = lockedDate = userName = ''
+            contactEmailsString = potentialDuplicateDatasetsString = rtTicketUrlsString = ''
 
             f.writerow([
                 datasetUrl, lockedDatasetTitle, reason, lockedDate, userName,
