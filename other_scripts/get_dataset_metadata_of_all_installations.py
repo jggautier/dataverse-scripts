@@ -311,7 +311,8 @@ for installation in mapdata['installations']:
             currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
 
             # Create directory for the installation
-            installationDirectory = allInstallationsMetadataDirectory + '/' + installationName.replace(' ', '_') + f'_{currentTime}'
+            # installationDirectory = allInstallationsMetadataDirectory + '/' + installationName.replace(' ', '_') + f'_{currentTime}'
+            installationDirectory = f'{allInstallationsMetadataDirectory}/{installationName.replace(' ', '_')}_{currentTime}'
             os.mkdir(installationDirectory)
 
             # Check if endpoint for getting installation's metadatablock files works and if so save metadatablock files
@@ -326,7 +327,8 @@ for installation in mapdata['installations']:
             if getMetadatablocksApiStatus == 'OK':        
 
                 # Create a directory for the installation's metadatablock files
-                metadatablockFileDirectoryPath = installationDirectory + '/' + f'metadatablocks_v{dataverseVersion}'
+                # metadatablockFileDirectoryPath = installationDirectory + '/' + f'metadatablocks_v{dataverseVersion}'
+                metadatablockFileDirectoryPath = f'{installationDirectory}/metadatablocks_v{dataverseVersion}'
                 os.mkdir(metadatablockFileDirectoryPath)
 
                 # Download metadatablock JSON files
@@ -361,9 +363,9 @@ for installation in mapdata['installations']:
             # Create CSV file
             datasetPidsFile = installationDirectory + '/' + f'dataset_pids_{installationName}_{currentTime}.csv'
 
-            with open(datasetPidsFile, mode='w', newline='') as f1:
-                f1 = csv.writer(f1, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-                f1.writerow(['persistent_id', 'persistent_url', 'dataverse_name', 'dataverse_alias'])
+            with open(datasetPidsFile, mode='w', newline='') as f:
+                f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                f.writerow(['persistent_id', 'persistent_url', 'dataverse_name', 'dataverse_alias'])
 
             # Create dataframe to record if Dataverse JSON metadata for each dataset was retrieved or not
             columnNames = ['persistent_id', 'dataverse_json_export_saved']
@@ -380,8 +382,8 @@ for installation in mapdata['installations']:
             # Create variable for storing count of misindexed datasets
             misindexedDatasetsCount = 0
 
-            with open(datasetPidsFile, mode='a', encoding='utf-8', newline='') as f1:
-                f1 = csv.writer(f1, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            with open(datasetPidsFile, mode='a', encoding='utf-8', newline='') as f:
+                f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                 while (condition):
                     try:
@@ -398,7 +400,7 @@ for installation in mapdata['installations']:
                             dataverseAlias = i.get('identifier_of_dataverse', 'NA')
 
                             # Create new row with dataset and file info
-                            f1.writerow([persistentId, persistentUrl, dataverseName, dataverseAlias])
+                            f.writerow([persistentId, persistentUrl, dataverseName, dataverseAlias])
 
                             datasetPidCount += 1
                             print(f'{datasetPidCount} of {datasetCount}', end='\r', flush=True)
@@ -424,7 +426,7 @@ for installation in mapdata['installations']:
                                 dataverseAlias = i.get('identifier_of_dataverse', 'NA')
 
                                 # Create new row with dataset and file info
-                                f1.writerow([persistentId, persistentUrl, dataverseName, dataverseAlias])
+                                f.writerow([persistentId, persistentUrl, dataverseName, dataverseAlias])
 
                                 datasetPidCount += 1
                                 print(f'{datasetPidCount} of {datasetCount}', end='\r', flush=True)
@@ -447,7 +449,7 @@ for installation in mapdata['installations']:
                 print(f'\n\nUnretrievable dataset PIDs due to misindexing: {misindexedDatasetsCount}\n')
 
             # Create directory for dataset JSON metadata
-            dataverseJsonMetadataDirectory = installationDirectory + '/' + 'Dataverse_JSON_metadata' + f'_{currentTime}'
+            dataverseJsonMetadataDirectory = f'{installationDirectory}/Dataverse_JSON_metadata_{currentTime}'
             os.mkdir(dataverseJsonMetadataDirectory)
 
             # For each dataset PID in CSV file, download dataset's Dataverse JSON metadata
@@ -476,7 +478,8 @@ for installation in mapdata['installations']:
                 # ... add a column, dataverse_json_export_saved, with all values as False
                 dataverseJsonExportSavedDF['dataverse_json_export_saved'] = False
 
-                # ... find the PIDs of datasets that were downloaded by removing from the full list of dataset PIDs the PIDs of datasets that weren't downloaded 
+                # ... find the PIDs of datasets that were downloaded by removing from the full list of dataset PIDs 
+                # the PIDs of datasets that weren't downloaded 
                 dataverseJsonMetadataDownloaded = list(set(datasetPids) - set(dataverseJsonMetadataNotDownloaded))
 
                 # ... add the PIDs that were downloaded to the dataframe's persistent_id column
