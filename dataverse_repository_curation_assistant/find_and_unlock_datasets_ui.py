@@ -185,9 +185,6 @@ class findAndUnlockDatasetsFrame(Frame):
         self.entryApiToken.grid(sticky='w', row=1, columnspan=2)
         self.labelApiTokenHelp.grid(sticky='w', row=2, columnspan=2)
 
-
-        ##############        
-
         # Create and place collapsible panel for getting locked datasets report
         self.collapsiblePanelLockedDatasetReport = collapsiblePanel(
             self.root,
@@ -213,10 +210,9 @@ class findAndUnlockDatasetsFrame(Frame):
 
         labelframeLockedDatasetsReportHelpText = (
             'Save a CSV file that includes each locked dataset\'s '
-            'URL, title, and contact email address; the type of lock, when it occured, and the username '
-            'of the account that attempted to publish the dataset; and the DOIs of any other datasets that '
-            'the depositor deposited with titles that are similar to the locked dataset, helpful for '
-            'determining if the depositor has already published the same data in another dataset.')
+            'URL, title, contact email address, the type of lock, when it occured, the username '
+            'of the account that tried to publish the dataset, and the DOIs of the depositor\'s other '
+            'datasets that might be duplicates of the locked dataset')
 
         self.labelImportCredentials = Label(
             self.frameLockedDatasetsReport,
@@ -225,11 +221,9 @@ class findAndUnlockDatasetsFrame(Frame):
             bg='white', fg='grey')
 
         # Place button and help text for importing account credentials
-        self.buttonLockedDatasetsReport.grid(sticky='w', column=0, row=0)
-        self.labelImportCredentials.grid(sticky='w', column=0, row=1)
-
-
-        ##############
+        self.labelImportCredentials.grid(sticky='w', column=0, row=0)
+        self.buttonLockedDatasetsReport.grid(sticky='w', column=0, row=1, pady=10)
+        
 
         # Create and place collapsible panel for entering datasets
         self.collapsiblePanelChooseDatasets = collapsiblePanel(
