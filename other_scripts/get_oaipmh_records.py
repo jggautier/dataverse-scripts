@@ -96,6 +96,7 @@ button_Submit.grid(sticky='w', column=0, row=15, pady=40, padx=20)
 # Keep window open until it's closed
 mainloop()
 
+
 def improved_get(_dict, path, default=None):
     for key in path.split('.'):
         try:
@@ -127,19 +128,21 @@ deletedRecordCount = 0
 
 with open(csvFilePath, mode='w', encoding='utf-8', newline='') as f:
     f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    f.writerow(['record_identifier', 'record_status'])
+    f.writerow(['record_identifier', 'record_status', 'data_stamp'])
 
     if 'resumptionToken' not in dictData['OAI-PMH']['ListIdentifiers']:
         for record in dictData['OAI-PMH']['ListIdentifiers']['header']:
             recordIdentifier = record['identifier']
+            dateStamp = record['datestamp']
             recordStatus = record.get('@status')
             if recordStatus != 'deleted':
                 recordStatus = 'present'
                 recordCount += 1
             elif recordStatus == 'deleted':
+                recordStatus = 'deleted'
                 deletedRecordCount +=1
 
-            f.writerow([recordIdentifier, recordStatus])
+            f.writerow([recordIdentifier, recordStatus, dateStamp])
 
         print(f'Record count in {oaiSet} set: {recordCount}')
         print(f'Count of deleted records: {deletedRecordCount}')
@@ -152,14 +155,16 @@ with open(csvFilePath, mode='w', encoding='utf-8', newline='') as f:
 
         for record in dictData['OAI-PMH']['ListIdentifiers']['header']:
             recordIdentifier = record['identifier']
+            dateStamp = record['datestamp']
             recordStatus = record.get('@status')
             if recordStatus != 'deleted':
                 recordStatus = 'present'
                 recordCount += 1
             elif recordStatus == 'deleted':
+                recordStatus = 'deleted'
                 deletedRecordCount +=1
 
-            f.writerow([recordIdentifier, recordStatus])
+            f.writerow([recordIdentifier, recordStatus, dateStamp])
 
             resumptionToken = improved_get(dictData, 'OAI-PMH.ListIdentifiers.resumptionToken.#text')
 
@@ -173,14 +178,16 @@ with open(csvFilePath, mode='w', encoding='utf-8', newline='') as f:
 
             for record in dictData['OAI-PMH']['ListIdentifiers']['header']:
                 recordIdentifier = record['identifier']
+                dateStamp = record['datestamp']
                 recordStatus = record.get('@status')
                 if recordStatus != 'deleted':
                     recordStatus = 'present'
                     recordCount += 1
                 elif recordStatus == 'deleted':
+                    recordStatus = 'deleted'
                     deletedRecordCount +=1
 
-                f.writerow([recordIdentifier, recordStatus])
+                f.writerow([recordIdentifier, recordStatus, dateStamp])
 
             resumptionToken = improved_get(dictData, 'OAI-PMH.ListIdentifiers.resumptionToken.#text')
 
