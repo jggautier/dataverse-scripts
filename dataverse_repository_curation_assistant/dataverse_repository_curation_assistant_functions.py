@@ -1,5 +1,6 @@
 # Functions for the curation app
 import csv
+from datetime import datetime
 from dateutil import tz
 from dateutil.parser import parse
 from functools import reduce
@@ -104,13 +105,17 @@ def list_to_string(lst):
 def convert_to_local_tz(timestamp, shortDate=False):
     # Save local timezone to localTimezone variable
     localTimezone = tz.tzlocal()
-    # Convert string to datetime object
-    timestamp = parse(timestamp)
-    # Convert timestamp to local timezone
+
+    # If timestamp is a string, convert to datetime object
+    if isinstance(timestamp, str):
+        timestamp = parse(timestamp)
+
+    # Convert datetime to local timezone
     timestamp = timestamp.astimezone(localTimezone)
     if shortDate is True:
         # Return timestamp in YYYY-MM-DD format
         timestamp = timestamp.strftime('%Y-%m-%d')
+
     return timestamp
 
 
@@ -1271,6 +1276,7 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
     ]
 
     currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
+    currentTimeDateTime = convert_to_local_tz(datetime.now(), shortDate=False)
 
     lockedDatasetPids = []
     lockTypesString = list_to_string(lockTypesList)
@@ -1304,7 +1310,7 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
     with open(csvOutputFilePath, mode='w', newline='') as f:
         f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         f.writerow([
-            'dataset_url', 'dataset_title', 'lock_reason', 'locked_date', 'user_name',
+            'dataset_url', 'dataset_title', 'lock_reason', 'locked_date', 'time_locked', 'user_name',
             'contact_email', 'possible_duplicate_datasets', 'rt_ticket_urls'])
 
         if total == 0:
@@ -1397,6 +1403,8 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
                     datasetUrl = f'{installationUrl}/dataset.xhtml?persistentId={lockedDatasetPid}&version=DRAFT'
                     reason = lock['lockType']
                     lockedDate = convert_to_local_tz(lock['date'])
+                     # Get difference between current time and time of lock
+                    timeLocked = currentTimeDateTime - lockedDate
                     userName = lock['user']
 
                     # Use User Traces API endpoint to search for and return the DOIs of the depositor's datasets
@@ -1455,7 +1463,7 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
 
                     # Write information to the CSV file
                     f.writerow([
-                        datasetUrl, lockedDatasetTitle, reason, lockedDate, userName,
+                        datasetUrl, lockedDatasetTitle, reason, lockedDate, timeLocked, userName,
                         contactEmailsString, potentialDuplicateDatasetsString])
 
                     # print('\tInformation added to CSV file')
