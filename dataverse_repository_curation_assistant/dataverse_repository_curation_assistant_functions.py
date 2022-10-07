@@ -103,13 +103,17 @@ def list_to_string(lst):
 def convert_to_local_tz(timestamp, shortDate=False):
     # Save local timezone to localTimezone variable
     localTimezone = tz.tzlocal()
-    # Convert string to datetime object
-    timestamp = parse(timestamp)
-    # Convert timestamp to local timezone
+
+    # If timestamp is a string, convert to datetime object
+    if isinstance(timestamp, str):
+        timestamp = parse(timestamp)
+
+    # Convert datetime to local timezone
     timestamp = timestamp.astimezone(localTimezone)
     if shortDate is True:
         # Return timestamp in YYYY-MM-DD format
         timestamp = timestamp.strftime('%Y-%m-%d')
+
     return timestamp
 
 
