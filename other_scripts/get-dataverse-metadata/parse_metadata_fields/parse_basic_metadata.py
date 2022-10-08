@@ -144,11 +144,15 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 
         # Check if JSON file has "data" key
         if datasetMetadata['status'] == 'OK':
-            # datasetVersionId = datasetMetadata['data']['datasetVersion']['id']
 
-            # datasetPersistentId = improved_get(datasetMetadata, 'data.datasetVersion.datasetPersistentId')
+            # Save the metadata values in variables
             datasetPersistentUrl = datasetMetadata['data']['persistentUrl']
-            datasetPersistentId = get_canonical_pid(datasetPersistentUrl)
+            datasetPid = improved_get(datasetMetadata, 'data.datasetVersion.datasetPersistentId')
+
+            # Older Dataverse installations' JSON metadata exports don't include the datasetPersistentId key
+            # So try to use the datasetPersistentUrl instead and convert to a canonical PID. Hopefully it's a DOI or HDL...
+            if datasetPid is None:
+                datasetPid = get_canonical_pid(datasetPersistentUrl)  
 
             majorVersionNumber = improved_get(datasetMetadata, 'data.datasetVersion.versionNumber')
             minorVersionNumber = improved_get(datasetMetadata, 'data.datasetVersion.versionMinorNumber')
@@ -170,7 +174,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 
                 # Write new row
                 metadatafile.writerow([
-                    datasetPersistentId, datasetPersistentUrl, datasetVersionNumber, datasetPublicationDate,
+                    datasetPid, datasetPersistentUrl, datasetVersionNumber, datasetPublicationDate,
                     datasetVersionCreateTime, datasetVersionState, publisher])
 
         # If JSON file doens't have "data" key, add file to list of error_files
