@@ -113,7 +113,7 @@ mainloop()
 
 
 # Store path of csv file to filename variable
-filename = os.path.join(csvDirectory, 'license_and_terms.csv')
+filename = os.path.join(csvDirectory, 'licenses_and_terms_metadata.csv')
 
 print('Creating CSV file')
 
@@ -161,7 +161,12 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
 
         # Save the metadata values in variables
         datasetPersistentUrl = datasetMetadata['data']['persistentUrl']
-        datasetPersistentId = get_canonical_pid(datasetPersistentUrl)
+        datasetPid = improved_get(datasetMetadata, 'data.datasetVersion.datasetPersistentId')
+
+        # Older Dataverse installations' JSON metadata exports don't include the datasetPersistentId key
+        # So try to use the datasetPersistentUrl instead and convert to a canonical PID. Hopefully it's a DOI or HDL...
+        if datasetPid is None:
+            datasetPid = get_canonical_pid(datasetPersistentUrl)  
 
         majorVersionNumber = datasetMetadata['data']['datasetVersion']['versionNumber']
         minorVersionNumber = datasetMetadata['data']['datasetVersion']['versionMinorNumber']
@@ -208,7 +213,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
 
             # Write new row
             metadatafile.writerow([
-                datasetPersistentId, datasetPersistentUrl, datasetVersionNumber, licenseName, licenseUri,
+                datasetPid, datasetPersistentUrl, datasetVersionNumber, licenseName, licenseUri,
                 termsOfUse, confidentialityDeclaration, specialPermissions, restrictions, 
                 citationRequirements, depositorRequirements, conditions, disclaimer, 
                 termsOfAccess, dataAccessPlace, originalArchive,
