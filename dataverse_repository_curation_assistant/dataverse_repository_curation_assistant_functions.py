@@ -523,11 +523,7 @@ def get_object_dataframe_from_search_api(
         params=params,
         headers=header
     )
-    print(response.url)
-    try:
-        data = response.json()
-    except Exception as e:
-        print(e)
+    data = response.json()
     total = data['data']['total_count']
 
     misindexedObjectCount = 0
