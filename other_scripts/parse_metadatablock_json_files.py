@@ -22,15 +22,17 @@ def listdir_nohidden(path):
 mainDirectory = ''
 
 # Enter path to directory to store CSV file that this script will create
-csvfile_folder = ''
+csvFileFolder = ''
 
-csvfile = str(Path(csvfile_folder + '/' + 'metadatablocks.csv'))
+csvFile = str(Path(csvFileFolder + '/' + 'metadatablocks.csv'))
 
-with open(csvfile, mode='w') as data:
+with open(csvFile, mode='w') as data:
     data = csv.writer(data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
     # Create header row
-    data.writerow(['installation_name_(Dataverse_version)', 'metadatablock_name', 'parentfield_name', 'subfield_name'])
+    data.writerow([
+        'installation_name_(Dataverse_version)', 'metadatablock_name', 
+        'parentfield_name', 'subfield_name'])
 
 count = 0
 total = len(listdir_nohidden(mainDirectory))
@@ -43,15 +45,15 @@ for repositoryFileName in listdir_nohidden(mainDirectory):
     # Get the repository name
     size = len(repositoryFileName)
     repositoryName = repositoryFileName[:size - 20]
-    print(f'Parsing metadatablocks: {count} of {total}: %s')
+    print(f'Parsing metadatablocks: {count} of {total}')
 
     # Open each installation folder
     repositoryFolderPath = str(Path(mainDirectory + '/' + repositoryFileName))
     if os.path.isdir(repositoryFolderPath):
 
-        for sub_folder in os.listdir(repositoryFolderPath):
-            if 'metadatablocks' in sub_folder:
-                metadatablockFolderPath = str(Path(repositoryFolderPath + '/' + sub_folder))
+        for subFolder in os.listdir(repositoryFolderPath):
+            if 'metadatablocks' in subFolder:
+                metadatablockFolderPath = str(Path(repositoryFolderPath + '/' + subFolder))
 
         # Open each .json file
         for metadatablockFile in os.listdir(metadatablockFolderPath):
@@ -88,7 +90,7 @@ for repositoryFileName in listdir_nohidden(mainDirectory):
                             allParentAndChildFields.append(subfield)
 
                             # Add parent and child names to the CSV file
-                            with open(csvfile, mode='a') as data:
+                            with open(csvFile, mode='a') as data:
                                 data = csv.writer(data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                                 # Write new row
@@ -112,7 +114,7 @@ for repositoryFileName in listdir_nohidden(mainDirectory):
                     # Set subfield to an empty string so that Dataverse ingests the CSV file.
                     # (Dataverse's ingest process doesn't seem to like it when there is nothing entered in the fourth column)
                     subfield = ''
-                    with open(csvfile, mode='a') as data:
+                    with open(csvFile, mode='a') as data:
                         data = csv.writer(data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                         # Write new row
