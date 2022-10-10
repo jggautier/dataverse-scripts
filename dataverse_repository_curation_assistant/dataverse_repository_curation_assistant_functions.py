@@ -659,6 +659,7 @@ def get_canonical_pid(pidOrUrl):
     elif pidOrUrl.startswith('http') and 'doi.' in pidOrUrl:
         canonicalPid = re.sub('http.*org\/', 'doi:', pidOrUrl)
 
+    # If entered dataset PID is a canonical DOI, save it as canonicalPid
     elif pidOrUrl.startswith('doi:') and '/' in pidOrUrl:
         canonicalPid = pidOrUrl
 
@@ -666,7 +667,11 @@ def get_canonical_pid(pidOrUrl):
     elif pidOrUrl.startswith('http') and 'hdl.' in pidOrUrl:
         canonicalPid = re.sub('http.*net\/', 'hdl:', pidOrUrl)
 
+    # If entered dataset PID is a canonical HDL, save it as canonicalPid
     elif pidOrUrl.startswith('hdl:') and '/' in pidOrUrl:
+        canonicalPid = pidOrUrl
+
+    else:
         canonicalPid = pidOrUrl
 
     return canonicalPid
