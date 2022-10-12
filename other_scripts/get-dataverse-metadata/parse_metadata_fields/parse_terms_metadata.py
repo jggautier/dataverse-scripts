@@ -5,9 +5,13 @@ import json
 import glob
 import os
 import re
+import sys
 from tkinter import filedialog
 from tkinter import ttk
 from tkinter import *
+
+sys.path.append('/Users/juliangautier/dataverse-scripts/dataverse_repository_curation_assistant')
+from dataverse_repository_curation_assistant_functions import *
 
 # Create GUI for getting user input
 
@@ -15,45 +19,6 @@ from tkinter import *
 window = Tk()
 window.title('Get terms of use and access metadata')
 window.geometry('550x350')  # width x height
-
-
-def get_canonical_pid(pidOrUrl):
-
-    # If entered dataset PID is the dataset page URL, get canonical PID
-    if pidOrUrl.startswith('http') and 'persistentId=' in pidOrUrl:
-        canonicalPid = pidOrUrl.split('persistentId=')[1]
-        canonicalPid = canonicalPid.split('&version')[0]
-        canonicalPid = canonicalPid.replace('%3A', ':').replace('%2F', ('/'))
-
-    # If entered dataset PID is a DOI URL, get canonical PID
-    elif pidOrUrl.startswith('http') and 'doi.' in pidOrUrl:
-        canonicalPid = re.sub('http.*org\/', 'doi:', pidOrUrl)
-
-    elif pidOrUrl.startswith('doi:') and '/' in pidOrUrl:
-        canonicalPid = pidOrUrl
-
-    # If entered dataset PID is a Handle URL, get canonical PID
-    elif pidOrUrl.startswith('http') and 'hdl.' in pidOrUrl:
-        canonicalPid = re.sub('http.*net\/', 'hdl:', pidOrUrl)
-
-    elif pidOrUrl.startswith('hdl:') and '/' in pidOrUrl:
-        canonicalPid = pidOrUrl
-
-    return canonicalPid
-
-
-# Function for getting value of nested key, truncating the value to 10,000 characters if it's a string
-# (character limit for many spreadsheet applications), and returning nothing if key doesn't exist
-def improved_get(_dict, path, default=None):
-    for key in path.split('.'):
-        try:
-            _dict = _dict[key]
-        except KeyError:
-            return default
-    if isinstance(_dict, int) or isinstance(_dict, dict):
-        return _dict
-    elif isinstance(_dict, str):
-        return _dict[:10000].replace('\r', ' - ')
 
 
 # Function called when user presses button to browse for JSON files directory
