@@ -11,6 +11,9 @@ from tkinter import filedialog
 from tkinter import ttk
 from tkinter import *
 
+sys.path.append('/Users/juliangautier/dataverse-scripts/dataverse_repository_curation_assistant')
+from dataverse_repository_curation_assistant_functions import *
+
 # Create GUI for getting user input
 
 # Create, title and size the window
@@ -31,31 +34,6 @@ def improved_get(_dict, path, default=None):
         return _dict
     elif isinstance(_dict, str):
         return _dict[:10000].replace('\r', ' - ')
-
-
-def get_canonical_pid(pidOrUrl):
-
-    # If entered dataset PID is the dataset page URL, get canonical PID
-    if pidOrUrl.startswith('http') and 'persistentId=' in pidOrUrl:
-        canonicalPid = pidOrUrl.split('persistentId=')[1]
-        canonicalPid = canonicalPid.split('&version')[0]
-        canonicalPid = canonicalPid.replace('%3A', ':').replace('%2F', ('/'))
-
-    # If entered dataset PID is a DOI URL, get canonical PID
-    elif pidOrUrl.startswith('http') and 'doi.' in pidOrUrl:
-        canonicalPid = re.sub('http.*org\/', 'doi:', pidOrUrl)
-
-    elif pidOrUrl.startswith('doi:') and '/' in pidOrUrl:
-        canonicalPid = pidOrUrl
-
-    # If entered dataset PID is a Handle URL, get canonical PID
-    elif pidOrUrl.startswith('http') and 'hdl.' in pidOrUrl:
-        canonicalPid = re.sub('http.*net\/', 'hdl:', pidOrUrl)
-
-    elif pidOrUrl.startswith('hdl:') and '/' in pidOrUrl:
-        canonicalPid = pidOrUrl
-
-    return canonicalPid
 
 
 # Function called when user presses button to browse for JSON files directory
@@ -144,11 +122,15 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 
         # Check if JSON file has "data" key
         if datasetMetadata['status'] == 'OK':
-            # datasetVersionId = datasetMetadata['data']['datasetVersion']['id']
 
-            # datasetPersistentId = improved_get(datasetMetadata, 'data.datasetVersion.datasetPersistentId')
+            # Save the metadata values in variables
             datasetPersistentUrl = datasetMetadata['data']['persistentUrl']
-            datasetPersistentId = get_canonical_pid(datasetPersistentUrl)
+            datasetPid = improved_get(datasetMetadata, 'data.datasetVersion.datasetPersistentId')
+
+            # Older Dataverse installations' JSON metadata exports don't include the datasetPersistentId key
+            # So try to use the datasetPersistentUrl instead and convert to a canonical PID. Hopefully it's a DOI or HDL...
+            if datasetPid is None:
+                datasetPid = get_canonical_pid(datasetPersistentUrl)  
 
             majorVersionNumber = improved_get(datasetMetadata, 'data.datasetVersion.versionNumber')
             minorVersionNumber = improved_get(datasetMetadata, 'data.datasetVersion.versionMinorNumber')
@@ -170,7 +152,7 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
 
                 # Write new row
                 metadatafile.writerow([
-                    datasetPersistentId, datasetPersistentUrl, datasetVersionNumber, datasetPublicationDate,
+                    datasetPid, datasetPersistentUrl, datasetVersionNumber, datasetPublicationDate,
                     datasetVersionCreateTime, datasetVersionState, publisher])
 
         # If JSON file doens't have "data" key, add file to list of error_files

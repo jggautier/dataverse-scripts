@@ -501,10 +501,11 @@ def get_value_row_from_search_api_object(item, installationUrl):
 # Uses Search API to return dataframe containing info about datasets in a Dataverse installation
 # Write progress and results to the tkinter window
 def get_object_dataframe_from_search_api(
-    url, params, objectType, printProgress=False,
+    installationUrl, params, objectType, printProgress=False,
     rootWindow=None, progressText=None, progressLabel=None, apiKey=None):
 
-    installationUrl = get_installation_url(url)
+    installationUrl = get_installation_url(installationUrl)
+    print(installationUrl)
 
     if apiKey:
         header = {'X-Dataverse-key': apiKey}
@@ -520,7 +521,7 @@ def get_object_dataframe_from_search_api(
     params['per_page'] = 1
 
     response = requests.get(
-        url,
+        installationUrl,
         params=params,
         headers=header
     )
@@ -545,7 +546,7 @@ def get_object_dataframe_from_search_api(
         try:
             params['per_page'] = 10
             response = requests.get(
-                url,
+                installationUrl,
                 params=params,
                 headers=header
             )
@@ -569,7 +570,7 @@ def get_object_dataframe_from_search_api(
             try:
                 params['per_page'] = 1
                 response = requests.get(
-                    url,
+                    installationUrl,
                     params=params,
                     headers=header
                 )
@@ -660,6 +661,7 @@ def get_canonical_pid(pidOrUrl):
     elif pidOrUrl.startswith('http') and 'doi.' in pidOrUrl:
         canonicalPid = re.sub('http.*org\/', 'doi:', pidOrUrl)
 
+    # If entered dataset PID is a canonical DOI, save it as canonicalPid
     elif pidOrUrl.startswith('doi:') and '/' in pidOrUrl:
         canonicalPid = pidOrUrl
 
@@ -667,7 +669,11 @@ def get_canonical_pid(pidOrUrl):
     elif pidOrUrl.startswith('http') and 'hdl.' in pidOrUrl:
         canonicalPid = re.sub('http.*net\/', 'hdl:', pidOrUrl)
 
+    # If entered dataset PID is a canonical HDL, save it as canonicalPid
     elif pidOrUrl.startswith('hdl:') and '/' in pidOrUrl:
+        canonicalPid = pidOrUrl
+
+    else:
         canonicalPid = pidOrUrl
 
     return canonicalPid
