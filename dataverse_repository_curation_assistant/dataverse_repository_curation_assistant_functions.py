@@ -119,6 +119,28 @@ def convert_to_local_tz(timestamp, shortDate=False):
     return timestamp
 
 
+# Converts timedelta object that shows an amount of time as yy:mm:dd:hh:mm:ss,
+# into more human readable string, e.g. 1 year, 8 months, 4 days...
+def td_format(timeDeltaObject):
+    seconds = int(timeDeltaObject.total_seconds())
+    periods = [
+        ('year', 60*60*24*365),
+        ('month', 60*60*24*30),
+        ('day', 60*60*24),
+        ('hour', 60*60),
+        ('minute', 60),
+        ('second', 1)]
+
+    strings = []
+    for periodName, periodSeconds in periods:
+        if seconds > periodSeconds:
+            periodValue , seconds = divmod(seconds, periodSeconds)
+            hasSeconds = 's' if periodValue > 1 else ''
+            strings.append(f'{periodValue} {periodName}{hasSeconds}')
+
+    return ', '.join(strings)
+
+
 def select_all(listbox):
     listbox.select_set(0, END)
 
