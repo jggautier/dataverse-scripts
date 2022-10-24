@@ -1312,9 +1312,6 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
                 lockedDatasetPid = lock['dataset']
                 lockedDatasetPids.append(lockedDatasetPid)
 
-    # Remove PIDs in ignorePIDs list from lockedDatasetPids list
-    lockedDatasetPids = [lockedDatasetPid for lockedDatasetPid in lockedDatasetPids if lockedDatasetPid not in ignorePIDs]
-
     # Use set function to deduplicate lockedDatasetPids list and convert set to a list again
     lockedDatasetPids = list(set(lockedDatasetPids))
 
