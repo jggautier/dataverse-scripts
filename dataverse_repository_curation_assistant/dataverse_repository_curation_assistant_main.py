@@ -1,5 +1,6 @@
 from get_metadata_as_csv_files_ui import *
 from delete_published_datasets_ui import *
+from find_and_unlock_datasets_ui import *
 from tkinter import Tk, ttk, Frame, Label, StringVar
 from tkinter.ttk import OptionMenu
 from ttkthemes import ThemedTk
@@ -7,6 +8,7 @@ from ttkthemes import ThemedTk
 def hide_choose_dataset_frames():
     getMetadataAsCSVsFrame.grid_forget()
     deletePublishedDatasetsFrame.grid_forget()
+    findAndUnlockDatasetsFrame.grid_forget()
 
 
 def show_task_frame(*args):
@@ -23,6 +25,12 @@ def show_task_frame(*args):
         frameChooseTaskBG.config(background=appPrimaryRedColor)
         frameChooseTask.config(background=appPrimaryRedColor)
         labelChooseTask.config(background=appPrimaryRedColor)
+    elif dropdownOptionSelected.get() == 'Find and unlock datasets':
+        hide_choose_dataset_frames()
+        findAndUnlockDatasetsFrame.grid(sticky='w', row=4, padx=20, pady=0)
+        frameChooseTaskBG.config(background=appPrimaryGreenColor)
+        frameChooseTask.config(background=appPrimaryGreenColor)
+        labelChooseTask.config(background=appPrimaryGreenColor)
 
 
 root = ThemedTk(theme='arc')
@@ -33,6 +41,7 @@ root.resizable(False, True)
 
 appPrimaryBlueColor = '#286090'
 appPrimaryRedColor = '#BF0000'
+appPrimaryGreenColor = '#218000'
 appPrimaryGreyColor = '#6E6E6E'
 
 # Create and place frame and labels for name and description of the app
@@ -55,9 +64,10 @@ labelAppDescription = Label(
 labelAppDescription.grid(row=1, sticky='w')
 
 # Create app frames, which are loaded from the show_task_frame
-#function when user chooses from list of tasks
+# function when user chooses from list of tasks
 getMetadataAsCSVsFrame = getMetadataAsCSVsFrame(root)
 deletePublishedDatasetsFrame = deletePublishedDatasetsFrame(root)
+findAndUnlockDatasetsFrame = findAndUnlockDatasetsFrame(root)
 
 # Create and place frame for choosing task
 frameChooseTaskBG = Frame(root, bg=appPrimaryBlueColor)
@@ -77,9 +87,9 @@ labelChooseTask = Label(
 labelChooseTask.grid(row=0, sticky='n')
 taskOptions = [
     'Get metadata as CSV files',
-    'Delete published datasets']
+    'Delete published datasets',
+    'Find and unlock datasets']
 dropdownOptionSelected = StringVar()
-# dropdownOptionSelected.set('Select...')
 dropdownOptionSelected.trace('w', show_task_frame)
 dropdownMenuChooseDatasets = OptionMenu(
     frameChooseTask,
