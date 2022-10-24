@@ -1293,16 +1293,6 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
     # List lock types. See https://guides.dataverse.org/en/5.10/api/native-api.html?highlight=locks#list-locks-across-all-datasets
     lockTypesList = ['Ingest', 'finalizePublication']
 
-    # List PIDs of datasets whose problematic locks have already been reported
-    # e.g. in the Harvard Dataverse Repository GitHub repo issue at https://github.com/IQSS/dataverse.harvard.edu/issues/150
-    ignorePIDs = [
-        'doi:10.7910/DVN/GLMW3X', 
-        'doi:10.7910/DVN/A3NWA7',
-        'doi:10.7910/DVN/VYNLON',
-        'doi:10.7910/DVN/RC0WLY',
-        'doi:10.7910/DVN/1EKMTZ'
-    ]
-
     currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
     currentTimeDateTime = convert_to_local_tz(datetime.now(), shortDate=False)
 
@@ -1310,7 +1300,6 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
     lockTypesString = list_to_string(lockTypesList)
 
     # Get dataset PIDs of datasets that have any of the lock types in lockTypesList
-    # print(f'Getting information about datasets with the lock types: {lockTypesString}')
     for lockType in lockTypesList:
         datasetLocksApiEndpoint = f'{installationUrl}/api/datasets/locks?type={lockType}'
         response = requests.get(
@@ -1350,10 +1339,7 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
                 datasetUrl, lockedDatasetTitle, reason, lockedDate, userName,
                 contactEmailsString, potentialDuplicateDatasetsString])
 
-            # print(f'No locked datasets found (not including the {len(ignorePIDs)} dataset(s) being ignored).')
-
         elif total > 0:
-            # print(f'Locked datasets found: {total}\r\r')
 
             lockedDatasetCount = 0
 
@@ -1361,9 +1347,6 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
             for lockedDatasetPid in lockedDatasetPids:
                 lockedDatasetCount += 1
 
-                # print(f'\rGetting information about {lockedDatasetCount} of {total} datasets: {lockedDatasetPid}')
-
-                # print('\tGetting dataset title and contact information')
                 datasetMetadata = get_dataset_metadata_export(
                     installationUrl=installationUrl, datasetPid=lockedDatasetPid, 
                     exportFormat='dataverse_json', apiKey=apiKey)
@@ -1425,19 +1408,19 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
                 # Get all data about locks on the dataset
                 getAllLocksofDatasetApiEndpoint = f'{installationUrl}/api/datasets/:persistentId/locks?persistentId={lockedDatasetPid}'
                 allLockData = requests.get(getAllLocksofDatasetApiEndpoint).json()
-                # print('\tGetting information about all locks on the dataset')
 
                 for lock in allLockData['data']:
                     datasetUrl = f'{installationUrl}/dataset.xhtml?persistentId={lockedDatasetPid}&version=DRAFT'
                     reason = lock['lockType']
                     lockedDate = convert_to_local_tz(lock['date'])
+
                      # Get difference between current time and time of lock
-                    timeLocked = currentTimeDateTime - lockedDate
+                    timeLocked = td_format(currentTimeDateTime - lockedDate)
+                    
                     userName = lock['user']
 
                     # Use User Traces API endpoint to search for and return the DOIs of the depositor's datasets
                     # with titles that are similar to the locked dataset's title
-                    # print('\tSearching for duplicate datasets')
 
                     userTracesApiEndpointUrl = f'{installationUrl}/api/users/{userName}/traces'
 
@@ -1493,8 +1476,6 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
                     f.writerow([
                         datasetUrl, lockedDatasetTitle, reason, lockedDate, timeLocked, userName,
                         contactEmailsString, potentialDuplicateDatasetsString])
-
-                    # print('\tInformation added to CSV file')
 
 
 def unlock_dataset(installationUrl, datasetPid, apiKey):
