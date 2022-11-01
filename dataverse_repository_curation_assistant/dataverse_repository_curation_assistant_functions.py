@@ -523,11 +523,10 @@ def get_value_row_from_search_api_object(item, installationUrl):
 # Uses Search API to return dataframe containing info about datasets in a Dataverse installation
 # Write progress and results to the tkinter window
 def get_object_dataframe_from_search_api(
-    installationUrl, params, objectType, printProgress=False,
+    url, params, objectType, printProgress=False,
     rootWindow=None, progressText=None, progressLabel=None, apiKey=None):
 
-    installationUrl = get_installation_url(installationUrl)
-    print(installationUrl)
+    installationUrl = get_installation_url(url)
 
     if apiKey:
         header = {'X-Dataverse-key': apiKey}
@@ -543,10 +542,13 @@ def get_object_dataframe_from_search_api(
     params['per_page'] = 1
 
     response = requests.get(
-        installationUrl,
+        url,
         params=params,
         headers=header
     )
+
+    # print(response.request.url)
+
     data = response.json()
     total = data['data']['total_count']
 
@@ -568,7 +570,7 @@ def get_object_dataframe_from_search_api(
         try:
             params['per_page'] = 10
             response = requests.get(
-                installationUrl,
+                url,
                 params=params,
                 headers=header
             )
@@ -707,14 +709,15 @@ def get_datasets_from_collection_or_search_url(
 
     # Hide the textBoxCollectionDatasetPIDs scrollbox if it exists
     if textBoxCollectionDatasetPIDs is not None:
-    # if None not in [rootWindow, progressLabel, progressText, textBoxCollectionDatasetPIDs]:
         forget_widget(textBoxCollectionDatasetPIDs)
     
     # Use the Search API to get dataset info from the given search url or Dataverse collection URL
+    url = url.rstrip('/')
     searchApiUrl = get_search_api_url(url)
     requestsGetProperties = get_params(searchApiUrl)
     baseUrl = requestsGetProperties['baseUrl']
     params = requestsGetProperties['params']
+
     datasetInfoDF = get_object_dataframe_from_search_api(
         url=baseUrl, rootWindow=rootWindow, progressLabel=progressLabel, progressText=progressText,
         params=params, objectType='dataset', apiKey=apiKey)
