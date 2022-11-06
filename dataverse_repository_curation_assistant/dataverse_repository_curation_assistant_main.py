@@ -25,6 +25,7 @@ def show_task_frame(*args):
         frameChooseTaskBG.config(background=appPrimaryRedColor)
         frameChooseTask.config(background=appPrimaryRedColor)
         labelChooseTask.config(background=appPrimaryRedColor)
+
     elif dropdownOptionSelected.get() == 'Find and unlock datasets':
         hide_choose_dataset_frames()
         findAndUnlockDatasetsFrame.grid(sticky='w', row=4, padx=20, pady=0)
