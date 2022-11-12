@@ -1,13 +1,13 @@
 certifi==2021.10.8
 charset-normalizer==2.0.12
 colour==0.1.5
+fuzzywuzzy==0.18.0
 idna==3.3
 numpy==1.22.3
 pandas==1.4.2
-Pillow==9.1.1
+Pillow==9.1.0
 python-dateutil==2.8.2
 pytz==2022.1
-PyYAML==6.0
 requests==2.27.1
 six==1.16.0
 tkmacosx==1.0.4
