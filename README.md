@@ -4,12 +4,14 @@ A small software application for automating things in repositories that use the 
   - If you need all dataset metadata from any known Dataverse reposiories, please consider downloading the metadata from the dataset at https://doi.org/10.7910/DVN/DCDKZQ
 - Delete published datasets
   - This requires the API token of a "super user" account, usually used by administrators of Dataverse installations
+- Get information about locked datasets and remove dataset locks
+  - This requires the API token of a "super user" account, usually used by administrators of Dataverse installations
 
 <img width="964" alt="screenshot" src="https://user-images.githubusercontent.com/18374574/177402806-48d258bc-9fb0-4f8b-a8a2-e48a2d00f307.png">
 
-You can import your credentials from a a Dataverse repository by clicking the "Import credentials" button and choosing a YAML file from your computer. The Installation URL and API Token fields will be filled with the URL and token from the selected YAML file. You can download [the sample YAML file](https://github.com/jggautier/dataverse-scripts/blob/main/dataverse_repository_curation_assistant/credentials.yaml) and add your credentials.
+You can import your credentials from a Dataverse repository by clicking the "Import credentials" button and choosing a YAML file from your computer. The Installation URL and API Token fields will be filled with the URL and token from the selected YAML file. You can download [the sample YAML file](https://github.com/jggautier/dataverse-scripts/blob/main/dataverse_repository_curation_assistant/credentials.yaml) and add your credentials.
 
-The application is written using the [Dataverse software's APIs](https://guides.dataverse.org/en/5.10/api/index.html), Python 3, and Python's [tkinter library](https://docs.python.org/3/library/tkinter.html) (for creating the user interface), and made into an executable file using [pyInstaller](https://pyinstaller.readthedocs.io/).
+The application is written using the [Dataverse software's APIs](https://guides.dataverse.org/en/5.10/api/index.html), Python 3, and Python's [tkinter library](https://docs.python.org/3/library/tkinter.html) (for creating the graphical user interface), and made into an executable file using [pyInstaller](https://pyinstaller.readthedocs.io/).
 
 ## Status
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
@@ -49,14 +51,12 @@ Note: The tkinter library comes with most installations of Python 3, so pip does
 
 More functionality can be added to the application, depending on how useful it would be for its maintainers or others, including:
 - Merging user accounts in a Dataverse repository
-- Getting information about locked datasets in a Dataverse repository
-- Deleting dataset locks
-- Getting the guestbooks of all Dataverse Collections within a Dataverse Collection
-- Deleting Dataverse Collections (and optionally all collections and datasets within it)
-- Changing datasets' citation dates
-- Moving datasets to different Dataverse Collections
+- Getting the guestbooks of all Dataverse collections within a Dataverse collection
+- Deleting Dataverse collections (and optionally all collections and datasets within it)
+- Changing the year used in a datasets' suggested citation
+- Moving datasets to different Dataverse collections
 - Publishing datasets
-- Removing dataset links in Dataverse Collections
+- Removing dataset links in Dataverse collections
 
 ## Other scripts
 The [other_scripts directory](https://github.com/jggautier/dataverse-scripts/tree/main/other_scripts) contains Python scripts I've written over the years for automating some common curation and research-related tasks. Some of these scripts do things that the Dataverse repository curation assistant application may be updated to do. I'll remove each script from the directory as the script's functionality gets added to the application.
