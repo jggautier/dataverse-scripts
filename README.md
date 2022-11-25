@@ -1,7 +1,7 @@
 # Dataverse repository curation assistant
 A small software application for automating things in repositories that use the Dataverse software (https://dataverse.org). With this application you can:
 - Get dataset metadata as CSV files
-  - If you need all dataset metadata from any known Dataverse reposiories, please consider downloading the metadata from the dataset at https://doi.org/10.7910/DVN/DCDKZQ
+  - If you need all dataset metadata from any known Dataverse reposiories, instead of using this app please consider downloading the metadata already collected and published in the dataset at https://doi.org/10.7910/DVN/DCDKZQ
 - Delete published datasets
   - This requires the API token of a "super user" account, usually used by administrators of Dataverse installations
 - Get information about locked datasets and remove dataset locks
