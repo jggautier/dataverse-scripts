@@ -1243,7 +1243,6 @@ def get_dataset_metadata(
 
     if count > 0 and len(fieldsWithNoMetadata) > 0:
 
-        # noMetadataLabel.grid(sticky='w', row=2)
         fieldsWithNoMetadataString = list_to_string(fieldsWithNoMetadata)
         fieldsWithNoMetadataString = (
             'No metadata found for the following fields:\r' + fieldsWithNoMetadataString)
