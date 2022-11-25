@@ -1096,8 +1096,8 @@ def join_metadata_csv_files(csvDirectory):
 
     # Create list of common columns in CSV files to join on
     indexList = [
-        'dataset_pid', 'dataset_pid_url', 'dataset_url',
-        'publication_date', 'dataset_version_number']
+        'dataset_pid', 'dataset_pid_url', 'dataset_url', 'publication_date', 
+        'dataset_version_number', 'dataverse_alias']
 
     # Get list of CSV files in the csvDirectory
     filesList = listdir(csvDirectory)
@@ -1156,7 +1156,8 @@ def get_dataset_metadata(
         # Create header row for the CSV file
         headerRow = [
             'dataset_pid', 'dataset_pid_url', 'dataset_url', 
-            'publication_date', 'dataset_version_number']
+            'publication_date', 'dataset_version_number', 
+            'dataverse_collection_alias']
 
         childFieldsList = get_column_names(
             metadatablockData, parentFieldTitle, allFieldsDBNamesDict)
@@ -1185,6 +1186,18 @@ def get_dataset_metadata(
 
     for datasetPid in datasetPidList:
 
+        # Get alias of collection that dataset is in
+        searchApiUrl = f'{installationUrl}/api/search?q=dsPersistentId:"{datasetPid}"'
+        requestsGetProperties = get_params(searchApiUrl)
+        baseUrl = requestsGetProperties['baseUrl']
+        params = requestsGetProperties['params']
+
+        datasetInfoDF = get_object_dataframe_from_search_api(
+            url=baseUrl, rootWindow=rootWindow, progressLabel=None, progressText=None,
+            params=params, objectType='dataset', apiKey=apiKey)
+
+        dataverseAlias = datasetInfoDF.iloc[0]['dataverse_alias']
+
         # Get the JSON metadata export of the latest version of the dataset
         datasetMetadata = get_dataset_metadata_export(
             installationUrl=installationUrl,
@@ -1211,6 +1224,10 @@ def get_dataset_metadata(
 
                 for valueList in valueLists:
 
+                    # Insert alias of collection that dataset is published in
+                    valueList.insert(5, dataverseAlias)
+
+                    # Add row containing metadata of the dataset
                     with open(citationMetadataCsvFilePath, mode='a', newline='', encoding='utf-8') as f:
                         writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                         writer.writerow(valueList) 
@@ -1219,29 +1236,6 @@ def get_dataset_metadata(
         text = 'Dataset metadata retrieved: %s of %s' % (count, datasetTotalCount)
         progressText.set(text)
         rootWindow.update_idletasks()
-
-    # Add to the mainDirectoryPath a CSV file that lists the Dataverse alias of each dataset
-    
-    dataverseAliasCsvFilePath = str(Path(mainDirectoryPath, 'dataverse_aliases')) + '.csv'
-    
-    # Create header row for the CSV file
-    headerRow = ['dataset_pid', 'dataverseAlias']
-
-    # Create CSV file and add headerrow
-    with open(dataverseAliasCsvFilePath, mode='w', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow(headerRow)
-
-    for datasetPid in datasetPidList:
-        # Use get_object_dataframe_from_search_api to get Dataverse aliases
-        # of each dataset and write dataset PID and alias to the csv file
-
-
-
-        with open(dataverseAliasCsvFilePath, mode='a', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            writer.writerow([datasetPid, dataverseAlias])
-
 
     # Delete any CSV files in the mainDirectory that are empty and 
     # report in the app the deleted CSV files
