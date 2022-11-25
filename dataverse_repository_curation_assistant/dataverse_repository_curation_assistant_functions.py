@@ -1205,13 +1205,13 @@ def get_dataset_metadata(
                     chosenTitleDBName=dbName, 
                     chosenFields=get_column_names(
                         metadatablockData, parentFieldTitle, allFieldsDBNamesDict))                
-                csvFileName =  parentFieldTitle.lower().strip().replace(' ', '_')
-                csvFileName = csvFileName + '(citation)'
-                csvFilePath = str(Path(mainDirectoryPath, csvFileName)) + '.csv'
+                citationMetadataCsvFileName =  parentFieldTitle.lower().strip().replace(' ', '_')
+                citationMetadataCsvFileName = citationMetadataCsvFileName + '(citation)'
+                citationMetadataCsvFilePath = str(Path(mainDirectoryPath, citationMetadataCsvFileName)) + '.csv'
 
                 for valueList in valueLists:
 
-                    with open(csvFilePath, mode='a', newline='', encoding='utf-8') as f:
+                    with open(citationMetadataCsvFilePath, mode='a', newline='', encoding='utf-8') as f:
                         writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                         writer.writerow(valueList) 
 
@@ -1220,6 +1220,31 @@ def get_dataset_metadata(
         progressText.set(text)
         rootWindow.update_idletasks()
 
+    # Add to the mainDirectoryPath a CSV file that lists the Dataverse alias of each dataset
+    
+    dataverseAliasCsvFilePath = str(Path(mainDirectoryPath, 'dataverse_aliases')) + '.csv'
+    
+    # Create header row for the CSV file
+    headerRow = ['dataset_pid', 'dataverseAlias']
+
+    # Create CSV file and add headerrow
+    with open(dataverseAliasCsvFilePath, mode='w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(headerRow)
+
+    for datasetPid in datasetPidList:
+        # Use get_object_dataframe_from_search_api to get Dataverse aliases
+        # of each dataset and write dataset PID and alias to the csv file
+
+
+
+        with open(dataverseAliasCsvFilePath, mode='a', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow([datasetPid, dataverseAlias])
+
+
+    # Delete any CSV files in the mainDirectory that are empty and 
+    # report in the app the deleted CSV files
     fieldsWithNoMetadata = delete_empty_csv_files(mainDirectoryPath)
 
     if count > 0 and len(fieldsWithNoMetadata) > 0:
