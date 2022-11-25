@@ -1096,8 +1096,8 @@ def join_metadata_csv_files(csvDirectory):
 
     # Create list of common columns in CSV files to join on
     indexList = [
-        'dataset_pid', 'dataset_pid_url', 'dataset_url',
-        'publication_date', 'dataset_version_number']
+        'dataset_pid', 'dataset_pid_url', 'dataset_url', 'publication_date', 
+        'dataset_version_number', 'dataverse_alias']
 
     # Get list of CSV files in the csvDirectory
     filesList = listdir(csvDirectory)
@@ -1156,7 +1156,8 @@ def get_dataset_metadata(
         # Create header row for the CSV file
         headerRow = [
             'dataset_pid', 'dataset_pid_url', 'dataset_url', 
-            'publication_date', 'dataset_version_number']
+            'publication_date', 'dataset_version_number', 
+            'dataverse_collection_alias']
 
         childFieldsList = get_column_names(
             metadatablockData, parentFieldTitle, allFieldsDBNamesDict)
@@ -1185,6 +1186,18 @@ def get_dataset_metadata(
 
     for datasetPid in datasetPidList:
 
+        # Get alias of collection that dataset is in
+        searchApiUrl = f'{installationUrl}/api/search?q=dsPersistentId:"{datasetPid}"'
+        requestsGetProperties = get_params(searchApiUrl)
+        baseUrl = requestsGetProperties['baseUrl']
+        params = requestsGetProperties['params']
+
+        datasetInfoDF = get_object_dataframe_from_search_api(
+            url=baseUrl, rootWindow=rootWindow, progressLabel=None, progressText=None,
+            params=params, objectType='dataset', apiKey=apiKey)
+
+        dataverseAlias = datasetInfoDF.iloc[0]['dataverse_alias']
+
         # Get the JSON metadata export of the latest version of the dataset
         datasetMetadata = get_dataset_metadata_export(
             installationUrl=installationUrl,
@@ -1205,13 +1218,17 @@ def get_dataset_metadata(
                     chosenTitleDBName=dbName, 
                     chosenFields=get_column_names(
                         metadatablockData, parentFieldTitle, allFieldsDBNamesDict))                
-                csvFileName =  parentFieldTitle.lower().strip().replace(' ', '_')
-                csvFileName = csvFileName + '(citation)'
-                csvFilePath = str(Path(mainDirectoryPath, csvFileName)) + '.csv'
+                citationMetadataCsvFileName =  parentFieldTitle.lower().strip().replace(' ', '_')
+                citationMetadataCsvFileName = citationMetadataCsvFileName + '(citation)'
+                citationMetadataCsvFilePath = str(Path(mainDirectoryPath, citationMetadataCsvFileName)) + '.csv'
 
                 for valueList in valueLists:
 
-                    with open(csvFilePath, mode='a', newline='', encoding='utf-8') as f:
+                    # Insert alias of collection that dataset is published in
+                    valueList.insert(5, dataverseAlias)
+
+                    # Add row containing metadata of the dataset
+                    with open(citationMetadataCsvFilePath, mode='a', newline='', encoding='utf-8') as f:
                         writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                         writer.writerow(valueList) 
 
@@ -1220,11 +1237,12 @@ def get_dataset_metadata(
         progressText.set(text)
         rootWindow.update_idletasks()
 
+    # Delete any CSV files in the mainDirectory that are empty and 
+    # report in the app the deleted CSV files
     fieldsWithNoMetadata = delete_empty_csv_files(mainDirectoryPath)
 
     if count > 0 and len(fieldsWithNoMetadata) > 0:
 
-        # noMetadataLabel.grid(sticky='w', row=2)
         fieldsWithNoMetadataString = list_to_string(fieldsWithNoMetadata)
         fieldsWithNoMetadataString = (
             'No metadata found for the following fields:\r' + fieldsWithNoMetadataString)
