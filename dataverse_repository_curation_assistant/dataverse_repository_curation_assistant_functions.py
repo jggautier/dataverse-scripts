@@ -494,14 +494,14 @@ def get_value_row_from_search_api_object(item, installationUrl):
         newRow = {
             'dataset_pid': item['global_id'],
             'version_state': item['versionState'],
-            'dataverse_alias': item['identifier_of_dataverse']
+            'dataverse_collection_alias': item['identifier_of_dataverse']
             # 'dataverse_url': dataverseUrl
         }
 
     if item['type'] == 'dataverse':
         newRow = {
             'dataverse_database_id': item['entity_id'],
-            'dataverse_alias': item['identifier'],
+            'dataverse_collection_alias': item['identifier'],
             'dataverse_url': item['url'],
             'dataverse_name': item['name']
         }
@@ -765,7 +765,7 @@ def get_datasets_from_collection_or_search_url(
                 # Remove any datasets that aren't owned by any of the 
                 # subdataverses. This will exclude linked datasets
                 datasetInfoDF = datasetInfoDF[
-                    datasetInfoDF['dataverse_alias'].isin(dataverseAliases)]
+                    datasetInfoDF['dataverse_collection_alias'].isin(dataverseAliases)]
 
                 uniqueDatasetCount = len(datasetInfoDF)
 
@@ -775,7 +775,7 @@ def get_datasets_from_collection_or_search_url(
                 # Get the alias of the collection (including the alias of the root collection)
                 alias = get_alias_from_collection_url(url)
                 # Retain only datasets owned by that collection
-                datasetInfoDF = datasetInfoDF[datasetInfoDF['dataverse_alias'].isin([alias])]
+                datasetInfoDF = datasetInfoDF[datasetInfoDF['dataverse_collection_alias'].isin([alias])]
 
                 uniqueDatasetCount = len(datasetInfoDF)
 
@@ -1072,7 +1072,8 @@ def get_metadata_values_lists(
     return rowVariablesList
 
 
-# Delete empty CSV files in a given directory. If file has fewer than 2 rows, delete it.
+# Delete empty CSV files in a given directory.
+# If file has fewer than 2 rows, delete it.
 def delete_empty_csv_files(csvDirectory):
     fieldsWithNoMetadata = []
     for file in glob.glob(str(Path(csvDirectory)) + '/' + '*.csv'):
@@ -1097,7 +1098,7 @@ def join_metadata_csv_files(csvDirectory):
     # Create list of common columns in CSV files to join on
     indexList = [
         'dataset_pid', 'dataset_pid_url', 'dataset_url', 'publication_date', 
-        'dataset_version_number', 'dataverse_alias']
+        'dataset_version_number', 'dataverse_collection_alias']
 
     # Get list of CSV files in the csvDirectory
     filesList = listdir(csvDirectory)
@@ -1136,9 +1137,16 @@ def get_dataset_metadata(
     # Create directory in the directory that the user chose
     currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
 
-    installationRootName = get_root_alias_name(installationUrl)
+    # Get name of repository
+    req = requests.get(
+        f'{installationUrl}/api/dataverses/1')
+    data = req.json()
+    installationName = data['data']['name'].replace(' ', '_').replace('__', '_')
 
-    mainDirectoryName = '%s_dataset_metadata_%s' % (installationRootName, currentTime)
+    # installationName = get_root_alias_name(installationUrl)
+
+
+    mainDirectoryName = '%s_dataset_metadata_%s' % (installationName, currentTime)
     mainDirectoryPath = str(Path(directoryPath + '/' + mainDirectoryName))
     os.mkdir(mainDirectoryPath)
 
@@ -1196,7 +1204,7 @@ def get_dataset_metadata(
             url=baseUrl, rootWindow=rootWindow, progressLabel=None, progressText=None,
             params=params, objectType='dataset', apiKey=apiKey)
 
-        dataverseAlias = datasetInfoDF.iloc[0]['dataverse_alias']
+        dataverseAlias = datasetInfoDF.iloc[0]['dataverse_collection_alias']
 
         # Get the JSON metadata export of the latest version of the dataset
         datasetMetadata = get_dataset_metadata_export(
