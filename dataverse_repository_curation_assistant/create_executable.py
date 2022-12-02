@@ -11,6 +11,9 @@ PyInstaller.__main__.run([
     '--name=Dataverse_repository_curation_assistant'
 ])
 
+print('Reoganizing files...')
+
+print('Moving .app file to main directory and renaming')
 # Move .app file to main directory and rename
 shutil.move(
     'dist/Dataverse_repository_curation_assistant.app',
@@ -19,7 +22,7 @@ shutil.move(
 # Delete remaining directories and their files
 shutil.rmtree('dist')
 shutil.rmtree('build')
-os.remove('Dataverse repository curation assistant.spec')
+os.remove('Dataverse_repository_curation_assistant.spec')
 
 # Zip the Dataverse repository curation assistant.app file
 # shutil.make_archive(
