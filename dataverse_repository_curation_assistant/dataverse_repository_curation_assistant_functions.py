@@ -991,6 +991,8 @@ def get_metadata_values_lists(
         datasetPid = get_canonical_pid(datasetPersistentUrl)
         datasetUrl = installationUrl + '/dataset.xhtml?persistentId=' + datasetPid
 
+        versionCreateTime = datasetMetadata['data'][versions]['createTime']
+
         if 'publicationDate' not in datasetMetadata['data']:
             publicationDate = ''
         elif 'publicationDate' in datasetMetadata['data']:
@@ -1015,6 +1017,7 @@ def get_metadata_values_lists(
                         rowVariables = [
                             datasetPid, datasetPersistentUrl, datasetUrl,
                             publicationDate, datasetVersionNumber, 
+                            versionCreateTime,
                             value[:10000].replace('\r', ' - ')]
                         rowVariablesList.append(rowVariables)
 
@@ -1022,7 +1025,8 @@ def get_metadata_values_lists(
                     value = fields['value'][:10000].replace('\r', ' - ')
                     rowVariables = [
                         datasetPid, datasetPersistentUrl, datasetUrl, 
-                        publicationDate, datasetVersionNumber, value]
+                        publicationDate, datasetVersionNumber, 
+                        versionCreateTime, value]
 
                     rowVariablesList.append(rowVariables)
 
@@ -1034,7 +1038,8 @@ def get_metadata_values_lists(
                     while condition:
                         rowVariables = [
                             datasetPid, datasetPersistentUrl, datasetUrl, 
-                            publicationDate, datasetVersionNumber]
+                            publicationDate, datasetVersionNumber,
+                            versionCreateTime]
 
                         # Get number of multiples
                         total = len(fields['value'])
@@ -1058,7 +1063,8 @@ def get_metadata_values_lists(
                 elif typeClass == 'compound' and allowsMultiple is False:
                     rowVariables = [
                         datasetPid, datasetPersistentUrl, datasetUrl, 
-                        publicationDate, datasetVersionNumber]
+                        publicationDate, datasetVersionNumber,
+                        versionCreateTime]
 
                     for chosenField in chosenFields:
                         try:
@@ -1098,7 +1104,8 @@ def join_metadata_csv_files(csvDirectory):
     # Create list of common columns in CSV files to join on
     indexList = [
         'dataset_pid', 'dataset_pid_url', 'dataset_url', 'publication_date', 
-        'dataset_version_number', 'dataverse_collection_alias']
+        'dataset_version_number', 'dataset_version_create_time', 
+        'dataverse_collection_alias']
 
     # Get list of CSV files in the csvDirectory
     filesList = listdir(csvDirectory)
@@ -1165,7 +1172,7 @@ def get_dataset_metadata(
         headerRow = [
             'dataset_pid', 'dataset_pid_url', 'dataset_url', 
             'publication_date', 'dataset_version_number', 
-            'dataverse_collection_alias']
+            'dataset_version_create_time', 'dataverse_collection_alias']
 
         childFieldsList = get_column_names(
             metadatablockData, parentFieldTitle, allFieldsDBNamesDict)
@@ -1233,7 +1240,7 @@ def get_dataset_metadata(
                 for valueList in valueLists:
 
                     # Insert alias of collection that dataset is published in
-                    valueList.insert(5, dataverseAlias)
+                    valueList.insert(6, dataverseAlias)
 
                     # Add row containing metadata of the dataset
                     with open(citationMetadataCsvFilePath, mode='a', newline='', encoding='utf-8') as f:
