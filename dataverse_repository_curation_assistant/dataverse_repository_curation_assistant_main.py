@@ -26,7 +26,7 @@ def show_task_frame(*args):
         frameChooseTask.config(background=appPrimaryRedColor)
         labelChooseTask.config(background=appPrimaryRedColor)
 
-    elif dropdownOptionSelected.get() == 'Find and unlock datasets':
+    elif dropdownOptionSelected.get() == 'Find locked datasets and unlock them':
         hide_choose_dataset_frames()
         findAndUnlockDatasetsFrame.grid(sticky='w', row=4, padx=20, pady=0)
         frameChooseTaskBG.config(background=appPrimaryGreenColor)
@@ -89,7 +89,7 @@ labelChooseTask.grid(row=0, sticky='n')
 taskOptions = [
     'Get metadata as CSV files',
     'Delete published datasets',
-    'Find and unlock datasets']
+    'Find locked datasets and unlock them']
 dropdownOptionSelected = StringVar()
 dropdownOptionSelected.trace('w', show_task_frame)
 dropdownMenuChooseDatasets = OptionMenu(
