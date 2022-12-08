@@ -24,7 +24,9 @@ def retrieve_directory():
     directory = filedialog.askdirectory()
 
     # Show user which directory she chose
-    label_showChosenDirectory = Label(window, text='You chose: ' + directory, anchor='w', foreground='green', wraplength=500, justify='left')
+    label_showChosenDirectory = Label(
+        window, text='You chose: ' + directory, anchor='w', 
+        foreground='green', wraplength=500, justify='left')
     label_showChosenDirectory.grid(sticky='w', column=0, row=14, padx=20)
 
 
@@ -45,7 +47,9 @@ def retrieve_input():
     # If no baseUrl is entered, display message that one is required
     else:
         print('A dataverse URL is required')
-        label_baseUrlReqiured = Label(window, text='The repository\'s OAI-PMH URL is required.', foreground='red', anchor='w')
+        label_baseUrlReqiured = Label(
+            window, text='The repository\'s OAI-PMH URL is required.', 
+            foreground='red', anchor='w')
         label_baseUrlReqiured.grid(sticky='w', column=0, row=3, padx=20)
 
 
@@ -59,7 +63,9 @@ entry_baseUrl = Entry(window, width=50, textvariable=dataverseUrl)
 entry_baseUrl.grid(sticky='w', column=0, row=1, pady=2, padx=20)
 
 # Create help text for BaseUrl field
-label_dataverseUrlHelpText = Label(window, text='Example: https://demo.dataverse.org/oai', foreground='grey', anchor='w')
+label_dataverseUrlHelpText = Label(
+    window, text='Example: https://demo.dataverse.org/oai', 
+    foreground='grey', anchor='w')
 label_dataverseUrlHelpText.grid(sticky='w', column=0, row=2, padx=20)
 
 # Create empty row in grid to improve spacing between the two fields
@@ -75,22 +81,29 @@ entry_oaiSet = Entry(window, width=50, textvariable=oaiSet)
 entry_oaiSet.grid(sticky='w', column=0, row=9, pady=2, padx=20)
 
 # Create help text for oaiSet field
-label_oaiSetHelpText = Label(window, text='If no OAI Set is entered, all records in the repository\'s OAI-PMH feed will be retrived', foreground='grey', anchor='w')
+label_oaiSetHelpText = Label(
+    window, text='If no OAI Set is entered, all records in the repository\'s OAI-PMH feed will be retrived', 
+    foreground='grey', anchor='w')
 label_oaiSetHelpText.grid(sticky='w', column=0, row=10, padx=20)
 
 # Create empty row in grid to improve spacing between the two fields
 window.grid_rowconfigure(11, minsize=25)
 
 # Create label for Browse directory button
-label_browseDirectory = Label(window, text='Choose folder to store CSV file with identifiers and statuses of harvested records:', anchor='w')
+label_browseDirectory = Label(
+    window, 
+    text='Choose folder to store CSV file with identifiers and statuses of harvested records:', 
+    anchor='w')
 label_browseDirectory.grid(sticky='w', column=0, row=12, pady=2, padx=20)
 
 # Create Browse directory button
-button_browseDirectory = ttk.Button(window, text='Browse', command=lambda: retrieve_directory())
+button_browseDirectory = ttk.Button(
+    window, text='Browse', command=lambda: retrieve_directory())
 button_browseDirectory.grid(sticky='w', column=0, row=13, padx=20)
 
 # Create start button
-button_Submit = ttk.Button(window, text='Start', command=lambda: retrieve_input())
+button_Submit = ttk.Button(
+    window, text='Start', command=lambda: retrieve_input())
 button_Submit.grid(sticky='w', column=0, row=15, pady=40, padx=20)
 
 # Keep window open until it's closed
