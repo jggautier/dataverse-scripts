@@ -819,27 +819,44 @@ def get_file_path(fileTypes):
             filetypes=[('YAML','*.yaml'), ('YAML', '*.yml')])
     return filePath
 
-def get_dataset_metadata_export(installationUrl, datasetPid, exportFormat, header={}, apiKey=''):
+def get_dataset_metadata_export(
+    installationUrl, datasetPid, exportFormat, 
+    allVersions=False, header={}, apiKey=''):
     if apiKey:
         header['X-Dataverse-key'] = apiKey
 
     if exportFormat == 'dataverse_json':
-        getJsonRepresentationOfADatasetEndpoint = '%s/api/datasets/:persistentId/?persistentId=%s' % (installationUrl, datasetPid)
-        getJsonRepresentationOfADatasetEndpoint = getJsonRepresentationOfADatasetEndpoint.replace('//api', '/api')
-        response = requests.get(
-            getJsonRepresentationOfADatasetEndpoint,
-            headers=header)
-        if response.status_code in (200, 401): # 401 is the unauthorized code. Valid API key is needed
-            data = response.json()
-        else:
-            data = 'ERROR'
+        if allVersions is False:
 
-        return data
+            getJsonMetadataOfLatestDatasetVersionEndpoint = f'{installationUrl}/api/datasets/:persistentId/?persistentId={datasetPid}'
+            getJsonMetadataOfLatestDatasetVersionEndpoint = getJsonMetadataOfLatestDatasetVersionEndpoint.replace('//api', '/api')
+            response = requests.get(
+                getJsonMetadataOfLatestDatasetVersionEndpoint,
+                headers=header)
+            if response.status_code in (200, 401): # 401 is the unauthorized code. Valid API key is needed
+                data = response.json()
+            else:
+                data = 'ERROR'
+
+            return data
+
+        elif allVersions is True:
+            getJsonMetadataOfAllDatasetVersionsEndpoint = f'{installationUrl}/api/datasets/:persistentId/versions?persistentId={datasetPid}'
+            response = requests.get(
+                getJsonMetadataOfAllDatasetVersionsEndpoint,
+                headers=header)
+            if response.status_code in (200, 401): # 401 is the unauthorized code. Valid API key is needed
+                data = response.json()
+            else:
+                data = 'ERROR'
+
+            return data
 
     # For getting metadata from other exports, which are available only for each dataset's latest published
     #  versions (whereas Dataverse JSON export is available for unpublished versions)
     if exportFormat != 'dataverse_json':
-        datasetMetadataExportEndpoint = '%s/api/datasets/export?exporter=%s&persistentId=%s' % (installationUrl, exportFormat, datasetPid)
+        allVersions = False
+        datasetMetadataExportEndpoint = f'{installationUrl}/api/datasets/export?exporter={exportFormat}&persistentId={datasetPid}'
         datasetMetadataExportEndpoint = datasetMetadataExportEndpoint.replace('//api', '/api')
        
         response = requests.get(
