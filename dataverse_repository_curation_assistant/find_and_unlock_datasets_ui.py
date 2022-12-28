@@ -255,7 +255,7 @@ class findAndUnlockDatasetsFrame(Frame):
             width=45, height=8)
 
         searchURLEntryHelpTextString = (
-            'Enter each dataset URL or PID on a new line')
+            'Enter each dataset PID or URL on a new line')
         
         self.labelSearchURLHelpText = Label(
             self.frameSearchURLField,
