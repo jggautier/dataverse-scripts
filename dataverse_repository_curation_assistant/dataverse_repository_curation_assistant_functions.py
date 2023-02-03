@@ -102,6 +102,12 @@ def list_to_string(lst):
     return string
 
 
+def string_to_list(string):
+    stringToList = list(string.split(','))
+    stringToList = [s.strip() for s in stringToList]
+    return stringToList
+
+
 def convert_to_local_tz(timestamp, shortDate=False):
     # Save local timezone to localTimezone variable
     localTimezone = tz.tzlocal()
