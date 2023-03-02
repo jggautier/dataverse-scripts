@@ -502,7 +502,8 @@ def get_value_row_from_search_api_object(item, installationUrl):
         newRow = {
             'dataset_pid': item['global_id'],
             'version_state': item['versionState'],
-            'dataverse_collection_alias': item['identifier_of_dataverse']
+            'dataverse_collection_alias': item['identifier_of_dataverse'],
+            'dataverse_name': item['name_of_dataverse']
             # 'dataverse_url': dataverseUrl
         }
 
