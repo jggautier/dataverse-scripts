@@ -51,63 +51,6 @@ def get_metadata_export_api_status(installationUrl, exportFormat, testDatasetPid
     getMetadataExportApiStatus = check_api_endpoint(getMetadataExportApiUrl, verify=False)
     return getMetadataExportApiStatus
 
-# Not using and haven't tested this function to gets different types of metadata exports 
-def get_dataset_metadata_export(installationUrl, datasetPid, exportFormat, header={}):
-    if apiKey:
-        header['X-Dataverse-key'] = apiKey
-
-    if exportFormat == 'dataverse_json':
-        getJsonRepresentationOfADatasetEndpoint = '%s/api/datasets/:persistentId/?persistentId=%s' % (installationUrl, datasetPid)
-        getJsonRepresentationOfADatasetEndpoint = getJsonRepresentationOfADatasetEndpoint.replace('//api', '/api')
-        response = requests.get(
-            getJsonRepresentationOfADatasetEndpoint,
-            headers=header,
-            verify=False)
-        if response.status_code in (200, 401): # 401 is the unauthorized code. Valid API key is needed
-            data = response.json()
-        else:
-            data = 'ERROR'
-
-        return data
-
-    # For getting metadata from other exports, which are available only for each dataset's latest published
-    #  versions (whereas Dataverse JSON export is available for unpublished versions)
-    if exportFormat != 'dataverse_json':
-        datasetMetadataExportEndpoint = '%s/api/datasets/export?exporter=%s&persistentId=%s' % (installationUrl, exportFormat, datasetPid)
-        datasetMetadataExportEndpoint = datasetMetadataExportEndpoint.replace('//api', '/api')
-       
-        response = requests.get(
-            datasetMetadataExportEndpoint,
-            headers=header,
-            verify=False)
-
-        if response.status_code == 200:
-            
-            if exportFormat in ('schema.org' , 'OAI_ORE'):
-                data = response.json()
-
-            if exportFormat in ('ddi' , 'oai_ddi', 'dcterms', 'oai_dc', 'Datacite', 'oai_datacite'):
-                string = response.text
-                data = BeautifulSoup(string, 'xml').prettify()
-        else:
-            data = 'ERROR'
-
-        return data
-
-
-def improved_get(_dict, path, default=None):
-    for key in path.split('.'):
-        try:
-            _dict = _dict[key]
-        except KeyError:
-            return default
-    return str(_dict)
-
-
-def list_to_string(lst): 
-    string = ', '.join(lst)
-    return string
-
 
 # Context manager to patch joblib to report into tqdm progress bar given as argument
 @contextlib.contextmanager

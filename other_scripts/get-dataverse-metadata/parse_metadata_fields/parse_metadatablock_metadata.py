@@ -10,26 +10,15 @@ from tkinter import filedialog
 from tkinter import ttk
 from tkinter import *
 
+sys.path.append('/Users/juliangautier/dataverse-scripts/dataverse_repository_curation_assistant')
+from dataverse_repository_curation_assistant_functions import *
+
 # Create GUI for getting user input
 
 # Create, title and size the window
 window = Tk()
 window.title('Get metadata from a metadatablock')
 window.geometry('600x600')  # width x height
-
-
-# Function for getting value of nested key, truncating the value to 10,000 characters if it's a string
-# (character limit for many spreadsheet applications), and returning nothing if key doesn't exist
-def improved_get(_dict, path, default=None):
-    for key in path.split('.'):
-        try:
-            _dict = _dict[key]
-        except KeyError:
-            return default
-    if isinstance(_dict, int) or isinstance(_dict, dict):
-        return _dict
-    elif isinstance(_dict, str):
-        return _dict[:10000].replace('\r', ' - ')
 
 
 # Function called when user presses the browse button to choose the metadatablock file

@@ -1,11 +1,15 @@
 import csv
 import os
 import requests
+import sys
 import time
 from tkinter import filedialog
 from tkinter import ttk
 from tkinter import *
 import xmltodict
+
+sys.path.append('/Users/juliangautier/dataverse-scripts/dataverse_repository_curation_assistant')
+from dataverse_repository_curation_assistant_functions import *
 
 ####################################################################################
 
@@ -108,15 +112,6 @@ button_Submit.grid(sticky='w', column=0, row=15, pady=40, padx=20)
 
 # Keep window open until it's closed
 mainloop()
-
-
-def improved_get(_dict, path, default=None):
-    for key in path.split('.'):
-        try:
-            _dict = _dict[key]
-        except KeyError:
-            return default
-    return str(_dict)
 
 
 currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')

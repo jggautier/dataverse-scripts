@@ -13,6 +13,9 @@ from tkinter import filedialog
 from tkinter import ttk
 import sys
 
+sys.path.append('/Users/juliangautier/dataverse-scripts/dataverse_repository_curation_assistant')
+from dataverse_repository_curation_assistant_functions import *
+
 # Create GUI for getting user input
 window = Tk()
 window.title('Get dataset metadata')
@@ -133,16 +136,6 @@ def retrieve_input():
 
 # Keep window open until it's closed
 mainloop()
-
-
-def improved_get(_dict, path, default=None):
-    for key in path.split('.'):
-        try:
-            _dict = _dict[key]
-        except KeyError:
-            return default
-    return str(_dict)
-
 
 # Save current time to append it to main folder name
 currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
