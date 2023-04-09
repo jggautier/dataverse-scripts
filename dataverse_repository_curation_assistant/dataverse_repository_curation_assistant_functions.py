@@ -1,4 +1,5 @@
 # Functions for the curation app
+import contextlib
 import csv
 from datetime import datetime
 from dateutil import tz
@@ -6,6 +7,8 @@ from dateutil.parser import parse
 from functools import reduce
 from fuzzywuzzy import fuzz, process
 import json
+import joblib
+from joblib import Parallel, delayed
 import glob
 import os
 from os import listdir
@@ -18,6 +21,7 @@ import time
 from tkinter import Tk, ttk, Frame, Label, IntVar, Checkbutton, filedialog, NORMAL, DISABLED
 from tkinter import Listbox, MULTIPLE, StringVar, END, INSERT, N, E, S, W
 from tkinter.ttk import Entry, Progressbar, OptionMenu, Combobox
+from tqdm import tqdm
 from urllib.parse import urlparse
 import yaml
 
@@ -57,6 +61,23 @@ class collapsiblePanel(Frame):
         else:
             self.subFrame.forget()
             self.toggleButton.configure(text='▲')
+
+
+# Context manager to patch joblib to report into tqdm progress bar given as argument
+@contextlib.contextmanager
+def tqdm_joblib(tqdm_object):
+    class TqdmBatchCompletionCallback(joblib.parallel.BatchCompletionCallBack):
+        def __call__(self, *args, **kwargs):
+            tqdm_object.update(n=self.batch_size)
+            return super().__call__(*args, **kwargs)
+
+    old_batch_callback = joblib.parallel.BatchCompletionCallBack
+    joblib.parallel.BatchCompletionCallBack = TqdmBatchCompletionCallback
+    try:
+        yield tqdm_object
+    finally:
+        joblib.parallel.BatchCompletionCallBack = old_batch_callback
+        tqdm_object.close()
 
 
 # Insert the installation URL and API Token from a YAML file 
