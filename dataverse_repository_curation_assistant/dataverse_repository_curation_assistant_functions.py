@@ -138,10 +138,12 @@ def convert_to_local_tz(timestamp, shortDate=False):
 
     # If timestamp is a string, convert to datetime object
     if isinstance(timestamp, str):
-        timestamp = parse(timestamp)
+        tzinfos = {'EDT': tz.gettz('US/Eastern')}
+        timestamp = parse(timestamp, tzinfos=tzinfos)
 
     # Convert datetime to local timezone
     timestamp = timestamp.astimezone(localTimezone)
+
     if shortDate is True:
         # Return timestamp in YYYY-MM-DD format
         timestamp = timestamp.strftime('%Y-%m-%d')
@@ -332,9 +334,10 @@ def get_search_api_url(url):
 
         # Remove any digits after any fq parameters
         apiSearchURL = re.sub('fq\d', 'fq', apiSearchURL)
+
         apiSearchURL = apiSearchURL + '&per_page=10&start=0'
 
-        # Replace values of any "types" parameters into the Search API's "type" paramater
+        # Replace values of any "types" parameters in the Search API's "type" paramater
         try:
             dTypes = re.search(r'types=.*?&', apiSearchURL).group()
             dTypesList = dTypes.replace('types=', '').replace('&', '').split(':')
@@ -507,7 +510,7 @@ def get_params(apiSearchURL):
 
     # If there are type param values in typeParamList, add as value to new "type" param
     if typeParamList:
-        params['params']['type'] =  typeParamList
+        params['params']['type'] = typeParamList
 
     # If there are any fq params, add fq keys and values
     if len(fq) > 0:
@@ -528,6 +531,7 @@ def get_value_row_from_search_api_object(item, installationUrl):
             'dataverse_name': item['name_of_dataverse']
             # 'dataverse_url': dataverseUrl
         }
+
 
     if item['type'] == 'dataverse':
         newRow = {
@@ -551,7 +555,7 @@ def get_value_row_from_search_api_object(item, installationUrl):
     return newRow
 
 
-# Uses Search API to return dataframe containing info about datasets in a Dataverse installation
+# Uses Search API to return dataframe containing info about collectoins, datasets or files in an installation
 # Write progress and results to the tkinter window
 def get_object_dataframe_from_search_api(
     url, params, objectType, printProgress=False,
@@ -1174,7 +1178,7 @@ def join_metadata_csv_files(csvDirectory):
         joined = reduce(lambda left, right: left.join(right, how='outer'), dataframes)
 
         # Export joined dataframe to a CSV file
-        joined.to_csv(allMetadataFileName)
+        joined.to_csv(allMetadataFileName, encoding='utf-8-sig')
 
 
 # Get the metadata of datasets. Function passed to tkinter button
@@ -1650,3 +1654,27 @@ def format_size(byteSize):
        s = round(byteSize / p, 2)
        sizeUnit = sizeName[i]
        return f'{s} {sizeUnit}'
+
+
+def get_monthly_counts(installationUrl, objects, directoryPath):
+    # Create CSV file and add headerrow
+    fileName = f'monthly_{objects}_count.csv'
+    csvFilePath = f'{directoryPath}/{fileName}'
+    with open(csvFilePath, mode='w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(['date', 'count'])
+
+    monthlyCountsApiEndpoint = f'{installationUrl}/api/info/metrics/{objects}/monthly'
+
+    with open(csvFilePath, mode='a', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+        with requests.Session() as s:
+            download = s.get(monthlyCountsApiEndpoint)
+
+            decodedContent = download.content.decode('utf-8')
+
+            cr = csv.reader(decodedContent.splitlines(), delimiter=',')
+            countList = list(cr)
+            for row in countList[1:]:
+                writer.writerow(row)  
