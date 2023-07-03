@@ -80,21 +80,26 @@ def tqdm_joblib(tqdm_object):
         tqdm_object.close()
 
 
-# Insert the installation URL and API Token from a YAML file 
-def import_credentials(installationURLField, apiKeyField, filePath):
-    if filePath:
-        with open(filePath, 'r') as file:
-            creds = yaml.safe_load(file)
+# From a YAML file, insert the installation URL and API Token into curation script
+# or return dictionary containing the information
+def import_credentials(filePath, installationURLField=None, apiKeyField=None, forCurationApp=False):
 
-            # Clear installationURLField and insert installationURL from YAML file
-            installationURLField.set('')
-            installationURLField.set(creds['installationURL'])
+    with open(filePath, 'r') as file:
+        credsDict = yaml.safe_load(file)
+        installationURL = credsDict['installationURL']
+        apiKey = credsDict['apiToken']
 
-            # Clear apiKeyField and insert apiKey from YAML file
-            apiKeyField.delete(0, END)
-            apiKeyField.insert(END, creds['apiToken'])
-    else:
-        pass
+    if forCurationApp is True:
+        # Clear installationURLField and insert installationURL from YAML file
+        installationURLField.set('')
+        installationURLField.set(installationURL)
+
+        # Clear apiKeyField and insert apiKey from YAML file
+        apiKeyField.delete(0, END)
+        apiKeyField.insert(END, apiKey)
+
+    elif forCurationApp is False:
+        return credsDict
 
 
 def forget_widget(widget):
@@ -151,6 +156,19 @@ def convert_to_local_tz(timestamp, shortDate=False):
     return timestamp
 
 
+# Makes bytes sizes more human-readable
+def format_size(byteSize):
+    if byteSize == 0:
+        return '0 B'
+    elif byteSize > 0:
+       sizeName = ('B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB')
+       i = int(math.floor(math.log(byteSize, 1024)))
+       p = math.pow(1024, i)
+       s = round(byteSize / p, 2)
+       sizeUnit = sizeName[i]
+       return f'{s} {sizeUnit}'
+
+
 # Converts timedelta object that shows an amount of time as yy:mm:dd:hh:mm:ss,
 # into more human readable string, e.g. 1 year, 8 months, 4 days...
 def td_format(timeDeltaObject):
@@ -171,6 +189,18 @@ def td_format(timeDeltaObject):
             strings.append(f'{periodValue} {periodName}{hasSeconds}')
 
     return ', '.join(strings)
+
+
+def get_directory_path():
+    directoryPath = filedialog.askdirectory()
+    return directoryPath
+
+
+def get_file_path(fileTypes):
+    if 'yaml' in fileTypes:
+        filePath = filedialog.askopenfilename(
+            filetypes=[('YAML','*.yaml'), ('YAML', '*.yml')])
+    return filePath
 
 
 def select_all(listbox):
@@ -842,17 +872,6 @@ def get_datasets_from_collection_or_search_url(
         else:
             print(text)
 
-
-def get_directory_path():
-    directoryPath = filedialog.askdirectory()
-    return directoryPath
-
-
-def get_file_path(fileTypes):
-    if 'yaml' in fileTypes:
-        filePath = filedialog.askopenfilename(
-            filetypes=[('YAML','*.yaml'), ('YAML', '*.yml')])
-    return filePath
 
 def get_dataset_metadata_export(
     installationUrl, datasetPid, exportFormat, 
@@ -1642,18 +1661,6 @@ def unlock_datasets(
             notUnlockedMessage = f'Datasets not unlocked: {len(notUnlockedDatasets)}'
             notUnlockedText.set(notUnlockedMessage)
             rootWindow.update_idletasks()
-
-
-def format_size(byteSize):
-    if byteSize == 0:
-        return '0 B'
-    elif byteSize > 0:
-       sizeName = ('B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB')
-       i = int(math.floor(math.log(byteSize, 1024)))
-       p = math.pow(1024, i)
-       s = round(byteSize / p, 2)
-       sizeUnit = sizeName[i]
-       return f'{s} {sizeUnit}'
 
 
 def get_monthly_counts(installationUrl, objects, directoryPath):
