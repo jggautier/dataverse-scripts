@@ -93,8 +93,9 @@ class findAndUnlockDatasetsFrame(Frame):
             command=lambda: import_credentials(
                     installationURLField=self.comboboxInstallationUrl,
                     apiKeyField=self.entryApiToken,
-                    filePath=get_file_path(fileTypes=['yaml']), # function that asks user for directory
-                    ))
+                    filePath=get_file_path(fileTypes=['yaml']), # Function that asks user for directory
+                    forCurationApp=True)
+            )
 
         labelImportCredentialsHelpText = (
             'Select a YAML file from your computer to fill the Installation URL '
