@@ -554,9 +554,12 @@ def get_value_row_from_search_api_object(item, installationUrl):
     if item['type'] == 'dataset':
         datasetUrl = installationUrl + '/dataset.xhtml?persistentId=' + item['global_id']
         dataverseUrl = installationUrl + '/dataverse/' + item['identifier_of_dataverse']
+        fileCount = improved_get(item, '')
         newRow = {
             'dataset_pid': item['global_id'],
             'version_state': item['versionState'],
+            'dataset_version_create_time': item['createdAt'],
+            'file_count': item['fileCount'],
             'dataverse_collection_alias': item['identifier_of_dataverse'],
             'dataverse_name': item['name_of_dataverse']
             # 'dataverse_url': dataverseUrl
