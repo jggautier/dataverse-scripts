@@ -1,5 +1,7 @@
-# For each dataset listed in dataset_pids.csv, get the values of any metadata fields 
-# that in the provided metadatablock JSON file
+# Asks for directory of Dataverse JSON metadata exports and metadata block JSON file
+# and returns a CSV file containing the metadata of each field in that metadatablock
+# Use only if directory of Dataverse JSON metadata exports contains one json file for each dataset
+# 
 
 import csv
 import json
@@ -143,7 +145,7 @@ for parentfield in compoundfields:
 
 def getsubfields(parent_compound_field, subfield):
     try:
-        for fields in dataset_metadata['data']['datasetVersion']['metadataBlocks'][metadatablock_name]['fields']:
+        for fields in datasetMetadata['data']['datasetVersion']['metadataBlocks'][metadatablock_name]['fields']:
 
             # If the compound field allows multiple instances, use the index variable to iterate over each instance
             if fields['typeName'] == parent_compound_field and fields['multiple'] is True:
@@ -171,7 +173,7 @@ for parent_compound_field in compound_field_dictionary:
     print('\nCreating CSV file for %s metadata' % (parent_compound_field))
 
     # Create column names for the header row
-    ids = ['dataset_version_id', 'persistent_url', 'persistent_id']
+    ids = ['dataset_version_id', 'persistent_url', 'persistent_id', 'dataset_version_number', 'dataset_version_create_time']
     header_row = ids + subfields
 
     with open(compound_field_csv_filepath, mode='w', newline='') as metadatafile:
@@ -186,18 +188,18 @@ for parent_compound_field in compound_field_dictionary:
         # Open each file in read mode
         with open(file, 'r') as f1:
 
-            # Copy content to dataset_metadata variable
-            dataset_metadata = f1.read()
+            # Copy content to datasetMetadata variable
+            datasetMetadata = f1.read()
 
             # Overwrite variable with content as a python dict
-            dataset_metadata = json.loads(dataset_metadata)
+            datasetMetadata = json.loads(datasetMetadata)
 
         # Check if status is OK, there's a datasetVersion key (the dataset isn't deaccessioned,
         # and there's metadata for fields in the given metadatablock
-        if (dataset_metadata['status'] == 'OK') and ('datasetVersion' in dataset_metadata['data']) and (metadatablock_name in dataset_metadata['data']['datasetVersion']['metadataBlocks']):
+        if (datasetMetadata['status'] == 'OK') and ('datasetVersion' in datasetMetadata['data']) and (metadatablock_name in datasetMetadata['data']['datasetVersion']['metadataBlocks']):
 
             # Count number of the given compound fields
-            for fields in dataset_metadata['data']['datasetVersion']['metadataBlocks'][metadatablock_name]['fields']:
+            for fields in datasetMetadata['data']['datasetVersion']['metadataBlocks'][metadatablock_name]['fields']:
                 if fields['typeName'] == parent_compound_field:  # Find compound name
                     # If the compound field allows multiple values, assign the number of values to the total variable
                     if fields['multiple'] is True:
@@ -211,18 +213,30 @@ for parent_compound_field in compound_field_dictionary:
 
                     while condition:
                         # Save the id of the dataset's version
-                        datasetVersionId = str(dataset_metadata['data']['datasetVersion']['id'])
+                        datasetVersionId = str(datasetMetadata['data']['datasetVersion']['id'])
 
                         # Save the persistent URL and persistent ID of each dataset
-                        persistentUrl = dataset_metadata['data']['persistentUrl']
-                        datasetPersistentId = improved_get(dataset_metadata, 'data.datasetVersion.datasetPersistentId')
+                        persistentUrl = datasetMetadata['data']['persistentUrl']
+                        datasetPersistentId = improved_get(datasetMetadata, 'data.datasetVersion.datasetPersistentId')
+
+                        versionState = datasetMetadata['data']['datasetVersion']['versionState']
+                        if datasetMetadata['data']['publicationDate'] == None:
+                            datasetVersionNumber = 'UNPUBLISHED'
+                        elif versionState == 'DRAFT':
+                            datasetVersionNumber = 'DRAFT'
+                        elif versionState == 'RELEASED':
+                            majorVersionNumber = datasetMetadata['data']['datasetVersion']['versionNumber']
+                            minorVersionNumber = datasetMetadata['data']['datasetVersion']['versionMinorNumber']
+                            datasetVersionNumber = f'{majorVersionNumber}.{minorVersionNumber}'
+
+                        datasetVersionCreateTime = datasetMetadata['data']['datasetVersion']['createTime']
 
                         # Save subfield values to variables
                         for subfield in subfields:
                             globals()[subfield] = getsubfields(parent_compound_field, subfield)
 
                         # Create list of variables
-                        row_variables = [datasetVersionId, persistentUrl, datasetPersistentId]
+                        row_variables = [datasetVersionId, persistentUrl, datasetPersistentId, datasetVersionNumber, datasetVersionCreateTime]
                         for subfield in subfields:
                             row_variables.append(globals()[subfield])
 
@@ -243,7 +257,7 @@ for parent_compound_field in compound_field_dictionary:
         else:
             continue
 
-    print('\rFinished writing %s metadata to %s' % (parent_compound_field, compound_field_csv_filepath))
+    print('\nFinished writing %s metadata to %s' % (parent_compound_field, compound_field_csv_filepath))
 
 # Get list of primitive fields in the given metadatablock JSON file
 
@@ -271,9 +285,9 @@ for primitive_field in primitive_fields:
         metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
         # Create header row
-        metadatafile.writerow(['dataset_version_id', 'persistent_url', 'persistent_id', primitive_field])
+        metadatafile.writerow(['dataset_version_id', 'persistent_url', 'persistent_id', 'dataset_version_number', 'dataset_version_create_time', primitive_field])
 
-    print('\tGetting %s metadata:' % (primitive_field))
+    print('\nGetting %s metadata:' % (primitive_field))
 
     # For each file in the folder of JSON files
     for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
@@ -281,21 +295,32 @@ for primitive_field in primitive_fields:
         # Open each file in read mode
         with open(file, 'r') as f1:
 
-            # Copy content to dataset_metadata variable
-            dataset_metadata = f1.read()
+            # Copy content to datasetMetadata variable
+            datasetMetadata = f1.read()
 
             # Overwrite variable with content as a python dict
-            dataset_metadata = json.loads(dataset_metadata)
+            datasetMetadata = json.loads(datasetMetadata)
 
-            if (dataset_metadata['status'] == 'OK') and ('datasetVersion' in dataset_metadata['data']) and (metadatablock_name in dataset_metadata['data']['datasetVersion']['metadataBlocks']):
+            if (datasetMetadata['status'] == 'OK') and ('datasetVersion' in datasetMetadata['data']) and (metadatablock_name in datasetMetadata['data']['datasetVersion']['metadataBlocks']):
 
-                # Save the dataset id of each dataset
-                datasetVersionId = str(dataset_metadata['data']['datasetVersion']['id'])
-                persistentUrl = dataset_metadata['data']['persistentUrl']
-                datasetPersistentId = improved_get(dataset_metadata, 'data.datasetVersion.datasetPersistentId')
+                # Save the dataset id, persistent URL, and version number of each dataset
+                datasetVersionId = str(datasetMetadata['data']['datasetVersion']['id'])
+                persistentUrl = datasetMetadata['data']['persistentUrl']
+                datasetPersistentId = improved_get(datasetMetadata, 'data.datasetVersion.datasetPersistentId')
+
+                versionState = datasetMetadata['data']['datasetVersion']['versionState']
+                if datasetMetadata['data']['publicationDate'] == None:
+                    datasetVersionNumber = 'UNPUBLISHED'
+                elif versionState == 'DRAFT':
+                    datasetVersionNumber = 'DRAFT'
+                elif versionState == 'RELEASED':
+                    majorVersionNumber = datasetMetadata['data']['datasetVersion']['versionNumber']
+                    minorVersionNumber = datasetMetadata['data']['datasetVersion']['versionMinorNumber']
+                    datasetVersionNumber = f'{majorVersionNumber}.{minorVersionNumber}'
+
 
                 # Couple each field value with the dataset version ID and write as a row
-                for fields in dataset_metadata['data']['datasetVersion']['metadataBlocks'][metadatablock_name]['fields']:
+                for fields in datasetMetadata['data']['datasetVersion']['metadataBlocks'][metadatablock_name]['fields']:
                     if fields['typeName'] == primitive_field:
                         value = fields['value']
 
@@ -310,7 +335,7 @@ for primitive_field in primitive_fields:
                                 metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                                 # Write new row
-                                metadatafile.writerow([datasetVersionId, persistentUrl, datasetPersistentId, value])
+                                metadatafile.writerow([datasetVersionId, persistentUrl, datasetPersistentId, datasetVersionNumber, datasetVersionCreateTime, value])
 
                                 # As a progress indicator, print a dot each time a row is written
                                 sys.stdout.write('.')
@@ -323,13 +348,13 @@ for primitive_field in primitive_fields:
                                 # Truncate value to 10000 characters (some metadata fields have 30,000+ characters, which messes with CSV writing/reading)
                                 value = value[:10000].replace('\r', ' - ')
 
-                                # persistentUrl = dataset_metadata['data']['persistentUrl']
+                                # persistentUrl = datasetMetadata['data']['persistentUrl']
                                 with open(primitive_field_csv_filepath, mode='a', newline='', encoding='utf-8') as metadatafile:
 
                                     metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                                     # Write new row
-                                    metadatafile.writerow([datasetVersionId, persistentUrl, datasetPersistentId, value])
+                                    metadatafile.writerow([datasetVersionId, persistentUrl, datasetPersistentId, datasetVersionNumber, datasetVersionCreateTime, value])
 
                                     # As a progress indicator, print a dot each time a row is written
                                     sys.stdout.write('.')
