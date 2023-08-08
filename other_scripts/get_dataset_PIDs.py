@@ -37,14 +37,14 @@ def retrieve_directory():
 # Function called when Start button is pressed
 def retrieve_input():
     global dataverseUrl
-    global apikey
+    global apiKey
     global get_subdataverses
 
     # Record if user wants to search in subdataverses
     get_subdataverses = get_subdataverses.get()
 
     # Store what entered in the api key text box as a global variable
-    apikey = entry_apikey.get().rstrip()
+    apiKey = entry_apikey.get().rstrip()
 
     # Store what's entered in dataverseUrl text box as a global variable
     dataverseUrl = entry_dataverseUrl.get()
@@ -101,8 +101,8 @@ label_apikey = Label(window, text='API key:', anchor='w')
 label_apikey.grid(sticky='w', column=0, row=8)
 
 # Create API key field
-apikey = str()
-entry_apikey = Entry(window, width=50, textvariable=apikey)
+apiKey = str()
+entry_apikey = Entry(window, width=50, textvariable=apiKey)
 entry_apikey.grid(sticky='w', column=0, row=9, pady=2)
 
 # Create help text for API key field
@@ -130,9 +130,9 @@ mainloop()
 # Save current time to append it to main folder name
 current_time = time.strftime('%Y.%m.%d_%H.%M.%S')
 
-# Parse dataverseUrl to get server name and alias
+# Parse dataverseUrl to get installation name and alias
 parsed = urlparse(dataverseUrl)
-server = parsed.scheme + '://' + parsed.netloc
+installationUrl = parsed.scheme + '://' + parsed.netloc
 # alias = parsed.path.split('/')[2]
 
 try:
@@ -141,7 +141,7 @@ except IndexError:
     alias = ''
 
 # Get alias of the root dataverse (assumming the root dataverse's ID is 1, which isn't the case with UVA Dataverse)
-url = '%s/api/dataverses/1' % (server)
+url = f'%s/api/dataverses/1' % (installationUrl)
 response = requests.get(url)
 dataverse_data = response.json()
 root_alias = dataverse_data['data']['alias']
@@ -163,14 +163,14 @@ if not alias or alias == root_alias:
         f.writerow(['persistent_id', 'persistentUrl', 'dataverse_name', 'dataverse_alias', 'publication_date'])
 
     # Report count of datasets
-    if apikey:
-        url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&start=0&sort=date&order=desc&key=%s' % (server, apikey)
+    if apiKey:
+        url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&start=0&sort=date&order=desc&key=%s' % (installationUrl, apiKey)
         response = requests.get(url)
         data = response.json()
         total = data['data']['total_count']
         print('\nSaving %s dataset PIDs\n(Search API returns the draft and published version of a dataset. List will be de-duplicated at the end):' % (total))
     else:
-        url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&start=0&sort=date&order=desc' % (server)
+        url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&start=0&sort=date&order=desc' % (installationUrl)
         response = requests.get(url)
         data = response.json()
         total = data['data']['total_count']
@@ -187,10 +187,10 @@ if not alias or alias == root_alias:
     while condition:
         try:
             per_page = 10
-            if apikey:
-                url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&key=%s' % (server, per_page, start, apikey)
+            if apiKey:
+                url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&key=%s' % (installationUrl, per_page, start, apiKey)
             else:
-                url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (server, per_page, start)
+                url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (installationUrl, per_page, start)
 
             response = requests.get(url)
             data = response.json()
@@ -201,7 +201,7 @@ if not alias or alias == root_alias:
                 persistent_url = i['url']
                 dataverse_name = i['name_of_dataverse']
                 dataverse_alias = i['identifier_of_dataverse']
-                publicationDate = i.get('published_at', 'unpublished')
+                publicationDate = i.get('published_at', 'UNPUBLISHED')
 
                 with open(csv_file_path, mode='a', encoding='utf-8', newline='') as open_csv_file:
                     open_csv_file = csv.writer(open_csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -219,10 +219,10 @@ if not alias or alias == root_alias:
         except urllib.error.URLError:
             try:
                 per_page = 1
-                if apikey:
-                    url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&key=%s' % (server, per_page, start, apikey)
+                if apiKey:
+                    url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc&key=%s' % (installationUrl, per_page, start, apiKey)
                 else:
-                    url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (server, per_page, start)
+                    url = '%s/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=%s&start=%s&sort=date&order=desc' % (installationUrl, per_page, start)
 
                 response = requests.get(url)
                 data = response.json()
@@ -271,10 +271,10 @@ else:
         f.writerow(['persistent_id', 'persistentUrl', 'dataverse_name', 'dataverse_alias', 'publication_date'])
 
     # Get ID of given dataverse alias
-    if apikey:
-        url = '%s/api/dataverses/%s?key=%s' % (server, alias, apikey)
+    if apiKey:
+        url = '%s/api/dataverses/%s?key=%s' % (installationUrl, alias, apiKey)
     else:
-        url = '%s/api/dataverses/%s' % (server, alias)
+        url = '%s/api/dataverses/%s' % (installationUrl, alias)
 
     response = requests.get(url)
     data = response.json()
@@ -294,10 +294,10 @@ else:
             sys.stdout.write('.')
             sys.stdout.flush()
 
-            if apikey:
-                url = '%s/api/dataverses/%s/contents?key=%s' % (server, dataverse_id, apikey)
+            if apiKey:
+                url = '%s/api/dataverses/%s/contents?key=%s' % (installationUrl, dataverse_id, apiKey)
             else:
-                url = '%s/api/dataverses/%s/contents' % (server, dataverse_id)
+                url = '%s/api/dataverses/%s/contents' % (installationUrl, dataverse_id)
 
             response = requests.get(url)
             data = response.json()
@@ -321,20 +321,20 @@ else:
         for dataverse_id in dataverse_ids:
 
             # Get name of dataverse
-            if apikey:
-                url = '%s/api/dataverses/%s?key=%s' % (server, dataverse_id, apikey)
+            if apiKey:
+                url = '%s/api/dataverses/%s?key=%s' % (installationUrl, dataverse_id, apiKey)
             else:
-                url = '%s/api/dataverses/%s' % (server, dataverse_id)
+                url = '%s/api/dataverses/%s' % (installationUrl, dataverse_id)
             response = requests.get(url, timeout=10)
             data = response.json()
             dataverse_name = data['data']['name']
             dataverse_alias = data['data']['alias']
 
             # Get content of dataverse
-            if apikey:
-                url = '%s/api/dataverses/%s/contents?key=%s' % (server, dataverse_id, apikey)
+            if apiKey:
+                url = '%s/api/dataverses/%s/contents?key=%s' % (installationUrl, dataverse_id, apiKey)
             else:
-                url = '%s/api/dataverses/%s/contents' % (server, dataverse_id)
+                url = '%s/api/dataverses/%s/contents' % (installationUrl, dataverse_id)
 
             response = requests.get(url)
             data = response.json()
