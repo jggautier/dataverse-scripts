@@ -1,4 +1,5 @@
-# For each dataset listed in dataset_pids.txt, get terms of use and access metadata
+# For each dataset whose Dataverse JSON export is in a given folder, #
+# save the terms of use and access metadata to a CSV file
 
 import csv
 import json
@@ -133,9 +134,15 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
         if datasetPid is None:
             datasetPid = get_canonical_pid(datasetPersistentUrl)  
 
-        majorVersionNumber = datasetMetadata['data']['datasetVersion']['versionNumber']
-        minorVersionNumber = datasetMetadata['data']['datasetVersion']['versionMinorNumber']
-        datasetVersionNumber = f'{majorVersionNumber}.{minorVersionNumber}'
+        versionState = datasetMetadata['data']['datasetVersion']['versionState']
+        if datasetMetadata['data']['publicationDate'] == None:
+            datasetVersionNumber = 'UNPUBLISHED'
+        elif versionState == 'DRAFT':
+            datasetVersionNumber = 'DRAFT'
+        elif versionState == 'RELEASED':
+            majorVersionNumber = datasetMetadata['data']['datasetVersion']['versionNumber']
+            minorVersionNumber = datasetMetadata['data']['datasetVersion']['versionMinorNumber']
+            datasetVersionNumber = f'{majorVersionNumber}.{minorVersionNumber}'
 
         license = improved_get(datasetMetadata, 'data.datasetVersion.license', '')
 
