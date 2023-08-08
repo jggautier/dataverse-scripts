@@ -1,4 +1,5 @@
-# For each dataset listed in dataset_pids.csv, get the values of any fields that are primitive (don't have subfields)
+# For each dataset listed in dataset_pids.csv, get the values of any metadata fields 
+# that in the provided metadatablock JSON file
 
 import csv
 import json
@@ -177,7 +178,7 @@ for parent_compound_field in compound_field_dictionary:
         metadatafile = csv.writer(metadatafile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         metadatafile.writerow(header_row)  # Create header row
 
-    print('\tGetting %s metadata:' % (parent_compound_field))
+    print('\rGetting %s metadata:' % (parent_compound_field))
 
     # For each file in a folder of json files
     for file in glob.glob(os.path.join(jsonDirectory, '*.json')):
@@ -242,7 +243,7 @@ for parent_compound_field in compound_field_dictionary:
         else:
             continue
 
-    print('\tFinished writing %s metadata to %s' % (parent_compound_field, compound_field_csv_filepath))
+    print('\rFinished writing %s metadata to %s' % (parent_compound_field, compound_field_csv_filepath))
 
 # Get list of primitive fields in the given metadatablock JSON file
 
@@ -356,5 +357,5 @@ for file in glob.glob(str(Path(csvDirectory)) + '/' + '*.csv'):
             f.close()
             os.remove(file)
 if deletedfiles:
-    print('Number of files deleted because they had no metadata: %s' % (len(deletedfiles)))
+    print('\rNumber of files deleted because they had no metadata: %s' % (len(deletedfiles)))
     print(deletedfiles)
