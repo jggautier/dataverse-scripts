@@ -110,10 +110,10 @@ def forget_widget(widget):
         pass
 
 
-# Function for getting value of nested key and if it's a string, truncating 
-# the value to 10,000 characters (character limit for many spreadsheet 
-# applications) and removing carriage returns , and returning nothing if key
-# doesn't exist
+# Function for getting value of nested key or returning nothing if nested key
+# doesn't exist. If the value is a string, this truncates 
+# the value to 10,000 characters, the character limit for many spreadsheet 
+# applications, and removes carriage returns
 def improved_get(_dict, path, default=None):
     for key in path.split('.'):
         try:
@@ -235,7 +235,7 @@ def get_installation_list():
         name = installation['name']
         hostname = installation['hostname']
         installationUrl = 'https://' + hostname
-        nameAndUrl = '%s (%s)' % (name, installationUrl)
+        nameAndUrl = f'{name} ({installationUrl})'
         installationsList.append(nameAndUrl)
 
     installationsList.insert(0, 'Demo Dataverse (https://demo.dataverse.org)')
@@ -259,7 +259,7 @@ def get_root_alias_name(url):
         dataverseData = response.json()
         rootAlias = dataverseData['data']['alias']
     elif '/dataverse/' not in url:
-        url = '%s/api/dataverses/1' % (url)
+        url = f'{url}/api/dataverses/1'
         response = requests.get(url)
         dataverseData = response.json()
         rootAlias = dataverseData['data']['alias']
@@ -280,7 +280,7 @@ def get_alias_from_collection_url(url):
         # If's it's not the UVA homepage URL, get the alias of the collection whose database is 1
         elif 'dataverse.lib.virginia.edu' not in url:
             installationUrl = get_installation_url(url)
-            url = '%s/api/dataverses/1' % (installationUrl)
+            url = f'{installationUrl}/api/dataverses/1'
             response = requests.get(url)
             dataverseData = response.json()
             alias = dataverseData['data']['alias']
@@ -321,7 +321,7 @@ def get_search_api_url(url):
         dataversePart = re.search(r'\/dataverse\/.*', url).group()
         dataverseName = dataversePart.replace('/dataverse/', '')
         # Repalce '/dataverse/' and the dataverse name with '/api/search?q=*' and add subtree parameter with dataverse name
-        apiSearchURL = url.replace(dataversePart, '/api/search?q=*') + '&subtree=%s' % (dataverseName)
+        apiSearchURL = url.replace(dataversePart, '/api/search?q=*') + f'&subtree={dataverseName}'
 
     # If URL is not a search URL (doesn't contain 'q=') and doesn't have /dataverse/, assume it's the URL of the installation
     if 'q=' not in url and '/dataverse/' not in url:
@@ -703,7 +703,7 @@ def get_all_subcollection_aliases(collectionUrl, apiKey=''):
         header = {}
 
     # Get ID of given dataverse alias
-    dataverseInfoEndpoint = '%s/api/dataverses/%s' % (installationUrl, alias)
+    dataverseInfoEndpoint = f'{installationUrl}/api/dataverses/{alias}'
 
     response = requests.get(
         dataverseInfoEndpoint,
@@ -716,7 +716,7 @@ def get_all_subcollection_aliases(collectionUrl, apiKey=''):
 
     # Get each subdataverse in the given dataverse
     for dataverseId in dataverseIds:
-        dataverseGetContentsEndpoint = '%s/api/dataverses/%s/contents' % (installationUrl, dataverseId)
+        dataverseGetContentsEndpoint = f'{installationUrl}/api/dataverses/{dataverseId}/contents'
         response = requests.get(
             dataverseGetContentsEndpoint,
             headers=header)
@@ -730,7 +730,7 @@ def get_all_subcollection_aliases(collectionUrl, apiKey=''):
     # Get the alias for each dataverse ID
     dataverseAliases = []
     for dataverseId in dataverseIds:
-        dataverseInfoEndpoint = '%s/api/dataverses/%s' % (installationUrl, dataverseId)
+        dataverseInfoEndpoint = f'{installationUrl}/api/dataverses/{dataverseId}'
         response = requests.get(
             dataverseInfoEndpoint,
             headers=header)
@@ -866,9 +866,9 @@ def get_datasets_from_collection_or_search_url(
 
         # Create and place result text with uniqueDatasetCount
         if deaccessionedDatasetCount == 0:
-            text = 'Datasets found: %s' % (str(uniqueDatasetCount))
+            text = f'Datasets found: {str(uniqueDatasetCount)}'
         if deaccessionedDatasetCount > 0:
-            text = 'Datasets found: %s\rDeaccessioned datasets ignored: %s' % (str(uniqueDatasetCount), str(deaccessionedDatasetCount))
+            text = f'Datasets found: {str(uniqueDatasetCount)}\rDeaccessioned datasets ignored: {str(deaccessionedDatasetCount)}'
 
         if progressText is not None:
             progressText.set(text)
@@ -895,8 +895,6 @@ def get_dataset_metadata_export(
             else:
                 data = 'ERROR'
 
-            return data
-
         elif allVersions is True:
             getJsonMetadataOfAllDatasetVersionsEndpoint = f'{installationUrl}/api/datasets/:persistentId/versions?persistentId={datasetPid}'
             response = requests.get(
@@ -906,8 +904,6 @@ def get_dataset_metadata_export(
                 data = response.json()
             else:
                 data = 'ERROR'
-
-            return data
 
     # For getting metadata from other exports, which are available only for each dataset's latest published
     #  versions (whereas Dataverse JSON export is available for unpublished versions)
@@ -931,11 +927,86 @@ def get_dataset_metadata_export(
         else:
             data = 'ERROR'
 
-        return data
+    return data
+
+def save_dataset_export(
+    directoryPath, installationUrl, datasetPid, 
+    exportFormat, allVersions=False, header={}, apiKey=''):
+
+    latestVersionMetadata = get_dataset_metadata_export(installationUrl, 
+        datasetPid, exportFormat, allVersions=False, header={}, 
+        apiKey=apiKey)
+
+    # if latestVersionMetadata != 'ERROR':
+    persistentUrl = latestVersionMetadata['data']['persistentUrl']
+    publisher = latestVersionMetadata['data']['publisher']
+    publicationDate = improved_get(latestVersionMetadata, 'data.publicationDate')
+
+    if allVersions == False:
+        datasetVersion = {
+            'status': latestVersionMetadata['status'],
+            'data': {
+                'persistentUrl': persistentUrl,
+                'publisher': publisher,
+                'publicationDate': publicationDate,
+                'datasetVersion': latestVersionMetadata['data']['latestVersion']}}
+
+        datasetPidForFileName = datasetPid.replace(':', '_').replace('/', '_')
+
+        metadataFile = f'{datasetPidForFileName}.json'
+        with open(os.path.join(directoryPath, metadataFile), mode='w') as f:
+            f.write(json.dumps(datasetVersion, indent=4))
+
+    elif allVersions == True:
+
+        allVersionsMetadata = get_dataset_metadata_export(installationUrl, 
+            datasetPid, exportFormat, allVersions=True, header={}, 
+            apiKey=apiKey)
+
+        for datasetVersion in allVersionsMetadata['data']:
+            datasetVersion = {
+                'status': latestVersionMetadata['status'],
+                'data': {
+                    'persistentUrl': persistentUrl,
+                    'publisher': publisher,
+                    'publicationDate': publicationDate,
+                    'datasetVersion': datasetVersion}}
+
+            majorVersion = improved_get(datasetVersion, 'data.datasetVersion.versionNumber')
+            minorVersion = improved_get(datasetVersion, 'data.datasetVersion.versionMinorNumber')
+
+            datasetPidForFileName = datasetPid.replace(':', '_').replace('/', '_')
+
+            if (majorVersion is not None) and (minorVersion is not None):
+                versionNumber = f'{majorVersion}.{minorVersion}'
+                metadataFile = f'{datasetPidForFileName}_v{versionNumber}.json'
+            else:
+                metadataFile = f'{datasetPidForFileName}_DRAFT.json'
+
+            with open(os.path.join(directoryPath, metadataFile), mode='w') as f:
+                f.write(json.dumps(datasetVersion, indent=4))
+
+
+def save_dataset_exports(directoryPath, installationUrl, datasetPidList, 
+    exportFormat, allVersions=False, header={}, apiKey=''):
+
+    datasetCount = len(datasetPidList)
+
+    # Use joblib library to use 4 CPU cores to make SearchAPI calls to get info about datasets
+    # and report progress using tqdm progress bars
+    with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=datasetCount)) as progress_bar:
+        Parallel(n_jobs=4, backend='threading')(delayed(save_dataset_export)(
+            directoryPath=directoryPath, 
+            installationUrl=installationUrl,
+            datasetPid=datasetPid, 
+            exportFormat=exportFormat, 
+            allVersions=allVersions, 
+            header={}, 
+            apiKey=apiKey) for datasetPid in datasetPidList)
 
 
 def get_metadatablock_data(installationUrl, metadatablockName):
-    metadatablocksApiEndpoint = '%s/api/v1/metadatablocks/%s' % (installationUrl, metadatablockName)
+    metadatablocksApiEndpoint = f'{installationUrl}/api/v1/metadatablocks/{metadatablockName}'
 
     response = requests.get(metadatablocksApiEndpoint)
     if response.status_code == 200:
@@ -1001,7 +1072,7 @@ def get_parent_field_names(metadatablockData, listbox):
             for childField in childFieldDict:
                 childFieldsList.append(childField)
             childFieldsString = list_to_string(childFieldsList)
-            fieldWithChildField = '%s: %s' % (title, childFieldsString)
+            fieldWithChildField = f'{title}: {childFieldsString}'
             if len(fieldWithChildField) > 50:
                 fieldWithChildField = fieldWithChildField[0:50] + '...'
             fieldWithChildFieldList.append(fieldWithChildField)
@@ -1227,7 +1298,7 @@ def get_dataset_metadata(
     # installationName = get_root_alias_name(installationUrl)
 
 
-    mainDirectoryName = '%s_dataset_metadata_%s' % (installationName, currentTime)
+    mainDirectoryName = f'{installationName}_dataset_metadata_{currentTime}'
     mainDirectoryPath = str(Path(directoryPath + '/' + mainDirectoryName))
     os.mkdir(mainDirectoryPath)
 
@@ -1268,7 +1339,7 @@ def get_dataset_metadata(
     count = 0
     datasetTotalCount = len(datasetPidList)
 
-    text = 'Dataset metadata retrieved: 0 of %s' % (datasetTotalCount)
+    text = f'Dataset metadata retrieved: 0 of {datasetTotalCount}'
     progressText.set(text)
     progressLabel.grid(sticky='w', row=1, columnspan=2)
     rootWindow.update_idletasks()
@@ -1322,7 +1393,7 @@ def get_dataset_metadata(
                         writer.writerow(valueList) 
 
         count += 1
-        text = 'Dataset metadata retrieved: %s of %s' % (count, datasetTotalCount)
+        text = f'Dataset metadata retrieved: {count} of {datasetTotalCount}'
         progressText.set(text)
         rootWindow.update_idletasks()
 
@@ -1344,7 +1415,7 @@ def get_dataset_metadata(
 
 
 def delete_published_dataset(installationUrl, datasetPid, apiKey):
-    destroyDatasetApiEndpointUrl = '%s/api/datasets/:persistentId/destroy/?persistentId=%s' % (installationUrl, datasetPid)
+    destroyDatasetApiEndpointUrl = f'{installationUrl}/api/datasets/:persistentId/destroy/?persistentId={datasetPid}'
     req = requests.delete(
         destroyDatasetApiEndpointUrl,
         headers={'X-Dataverse-key': apiKey})
@@ -1354,7 +1425,7 @@ def delete_published_dataset(installationUrl, datasetPid, apiKey):
 
     if status:
         message = data.get('message', '')
-        statusMessage = '%s: %s' % (status, message)
+        statusMessage = f'{status}: {messsage}'
         return statusMessage
 
 
@@ -1382,7 +1453,7 @@ def delete_published_datasets(
     deletedDatasetCount = 0
     datasetTotalCount = len(canonicalPidList)
 
-    deletedText = 'Datasets deleted: 0 of %s' % (datasetTotalCount)
+    deletedText = f'Datasets deleted: 0 of {datasetTotalCount}'
     progressText.set(deletedText)
     progressLabel.config(fg='green')
     progressLabel.grid(sticky='w', row=1)
@@ -1400,14 +1471,15 @@ def delete_published_datasets(
         if 'OK' in statusMessage:
             destroyedDatasets.append(canonicalPid)
             deletedDatasetCount += 1
-            deletedText = 'Datasets deleted: %s of %s' % (deletedDatasetCount, datasetTotalCount)
+            deletedText = f'Datasets deleted: {deletedDatasetCount} of {datasetTotalCount}'
             progressText.set(deletedText)
             rootWindow.update_idletasks()
 
         elif 'ERROR' in statusMessage:
             notDeletedLabel.config(fg='red')
             notDestroyedDatasets.append(canonicalPid)
-            notDeletedMessage = 'Datasets not deleted: %s' % (len(notDestroyedDatasets))
+            notDestroyedDatasetsCount = len(notDestroyedDatasets)
+            notDeletedMessage = f'Datasets not deleted: {notDestroyedDatasetsCount}'
             notDeletedText.set(notDeletedMessage)
             rootWindow.update_idletasks()
 
@@ -1608,7 +1680,7 @@ def unlock_dataset(installationUrl, datasetPid, apiKey):
 
     if status:
         message = data.get('message', '')
-        statusMessage = '%s: %s' % (status, message)
+        statusMessage = f'{status}: {message}'
         return statusMessage
 
 
