@@ -22,13 +22,13 @@ window.title('Get dataset metadata')
 window.geometry('650x600')  # width x height
 
 # Create label for Dataverse repository URL
-labelRepositoryURL = Label(window, text='Enter Dataverse repository URL:', anchor='w')
-labelRepositoryURL.grid(sticky='w', column=0, row=0)
+labelInstallationUrl = Label(window, text='Enter Dataverse repository URL:', anchor='w')
+labelInstallationUrl.grid(sticky='w', column=0, row=0)
 
 # Create Dataverse repository URL text box
-repositoryURL = str()
-entryRepositoryURL = Entry(window, width=50, textvariable=repositoryURL)
-entryRepositoryURL.grid(sticky='w', column=0, row=1, pady=2)
+installationUrl = str()
+entryInstallationUrl = Entry(window, width=50, textvariable=installationUrl)
+entryInstallationUrl.grid(sticky='w', column=0, row=1, pady=2)
 
 # Create help text for server name field
 labelDataverseUrlHelpText = Label(window, text='Example: https://demo.dataverse.org/', foreground='grey', anchor='w')
@@ -42,9 +42,9 @@ labelApikey = Label(window, text='API token/key:', anchor='w')
 labelApikey.grid(sticky='w', column=0, row=4)
 
 # Create API key field
-apikey = str()
-entryApikey = Entry(window, width=50, textvariable=apikey)
-entryApikey.grid(sticky='w', column=0, row=5, pady=2)
+apiKey = str()
+entryApiKey = Entry(window, width=50, textvariable=apiKey)
+entryApiKey.grid(sticky='w', column=0, row=5, pady=2)
 
 # Create help text for API key field
 labelApikeyHelpText = Label(window, text='If no API token/key is entered, only published metadata will be downloaded', foreground='grey', anchor='w')
@@ -89,13 +89,13 @@ buttonSubmit.grid(sticky='w', column=0, row=18, pady=40)
 
 # Function called when Browse button is pressed for choosing text file with dataset PIDs
 def retrieve_file():
-    global datasetPIDFile
+    global datasetPidFile
 
     # Call the OS's file directory window and store selected object path as a global variable
-    datasetPIDFile = filedialog.askopenfilename(filetypes=[('Text files', '*.txt'), ('CSV files', '*.csv')])
+    datasetPidFile = filedialog.askopenfilename(filetypes=[('Text files', '*.txt'), ('CSV files', '*.csv')])
 
     # Show user which file she chose
-    labelShowChosenFile = Label(window, text='You chose: ' + datasetPIDFile, anchor='w', foreground='green', wraplength=500, justify='left')
+    labelShowChosenFile = Label(window, text='You chose: ' + datasetPidFile, anchor='w', foreground='green', wraplength=500, justify='left')
     labelShowChosenFile.grid(sticky='w', column=0, row=13)
 
 
@@ -118,19 +118,18 @@ def retrieve_directory():
 
 # Function called when Start button is pressed
 def retrieve_input():
-    global repositoryURL
-    global apikey
+    global installationUrl
+    global apiKey
     global getAllVersionMetadata
 
     # Record if user wants metadata from all dataset versions
     getAllVersionMetadata = getAllVersionMetadata.get()
 
     # Store what's entered in dataverseUrl text box as a global variable
-    repositoryURL = entryRepositoryURL.get()
+    installationUrl = entryInstallationUrl.get()
 
     # Store what's entered in the API key text box as a global variable
-    apikey = entryApikey.get().rstrip()
-
+    apiKey = entryApiKey.get().rstrip()
     window.destroy()
 
 
@@ -141,17 +140,17 @@ mainloop()
 currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
 
 # Use the "Get Version" endpoint to get repository's Dataverse version (or set version as 'NA')
-getInstallationVersionApiUrl = '%s/api/v1/info/version' % (repositoryURL)
+getInstallationVersionApiUrl = f'%s/api/v1/info/version' % (installationUrl)
 response = requests.get(getInstallationVersionApiUrl)
 getInstallationVersionApiData = response.json()
 dataverseVersion = getInstallationVersionApiData['data']['version']
 dataverseVersion = str(dataverseVersion.lstrip('v'))
 
 # Create main directory name with current time
-metadataFileDirectoryPath = str(Path(metadataFileDirectory)) + '/' + 'JSON_metadata_%s' % (currentTime)
+metadataFileDirectoryPath = str(Path(metadataFileDirectory)) + '/' + f'JSON_metadata_{currentTime}'
 
 # Create name for metadatablock files directory in main directory
-metadatablockFileDirectoryPath = str(Path(metadataFileDirectory)) + '/' + 'metadatablocks_v%s' % (dataverseVersion)
+metadatablockFileDirectoryPath = str(Path(metadataFileDirectory)) + '/' + f'metadatablocks_v{dataverseVersion}'
 
 # Create dataset metadata and metadatablock directories
 os.mkdir(metadataFileDirectoryPath)
@@ -160,7 +159,7 @@ os.mkdir(metadatablockFileDirectoryPath)
 # Download metadatablock JSON files
 
 # Get list of the repository's metadatablock names
-metadatablocksApi = '%s/api/v1/metadatablocks' % (repositoryURL)
+metadatablocksApi = f'{installationUrl}/api/v1/metadatablocks'
 metadatablocksApi = metadatablocksApi.replace('//api', '/api')
 
 response = requests.get(metadatablocksApi)
@@ -171,13 +170,15 @@ for i in data['data']:
     name = i['name']
     metadatablockNames.append(name)
 
-print('Downloading %s metadatablock JSON file(s) into metadatablocks folder:' % ((len(metadatablockNames))))
+metadatablockNamesCount = len(metadatablockNames)
+
+print(f'Downloading {metadatablockNamesCount} metadatablock JSON file(s) into metadatablocks folder:')
 
 for metadatablockName in metadatablockNames:
-    metadatablockApi = '%s/%s' % (metadatablocksApi, metadatablockName)
+    metadatablockApi = f'{metadatablocksApi}/{metadatablockName}'
     response = requests.get(metadatablockApi)
 
-    metadatablockFile = str(Path(metadatablockFileDirectoryPath)) + '/' '%s_v%s.json' % (metadatablockName, dataverseVersion)
+    metadatablockFile = str(Path(metadatablockFileDirectoryPath)) + '/' f'{metadatablockName}_v{dataverseVersion}.json'
 
     with open(metadatablockFile, mode='w') as f:
         f.write(json.dumps(response.json(), indent=4))
@@ -185,7 +186,7 @@ for metadatablockName in metadatablockNames:
     sys.stdout.write('.')
     sys.stdout.flush()
 
-print('\nFinished downloading %s metadatablock JSON file(s)' % (len(metadatablockNames)))
+print(f'\nFinished downloading {metadatablockNamesCount} metadatablock JSON file(s)')
 
 if getAllVersionMetadata != 1:
     print('\nDownloading JSON metadata of latest published dataset versions to dataset_metadata folder:')
@@ -195,88 +196,31 @@ elif getAllVersionMetadata == 1:
 # Initiate count for terminal progress indicator
 count = 0
 
-datasetPIDs = []
-if '.csv' in datasetPIDFile:
-    with open(datasetPIDFile, mode='r', encoding='utf-8') as f:
+datasetPids = []
+if '.csv' in datasetPidFile:
+    with open(datasetPidFile, mode='r', encoding='utf-8') as f:
         csvDictReader = DictReader(f, delimiter=',')
         for row in csvDictReader:
-            datasetPIDs.append(row['persistent_id'].rstrip())
+            datasetPids.append(row['persistent_id'].rstrip())
 
-elif '.txt' in datasetPIDFile:
-    datasetPIDFile = open(datasetPIDFile)
-    for datasetPID in datasetPIDFile:
+elif '.txt' in datasetPidFile:
+    datasetPidFile = open(datasetPidFile)
+    for datasetPid in datasetPidFile:
 
-        # Remove any trailing spaces from datasetPID
-        datasetPIDs.append(datasetPID.rstrip())
+        # Remove any trailing spaces from datasetPid
+        datasetPids.append(datasetPid.rstrip())
 
-total = len(datasetPIDs)
+if getAllVersionMetadata != 1:
+    save_dataset_exports(
+        directoryPath=metadataFileDirectoryPath, 
+        installationUrl=installationUrl, datasetPidList=datasetPids, 
+        exportFormat='dataverse_json', allVersions=False, header={}, 
+        apiKey=apiKey)
 
-for datasetPID in datasetPIDs:
-    try:
-        latestVersionUrl = '%s/api/datasets/:persistentId' % (repositoryURL)
-        params = {'persistentId': datasetPID}
-        if apikey:
-            params['key'] = apikey
-        response = requests.get(
-            latestVersionUrl,
-            params=params)
-        latestVersionMetadata = response.json()
+elif getAllVersionMetadata == 1:
+    save_dataset_exports(
+        directoryPath=metadataFileDirectoryPath, 
+        installationUrl=installationUrl, datasetPidList=datasetPids, 
+        exportFormat='dataverse_json', allVersions=True, header={}, 
+        apiKey=apiKey)
 
-        # If the dataset has a database ID
-        if 'id' in latestVersionMetadata['data']:
-            persistentUrl = latestVersionMetadata['data']['persistentUrl']
-            publisher = latestVersionMetadata['data']['publisher']
-            publicationDate = improved_get(latestVersionMetadata, 'data.publicationDate')
-
-            if 'id' in latestVersionMetadata['data']:
-                if getAllVersionMetadata != 1:
-                    datasetVersion = {
-                        'status': latestVersionMetadata['status'],
-                        'data': {
-                            'persistentUrl': persistentUrl,
-                            'publisher': publisher,
-                            'publicationDate': publicationDate,
-                            'datasetVersion': latestVersionMetadata['data']['latestVersion']}}
-
-                    metadataFile = '%s.json' % (datasetPID.replace(':', '_').replace('/', '_'))
-                    with open(os.path.join(metadataFileDirectoryPath, metadataFile), mode='w') as f:
-                        f.write(json.dumps(datasetVersion, indent=4))
-                else:
-                    allVersionUrl = '%s/api/datasets/:persistentId/versions' % (repositoryURL)
-                    params = {'persistentId': datasetPID}
-                    if apikey:
-                        params['key'] = apikey
-                    response = requests.get(
-                        allVersionUrl,
-                        params=params)
-                    allVersionsMetadata = response.json()
-
-                    for datasetVersion in allVersionsMetadata['data']:
-                        datasetVersion = {
-                            'status': latestVersionMetadata['status'],
-                            'data': {
-                                'persistentUrl': persistentUrl,
-                                'publisher': publisher,
-                                'publicationDate': publicationDate,
-                                'datasetVersion': datasetVersion}}
-
-                        majorVersion = improved_get(datasetVersion, 'data.datasetVersion.versionNumber')
-                        minorVersion = improved_get(datasetVersion, 'data.datasetVersion.versionMinorNumber')
-
-                        if (majorVersion is not None) and (minorVersion is not None):
-                            versionNumber = majorVersion + '.' + minorVersion
-                            metadataFile = '%s_v%s.json' % (datasetPID.replace(':', '_').replace('/', '_'), versionNumber)
-                        else:
-                            metadataFile = '%s_vDRAFT.json' % (datasetPID.replace(':', '_').replace('/', '_'))
-
-                        with open(os.path.join(metadataFileDirectoryPath, metadataFile), mode='w') as f:
-                            f.write(json.dumps(datasetVersion, indent=4))
-
-                # Increase count variable to track progress
-                count += 1
-
-                # Print progress
-                print('%s of %s datasets' % (count, total), end='\r', flush=True)
-
-    except Exception:
-        print('Could not download JSON metadata of %s' % (datasetPID))
