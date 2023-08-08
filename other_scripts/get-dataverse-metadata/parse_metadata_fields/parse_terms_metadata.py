@@ -89,11 +89,13 @@ with open(filename, mode='w', newline='') as metadatafile:
     
     # Create header row
     metadatafile.writerow([
-        'dataset_pid', 'dataset_pid_url', 'dataset_version_number', 'license_name', 'license_uri', 
-        'terms_of_use', 'confidentiality_declaration', 'special_permissions', 'restrictions',
-        'citation_requirements', 'depositor_requirements', 'conditions', 'disclaimer',
-        'terms_of_access', 'data_access_place', 'original_archive',
-        'availability_status', 'contact_for_access', 'size_of_collection', 'study_completion'])
+        'dataset_pid', 'dataset_pid_url', 'dataset_version_number', 
+        'dataset_version_create_time', 'license_name', 'license_uri', 
+        'terms_of_use', 'confidentiality_declaration', 'special_permissions', 
+        'restrictions', 'citation_requirements', 'depositor_requirements', 
+        'conditions', 'disclaimer', 'terms_of_access', 'data_access_place', 
+        'original_archive', 'availability_status', 'contact_for_access', 
+        'size_of_collection', 'study_completion'])
 
 print('Getting metadata:')
 
@@ -144,6 +146,8 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
             minorVersionNumber = datasetMetadata['data']['datasetVersion']['versionMinorNumber']
             datasetVersionNumber = f'{majorVersionNumber}.{minorVersionNumber}'
 
+        datasetVersionCreateTime = datasetMetadata['data']['datasetVersion']['createTime']
+
         license = improved_get(datasetMetadata, 'data.datasetVersion.license', '')
 
         # If value of license is a dictionary, installation is v5.10+. Get licenseName and licenseUri
@@ -185,10 +189,12 @@ for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON f
 
             # Write new row
             metadatafile.writerow([
-                datasetPid, datasetPersistentUrl, datasetVersionNumber, licenseName, licenseUri,
-                termsOfUse, confidentialityDeclaration, specialPermissions, restrictions, 
-                citationRequirements, depositorRequirements, conditions, disclaimer, 
-                termsOfAccess, dataAccessPlace, originalArchive,
-                availabilityStatus, contactForAccess, sizeOfCollection, studyCompletion])
+                datasetPid, datasetPersistentUrl, datasetVersionNumber, 
+                datasetVersionCreateTime, licenseName, licenseUri,
+                termsOfUse, confidentialityDeclaration, specialPermissions, 
+                restrictions, citationRequirements, depositorRequirements, 
+                conditions, disclaimer, termsOfAccess, dataAccessPlace, 
+                originalArchive, availabilityStatus, contactForAccess, 
+                sizeOfCollection, studyCompletion])
             
 print(f'Finished: {count} of {fileCount}')
