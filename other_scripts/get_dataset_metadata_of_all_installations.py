@@ -415,12 +415,8 @@ for installation in mapdata['installations']:
             # Dataverse Collection and write them to a CSV file, and use the "Get dataset JSON" 
             # endpoint to get those datasets' metadata
 
-            # Use Search API to get installation's dataset info and write it to a CSV file
-
-            # Initialization for paginating through Search API results and showing progress
-            start = 0
-
             # Create start variables to paginate through SearchAPI results
+            start = 0
             apiCallsCount = round(datasetCount/10)
             startsList = [0]
             for apiCall in range(apiCallsCount):
@@ -436,15 +432,15 @@ for installation in mapdata['installations']:
 
             with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=startsListCount)) as progress_bar:
                 Parallel(n_jobs=4, backend='threading')(delayed(get_dataset_info_dict)(start, headers=headers) for start in startsList)
-
-            # Deduplicate list of datasets. At least one repository has the same dataset indexed twice. See https://dataverse.rhi.hi.is/dataverse/root/?q=1.00002
+    
             # If there's a difference, print unique count and explain how this might've happened
             datasetPids = list(set(datasetPids))
             if len(datasetPids) != datasetCount:
                 print(f'Unique dataset PIDs found: {len(datasetPids)}. The Search API lists one or more datasets more than once')
 
-            # Create dataframe from datasetInfoDict, which lists dataset basic info from Search API
-            # Remove duplicate rows from the dataframe. At least one repository has the same dataset indexed twice. See https://dataverse.rhi.hi.is/dataverse/root/?q=1.00002
+            # Create dataframe from datasetInfoDict, which lists dataset basic info from Search API.
+            # And remove duplicate rows from the dataframe. At least one repository has two published versions of the same dataset indexed. 
+            # See https://dataverse.rhi.hi.is/dataverse/root/?q=1.00002
             datasetPidsFileDF = pd.DataFrame(datasetInfoDict).set_index('dataset_pid').drop_duplicates()
 
             # Export datasetPidsFileDF as a CSV file...
