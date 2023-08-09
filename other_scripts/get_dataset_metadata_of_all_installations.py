@@ -132,13 +132,21 @@ def download_dataset_metadata_export(datasetPid, downloadProgressFilePath, allVe
         # Get the Dataverse JSON metadata of each version of the dataset
         try:
             latestVersionEndpointUrl = f'{installationUrl}/api/datasets/:persistentId?persistentId={datasetPid}'
+
             response = requests.get(latestVersionEndpointUrl, headers=headers, verify=False)
             latestVersionMetadata = response.json()
+
             if latestVersionMetadata['status'] == 'OK' and 'latestVersion' in latestVersionMetadata['data']:
 
-                # Try to get caonical PID of dataset from JSON export to use as file name
+                # Try to get canonical PID of dataset from JSON export to use as file name
                 datasetPidInJson = improved_get(latestVersionMetadata, 'data.latestVersion.datasetPersistentId')
                 persistentUrl = latestVersionMetadata['data']['persistentUrl']
+
+                # Get version number of latest version
+                majorversion = str(latestVersionMetadata['data']['latestVersion']['versionNumber'])
+                minorversion = str(latestVersionMetadata['data']['latestVersion']['versionMinorNumber'])
+                latestVersionNumber = f'{majorversion}.{minorversion}'
+
 
                 # Older Dataverse installations' JSON metadata exports don't include the datasetPersistentId key
                 # So try to use the persistentUrl instead to get a canonical PID.
@@ -156,6 +164,7 @@ def download_dataset_metadata_export(datasetPid, downloadProgressFilePath, allVe
                     # Add to a CSV file that the dataset's metadata was downloaded
                     writer.writerow([datasetPidInJson, True])  
 
+                # To the name of metadata export file of the latest version, append (latest_version)
                 elif allVersions == True:
                     publisher = latestVersionMetadata['data']['publisher']
                     publicationDate = latestVersionMetadata['data']['publicationDate']
@@ -184,7 +193,12 @@ def download_dataset_metadata_export(datasetPid, downloadProgressFilePath, allVe
                         versionNumber = f'{majorversion}.{minorversion}'
 
                         datasetPidInJsonForFileName = datasetPidInJson.replace(':', '_').replace('/', '_')
-                        metadataFile = f'{dataverseJsonMetadataDirectory}/{datasetPidInJsonForFileName}_v{versionNumber}.json'
+
+                        # If this is the latest version, add (latest_version) to the file name
+                        if latestVersionNumber == versionNumber:
+                            metadataFile = f'{dataverseJsonMetadataDirectory}/{datasetPidInJsonForFileName}_v{versionNumber}(latest_version).json'
+                        else:
+                            metadataFile = f'{dataverseJsonMetadataDirectory}/{datasetPidInJsonForFileName}_v{versionNumber}.json'
 
                         # Write the JSON to the new file
                         with open(metadataFile, mode='w') as jsonFile:
@@ -195,8 +209,6 @@ def download_dataset_metadata_export(datasetPid, downloadProgressFilePath, allVe
 
             elif latestVersionMetadata['status'] == 'ERROR':
                 dataverseJsonMetadataNotDownloaded.append(datasetPid)
-
-                # print(latestVersionMetadata['message'])
 
                 # Add to a CSV file that the dataset's metadata was not downloaded
                 writer.writerow([datasetPid, False])  
@@ -209,11 +221,9 @@ def download_dataset_metadata_export(datasetPid, downloadProgressFilePath, allVe
 
         except Exception as e:
             dataverseJsonMetadataNotDownloaded.append(datasetPid)
-            # print(e)
 
             # Add to CSV file that the dataset's metadata was not downloaded
             writer.writerow([datasetPid, False])  
-
 
 # Get directory that this Python script is in
 currrentWorkingDirectory = os.getcwd()
@@ -223,12 +233,13 @@ currrentWorkingDirectory = os.getcwd()
 userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'
 emailAddress = 'juliangautier@g.harvard.edu'
 
-# Enter name of CSV file containing list of API keys for installations that require one to use certain API endpoints
-apiKeysFilePath = str(Path(currrentWorkingDirectory + '/' + 'dvinstallations_extra_info.csv'))
-
 headers = {
     'User-Agent': userAgent,
     'From': emailAddress}
+
+# Enter name of CSV file containing list of API keys for installations that require one to use certain API endpoints
+apiKeysFilePath = str(Path(currrentWorkingDirectory + '/' + 'dvinstallations_extra_info.csv'))
+
 
 # Save current time for folder and file timestamps
 currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
@@ -243,7 +254,7 @@ installationsRequiringApiKeyList = apiKeysDF.index.tolist()
 
 # Get JSON data that the Dataverse installations map uses
 print('Getting Dataverse installation data...')
-mapDataUrl = 'https://raw.githubusercontent.com/IQSS/dataverse-installations/master/data/data.json'
+mapDataUrl = 'https://raw.githubusercontent.com/IQSS/dataverse-installations/main/data/data.json'
 response = requests.get(mapDataUrl, headers=headers)
 mapdata = response.json()
 
@@ -261,21 +272,23 @@ for installation in mapdata['installations']:
         installationUrl = f'https://{hostname}'
         response = requests.get(installationUrl, headers=headers, timeout=60, verify=False)
         installationStatus = response.status_code
-        # If there's one or more redirects, get the url of the final redirect
-        if response.history:
+
+        # If installationStatus is bad and there're redirects, get the url of the final redirect
+        if installationStatus != 200 and len(response.history) > 1:
             installationUrl = response.url
+            response = requests.get(installationUrl, headers=headers, timeout=60, verify=False)
+            installationStatus = response.status_code
     
     except Exception as e:
         installationStatus = e
 
     if installationStatus != 200:
-
         try:
             installationUrl = f'http://{hostname}'
             response = requests.get(installationUrl, headers=headers, timeout=60, verify=False)
             installationStatus = response.status_code
             # If there's one or more redirects, get the url of the final redirect
-            if response.history:
+            if installationStatus != 200 and len(response.history) > 1:
                 installationUrl = response.url
 
         except Exception as e:
