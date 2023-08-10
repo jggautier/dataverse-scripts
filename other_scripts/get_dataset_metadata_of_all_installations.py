@@ -329,8 +329,8 @@ for installation in mapData['installations']:
             datasetPids = []
 
             with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=startsListCount)) as progress_bar:
-                Parallel(n_jobs=4, backend='threading')(delayed(get_dataset_info_dict)(start, headers=headers) for start in startsList)
-    
+                Parallel(n_jobs=4, backend='threading')(delayed(get_dataset_info_dict)(start, headers=headers) for start in startsList)   
+
             # If there's a difference, print unique count and explain how this might've happened
             datasetPids = list(set(datasetPids))
             if len(datasetPids) != datasetCount:
@@ -350,14 +350,14 @@ for installation in mapData['installations']:
 
             if misindexedDatasetsCount > 0:
 
-                # Create txt file and list
+                # Print count of unretrievable dataset PIDs due to misindexing
                 print(f'\n\nUnretrievable dataset PIDs due to misindexing: {misindexedDatasetsCount}\n')
 
             # Create directory for dataset JSON metadata
             dataverseJsonMetadataDirectory = f'{installationDirectory}/Dataverse_JSON_metadata_{currentTime}'
             os.mkdir(dataverseJsonMetadataDirectory)
 
-            # For each dataset PID in CSV file, download dataset's Dataverse JSON metadata
+            # For each dataset PID, download dataset's Dataverse JSON metadata export
             print('\nDownloading Dataverse JSON metadata to Dataverse_JSON_metadata folder:')
 
             # Initiate counts for progress indicator
@@ -368,7 +368,7 @@ for installation in mapData['installations']:
 
             # Create CSV file and add headerrow
             headerRow = ['dataset_pid', 'dataverse_json_export_saved']
-            with open(downloadStatusFilePath, mode='w', newline='') as downloadStatusFile:
+            with open(downloadStatusFilePath, mode='w', newline='', encoding='utf-8') as downloadStatusFile:
                 writer = csv.writer(downloadStatusFile)
                 writer.writerow(headerRow)
 
