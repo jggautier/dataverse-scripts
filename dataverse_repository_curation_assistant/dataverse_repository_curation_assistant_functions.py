@@ -25,6 +25,11 @@ from tqdm import tqdm
 from urllib.parse import urlparse
 import yaml
 
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+# The requests module isn't able to verify the SSL cert of some Dataverse installations,
+# so when requests calls in this script that are set to not verify certs (verify=False),
+# which suppresses the warning messages that are thrown when requests are made without verifying SSL certs
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 # Class for custom collapsiblePanel frame using tkinter widgets
 class collapsiblePanel(Frame):
@@ -227,7 +232,7 @@ def get_installation_url(string):
 # Gets list of URLs from Dataverse map JSON data and add Demo Dataverse url
 def get_installation_list():
     installationsList = []
-    dataverseInstallationsJsonUrl = 'https://raw.githubusercontent.com/IQSS/dataverse-installations/master/data/data.json'
+    dataverseInstallationsJsonUrl = 'https://raw.githubusercontent.com/IQSS/dataverse-installations/main/data/data.json'
     response = requests.get(dataverseInstallationsJsonUrl)
     data = response.json()
 
@@ -877,7 +882,7 @@ def get_datasets_from_collection_or_search_url(
 
 
 def get_dataset_metadata_export(
-    installationUrl, datasetPid, exportFormat, 
+    installationUrl, datasetPid, exportFormat, verify,
     allVersions=False, header={}, apiKey=''):
     if apiKey:
         header['X-Dataverse-key'] = apiKey
@@ -885,28 +890,31 @@ def get_dataset_metadata_export(
     if exportFormat == 'dataverse_json':
         if allVersions is False:
 
-            getJsonMetadataOfLatestDatasetVersionEndpoint = f'{installationUrl}/api/datasets/:persistentId/?persistentId={datasetPid}'
-            getJsonMetadataOfLatestDatasetVersionEndpoint = getJsonMetadataOfLatestDatasetVersionEndpoint.replace('//api', '/api')
+            dataGetLatestVersionUrl = f'{installationUrl}/api/datasets/:persistentId'
+            dataGetLatestVersionUrl = dataGetLatestVersionUrl.replace('//api', '/api')
             response = requests.get(
-                getJsonMetadataOfLatestDatasetVersionEndpoint,
-                headers=header)
+                dataGetLatestVersionUrl,
+                params={'persistentId': datasetPid},
+                headers=header, verify=verify)
             if response.status_code in (200, 401): # 401 is the unauthorized code. Valid API key is needed
                 data = response.json()
             else:
                 data = 'ERROR'
 
         elif allVersions is True:
-            getJsonMetadataOfAllDatasetVersionsEndpoint = f'{installationUrl}/api/datasets/:persistentId/versions?persistentId={datasetPid}'
+            dataGetAllVersionsUrl = f'{installationUrl}/api/datasets/:persistentId/versions'
             response = requests.get(
-                getJsonMetadataOfAllDatasetVersionsEndpoint,
-                headers=header)
+                dataGetAllVersionsUrl,
+                params={'persistentId': datasetPid},
+                headers=header,
+                verify=verify)
             if response.status_code in (200, 401): # 401 is the unauthorized code. Valid API key is needed
                 data = response.json()
             else:
                 data = 'ERROR'
 
     # For getting metadata from other exports, which are available only for each dataset's latest published
-    #  versions (whereas Dataverse JSON export is available for unpublished versions)
+    # versions (whereas Dataverse JSON export is available for unpublished versions)
     if exportFormat != 'dataverse_json':
         allVersions = False
         datasetMetadataExportEndpoint = f'{installationUrl}/api/datasets/export?exporter={exportFormat}&persistentId={datasetPid}'
@@ -914,7 +922,8 @@ def get_dataset_metadata_export(
        
         response = requests.get(
             datasetMetadataExportEndpoint,
-            headers=header)
+            headers=header,
+            verify=verify)
 
         if response.status_code == 200:
             
@@ -930,65 +939,113 @@ def get_dataset_metadata_export(
     return data
 
 def save_dataset_export(
-    directoryPath, installationUrl, datasetPid, 
-    exportFormat, allVersions=False, header={}, apiKey=''):
+    directoryPath, downloadStatusFilePath, installationUrl, datasetPid, 
+    exportFormat, verify, allVersions=False, header={}, apiKey=''):
 
-    latestVersionMetadata = get_dataset_metadata_export(installationUrl, 
-        datasetPid, exportFormat, allVersions=False, header={}, 
-        apiKey=apiKey)
+    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
-    # if latestVersionMetadata != 'ERROR':
-    persistentUrl = latestVersionMetadata['data']['persistentUrl']
-    publisher = latestVersionMetadata['data']['publisher']
-    publicationDate = improved_get(latestVersionMetadata, 'data.publicationDate')
+    with open(downloadStatusFilePath, mode='a', newline='', encoding='utf-8') as downloadStatusFile:
+        writer = csv.writer(
+            downloadStatusFile, delimiter=',', quotechar='"', 
+            quoting=csv.QUOTE_MINIMAL)
 
-    if allVersions == False:
-        datasetVersion = {
-            'status': latestVersionMetadata['status'],
-            'data': {
-                'persistentUrl': persistentUrl,
-                'publisher': publisher,
-                'publicationDate': publicationDate,
-                'datasetVersion': latestVersionMetadata['data']['latestVersion']}}
+        latestVersionMetadata = get_dataset_metadata_export(installationUrl, 
+            datasetPid, exportFormat, verify=verify, allVersions=False, 
+            header={}, apiKey=apiKey)
+        
+        if latestVersionMetadata == 'ERROR':
+            # Add to CSV file that the dataset's metadata was not downloaded
+            writer.writerow([datasetPid, False])  
 
-        datasetPidForFileName = datasetPid.replace(':', '_').replace('/', '_')
+        elif latestVersionMetadata != 'ERROR':
+            persistentUrl = latestVersionMetadata['data']['persistentUrl']
 
-        metadataFile = f'{datasetPidForFileName}.json'
-        with open(os.path.join(directoryPath, metadataFile), mode='w') as f:
-            f.write(json.dumps(datasetVersion, indent=4))
+            # Older Dataverse installations' JSON metadata exports don't include the datasetPersistentId key
+            # So try to use the persistentUrl instead to get a canonical PID.
+            datasetPidInJson = improved_get(latestVersionMetadata, 'data.latestVersion.datasetPersistentId')
+            if datasetPidInJson is None:
+                datasetPidInJson = get_canonical_pid(persistentUrl)   
 
-    elif allVersions == True:
+            publisher = latestVersionMetadata['data']['publisher']
+            publicationDate = improved_get(latestVersionMetadata, 'data.publicationDate')
 
-        allVersionsMetadata = get_dataset_metadata_export(installationUrl, 
-            datasetPid, exportFormat, allVersions=True, header={}, 
-            apiKey=apiKey)
+            # Get version number of latest version
+            versionState = latestVersionMetadata['data']['latestVersion']['versionState']
 
-        for datasetVersion in allVersionsMetadata['data']:
-            datasetVersion = {
-                'status': latestVersionMetadata['status'],
-                'data': {
-                    'persistentUrl': persistentUrl,
-                    'publisher': publisher,
-                    'publicationDate': publicationDate,
-                    'datasetVersion': datasetVersion}}
+            if publicationDate == None:
+                latestVersionNumber = 'UNPUBLISHED'
+            elif versionState == 'DRAFT':
+                latestVersionNumber = 'DRAFT'
+            elif versionState == 'RELEASED':
+                majorVersionNumber = latestVersionMetadata['data']['latestVersion']['versionNumber']
+                minorVersionNumber = latestVersionMetadata['data']['latestVersion']['versionMinorNumber']
+                latestVersionNumber = f'v{majorVersionNumber}.{minorVersionNumber}'
 
-            majorVersion = improved_get(datasetVersion, 'data.datasetVersion.versionNumber')
-            minorVersion = improved_get(datasetVersion, 'data.datasetVersion.versionMinorNumber')
+            if allVersions == False:
+                datasetVersion = {
+                    'status': latestVersionMetadata['status'],
+                    'data': {
+                        'persistentUrl': persistentUrl,
+                        'publisher': publisher,
+                        'publicationDate': publicationDate,
+                        'datasetVersion': latestVersionMetadata['data']['latestVersion']}}
 
-            datasetPidForFileName = datasetPid.replace(':', '_').replace('/', '_')
+                datasetPidForFileName = datasetPidInJson.replace(':', '_').replace('/', '_')
 
-            if (majorVersion is not None) and (minorVersion is not None):
-                versionNumber = f'{majorVersion}.{minorVersion}'
-                metadataFile = f'{datasetPidForFileName}_v{versionNumber}.json'
-            else:
-                metadataFile = f'{datasetPidForFileName}_DRAFT.json'
+                metadataFile = f'{datasetPidForFileName}_{latestVersionNumber}.json'
+                with open(os.path.join(directoryPath, metadataFile), mode='w') as f:
+                    f.write(json.dumps(datasetVersion, indent=4))
 
-            with open(os.path.join(directoryPath, metadataFile), mode='w') as f:
-                f.write(json.dumps(datasetVersion, indent=4))
+            elif allVersions == True:
 
+                allVersionsMetadata = get_dataset_metadata_export(installationUrl, 
+                    datasetPid, exportFormat, verify=verify, allVersions=True, header={}, 
+                    apiKey=apiKey)
 
-def save_dataset_exports(directoryPath, installationUrl, datasetPidList, 
-    exportFormat, allVersions=False, header={}, apiKey=''):
+                for datasetVersion in allVersionsMetadata['data']:
+                    datasetVersion = {
+                        'status': latestVersionMetadata['status'],
+                        'data': {
+                            'persistentUrl': persistentUrl,
+                            'publisher': publisher,
+                            'publicationDate': publicationDate,
+                            'datasetVersion': datasetVersion}}
+
+                    versionState = datasetVersion['data']['datasetVersion']['versionState']
+                    if publicationDate == None:
+                        versionNumber = 'UNPUBLISHED'
+                    elif versionState == 'DRAFT':
+                        versionNumber = 'DRAFT'
+                    elif versionState == 'RELEASED':
+                        majorVersionNumber = datasetVersion['data']['datasetVersion']['versionNumber']
+                        minorVersionNumber = datasetVersion['data']['datasetVersion']['versionMinorNumber']
+                        versionNumber = f'v{majorVersionNumber}.{minorVersionNumber}'
+
+                    datasetPidForFileName = datasetPidInJson.replace(':', '_').replace('/', '_')
+
+                    if latestVersionNumber == versionNumber:
+                        metadataFile = f'{datasetPidForFileName}_{versionNumber}(latest_version).json'
+                    else:
+                        metadataFile = f'{datasetPidForFileName}_{versionNumber}.json'
+
+                    with open(os.path.join(directoryPath, metadataFile), mode='w') as f:
+                        f.write(json.dumps(datasetVersion, indent=4))
+
+            # Add to CSV file that the dataset's metadata was not downloaded
+            writer.writerow([datasetPidInJson, True])  
+        
+
+def save_dataset_exports(directoryPath, downloadStatusFilePath, installationUrl, datasetPidList, 
+    exportFormat, verify, allVersions=False, header={}, apiKey=''):
+    
+    currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
+    
+    # Create CSV file and add headerrow
+    # downloadStatusFilePath = f'{installationDirectory}/download_progress_{installationName}_{currentTime}.csv'
+    headerRow = ['dataset_pid', 'dataverse_json_export_saved']
+    with open(downloadStatusFilePath, mode='w', newline='') as downloadStatusFile:
+        writer = csv.writer(downloadStatusFile)
+        writer.writerow(headerRow)
 
     datasetCount = len(datasetPidList)
 
@@ -996,14 +1053,16 @@ def save_dataset_exports(directoryPath, installationUrl, datasetPidList,
     # and report progress using tqdm progress bars
     with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=datasetCount)) as progress_bar:
         Parallel(n_jobs=4, backend='threading')(delayed(save_dataset_export)(
-            directoryPath=directoryPath, 
+            directoryPath=directoryPath,
+            downloadStatusFilePath=downloadStatusFilePath,
             installationUrl=installationUrl,
             datasetPid=datasetPid, 
-            exportFormat=exportFormat, 
+            exportFormat=exportFormat,
+            verify=verify,
             allVersions=allVersions, 
             header={}, 
             apiKey=apiKey) for datasetPid in datasetPidList)
-
+    
 
 def get_metadatablock_data(installationUrl, metadatablockName):
     metadatablocksApiEndpoint = f'{installationUrl}/api/v1/metadatablocks/{metadatablockName}'
@@ -1363,6 +1422,7 @@ def get_dataset_metadata(
             installationUrl=installationUrl,
             datasetPid=datasetPid, 
             exportFormat='dataverse_json',
+            verify=False,
             apiKey=apiKey)
 
         if datasetMetadata['status'] == 'OK':
