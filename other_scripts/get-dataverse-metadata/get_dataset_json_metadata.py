@@ -146,17 +146,10 @@ getInstallationVersionApiData = response.json()
 dataverseVersion = getInstallationVersionApiData['data']['version']
 dataverseVersion = str(dataverseVersion.lstrip('v'))
 
-# Create main directory name with current time
-metadataFileDirectoryPath = str(Path(metadataFileDirectory)) + '/' + f'JSON_metadata_{currentTime}'
-
+# Download metadatablock JSON files
 # Create name for metadatablock files directory in main directory
 metadatablockFileDirectoryPath = str(Path(metadataFileDirectory)) + '/' + f'metadatablocks_v{dataverseVersion}'
-
-# Create dataset metadata and metadatablock directories
-os.mkdir(metadataFileDirectoryPath)
 os.mkdir(metadatablockFileDirectoryPath)
-
-# Download metadatablock JSON files
 
 # Get list of the repository's metadatablock names
 metadatablocksApi = f'{installationUrl}/api/v1/metadatablocks'
@@ -188,6 +181,10 @@ for metadatablockName in metadatablockNames:
 
 print(f'\nFinished downloading {metadatablockNamesCount} metadatablock JSON file(s)')
 
+# Create directory for metadata exports with current time
+metadataFileDirectoryPath = str(Path(metadataFileDirectory)) + '/' + f'JSON_metadata_{currentTime}'
+os.mkdir(metadataFileDirectoryPath)
+
 if getAllVersionMetadata != 1:
     print('\nDownloading JSON metadata of latest published dataset versions to dataset_metadata folder:')
 elif getAllVersionMetadata == 1:
@@ -210,17 +207,21 @@ elif '.txt' in datasetPidFile:
         # Remove any trailing spaces from datasetPid
         datasetPids.append(datasetPid.rstrip())
 
+downloadStatusFilePath = str(Path(metadataFileDirectory)) + '/' + f'download_status_{currentTime}.csv'
+
 if getAllVersionMetadata != 1:
     save_dataset_exports(
-        directoryPath=metadataFileDirectoryPath, 
+        directoryPath=metadataFileDirectoryPath,
+        downloadStatusFilePath=downloadStatusFilePath,
         installationUrl=installationUrl, datasetPidList=datasetPids, 
-        exportFormat='dataverse_json', allVersions=False, header={}, 
-        apiKey=apiKey)
+        exportFormat='dataverse_json', verify=False, allVersions=False, 
+        header={}, apiKey=apiKey)
 
 elif getAllVersionMetadata == 1:
     save_dataset_exports(
-        directoryPath=metadataFileDirectoryPath, 
+        directoryPath=metadataFileDirectoryPath,
+        downloadStatusFilePath=downloadStatusFilePath,
         installationUrl=installationUrl, datasetPidList=datasetPids, 
-        exportFormat='dataverse_json', allVersions=True, header={}, 
-        apiKey=apiKey)
+        exportFormat='dataverse_json', verify=False, allVersions=True, 
+        header={}, apiKey=apiKey)
 
