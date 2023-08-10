@@ -123,115 +123,13 @@ def get_dataset_info_dict(start, headers):
                 misindexedDatasetsCount += 1
 
 
-def download_dataset_metadata_export(datasetPid, downloadProgressFilePath, allVersions=True):
-    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-
-    with open(downloadProgressFilePath, mode='a', newline='', encoding='utf-8') as downloadProgressFile:
-        writer = csv.writer(downloadProgressFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-
-        # Get the Dataverse JSON metadata of each version of the dataset
-        try:
-            latestVersionEndpointUrl = f'{installationUrl}/api/datasets/:persistentId?persistentId={datasetPid}'
-
-            response = requests.get(latestVersionEndpointUrl, headers=headers, verify=False)
-            latestVersionMetadata = response.json()
-
-            if latestVersionMetadata['status'] == 'OK' and 'latestVersion' in latestVersionMetadata['data']:
-
-                # Try to get canonical PID of dataset from JSON export to use as file name
-                datasetPidInJson = improved_get(latestVersionMetadata, 'data.latestVersion.datasetPersistentId')
-                persistentUrl = latestVersionMetadata['data']['persistentUrl']
-
-                # Get version number of latest version
-                majorversion = str(latestVersionMetadata['data']['latestVersion']['versionNumber'])
-                minorversion = str(latestVersionMetadata['data']['latestVersion']['versionMinorNumber'])
-                latestVersionNumber = f'{majorversion}.{minorversion}'
-
-
-                # Older Dataverse installations' JSON metadata exports don't include the datasetPersistentId key
-                # So try to use the persistentUrl instead to get a canonical PID.
-                if datasetPidInJson is None:
-                    datasetPidInJson = get_canonical_pid(persistentUrl)   
-
-                if allVersions == False:
-                    datasetPidInJsonForFileName = datasetPidInJson.replace(':', '_').replace('/', '_')
-                    metadataFile = f'{dataverseJsonMetadataDirectory}/{datasetPidInJsonForFileName}_latestversion.json'
-
-                    # Write the JSON to the new file
-                    with open(metadataFile, mode='w') as jsonFile:
-                        jsonFile.write(json.dumps(latestVersionMetadata, indent=4))
-
-                    # Add to a CSV file that the dataset's metadata was downloaded
-                    writer.writerow([datasetPidInJson, True])  
-
-                # To the name of metadata export file of the latest version, append (latest_version)
-                elif allVersions == True:
-                    publisher = latestVersionMetadata['data']['publisher']
-                    publicationDate = latestVersionMetadata['data']['publicationDate']
-                    metadataLanguage = improved_get(latestVersionMetadata, 'data.metadataLanguage')
-
-
-                    allVersionUrl = f'{installationUrl}/api/datasets/:persistentId/versions?persistentId={datasetPid}'
-                    response = requests.get(allVersionUrl, headers=headers, verify=False)
-                    allVersionsMetadata = response.json()
-
-                    for datasetVersion in allVersionsMetadata['data']:
-                        datasetVersion = {
-                            'status': latestVersionMetadata['status'],
-                            'data': {
-                                'persistentUrl': persistentUrl,
-                                'publisher': publisher,
-                                'publicationDate': publicationDate,
-                                'datasetVersion': datasetVersion}}
-
-                        # If there's a metadatalanguage, add it to the datasetVersion['data'] dict
-                        if metadataLanguage is not None:
-                            datasetVersion['data']['metadataLanguage'] = metadataLanguage
-
-                        majorversion = str(datasetVersion['data']['datasetVersion']['versionNumber'])
-                        minorversion = str(datasetVersion['data']['datasetVersion']['versionMinorNumber'])
-                        versionNumber = f'{majorversion}.{minorversion}'
-
-                        datasetPidInJsonForFileName = datasetPidInJson.replace(':', '_').replace('/', '_')
-
-                        # If this is the latest version, add (latest_version) to the file name
-                        if latestVersionNumber == versionNumber:
-                            metadataFile = f'{dataverseJsonMetadataDirectory}/{datasetPidInJsonForFileName}_v{versionNumber}(latest_version).json'
-                        else:
-                            metadataFile = f'{dataverseJsonMetadataDirectory}/{datasetPidInJsonForFileName}_v{versionNumber}.json'
-
-                        # Write the JSON to the new file
-                        with open(metadataFile, mode='w') as jsonFile:
-                            jsonFile.write(json.dumps(datasetVersion, indent=4))
-
-                    # Add to a CSV file that the dataset's metadata was downloaded
-                    writer.writerow([datasetPidInJson, True])  
-
-            elif latestVersionMetadata['status'] == 'ERROR':
-                dataverseJsonMetadataNotDownloaded.append(datasetPid)
-
-                # Add to a CSV file that the dataset's metadata was not downloaded
-                writer.writerow([datasetPid, False])  
-
-            else:
-                dataverseJsonMetadataNotDownloaded.append(datasetPid)
-
-                # Add to a CSV file that the dataset's metadata was not downloaded
-                writer.writerow([datasetPid, False])  
-
-        except Exception as e:
-            dataverseJsonMetadataNotDownloaded.append(datasetPid)
-
-            # Add to CSV file that the dataset's metadata was not downloaded
-            writer.writerow([datasetPid, False])  
-
 # Get directory that this Python script is in
 currrentWorkingDirectory = os.getcwd()
 
 # Enter a user agent and your email address. Some Dataverse installations block requests from scripts.
 # See https://www.whatismybrowser.com/detect/what-is-my-user-agent to get your user agent
-userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'
-emailAddress = 'juliangautier@g.harvard.edu'
+userAgent = ''
+emailAddress = ''
 
 headers = {
     'User-Agent': userAgent,
@@ -258,11 +156,11 @@ mapDataUrl = 'https://raw.githubusercontent.com/IQSS/dataverse-installations/mai
 response = requests.get(mapDataUrl, headers=headers)
 mapdata = response.json()
 
-countOfInstallations = len(mapdata['installations'])
+countOfInstallations = len(mapData['installations'])
 
 installationProgressCount = 1
 
-for installation in mapdata['installations']:
+for installation in mapData['installations']:
     installationName = installation['name']
     hostname = installation['hostname']
     
@@ -424,7 +322,7 @@ for installation in mapdata['installations']:
                 startsList.append(start)
             startsListCount = len(startsList)
 
-            print(f'\nSearching through {startsListCount} Search API pages to save info of {datasetCount} dataset(s) to CSV file:')
+            print(f'\nSearching through {startsListCount} Search API page(s) to save info of {datasetCount} dataset(s) to CSV file:')
 
             misindexedDatasetsCount = 0
             datasetInfoDict = []
@@ -466,16 +364,24 @@ for installation in mapdata['installations']:
             dataverseJsonMetadataNotDownloaded = []
 
             # Create CSV file for recording if dataset metadata was downloaded
-            downloadProgressFilePath = f'{installationDirectory}/download_progress_{installationName}_{currentTime}.csv'
+            downloadStatusFilePath = f'{installationDirectory}/download_status_{installationName}_{currentTime}.csv'
 
             # Create CSV file and add headerrow
             headerRow = ['dataset_pid', 'dataverse_json_export_saved']
-            with open(downloadProgressFilePath, mode='w', newline='') as downloadProgressFile:
-                writer = csv.writer(downloadProgressFile)
+            with open(downloadStatusFilePath, mode='w', newline='') as downloadStatusFile:
+                writer = csv.writer(downloadStatusFile)
                 writer.writerow(headerRow)
 
-            with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=datasetCount)) as progress_bar:
-                Parallel(n_jobs=4, backend='threading')(delayed(download_dataset_metadata_export)(datasetPid, downloadProgressFilePath=downloadProgressFilePath, allVersions=True) for datasetPid in datasetPids)
+            save_dataset_exports(
+                directoryPath=dataverseJsonMetadataDirectory,
+                downloadStatusFilePath=downloadStatusFilePath,
+                installationUrl=installationUrl, 
+                datasetPidList=datasetPids, 
+                exportFormat='dataverse_json', 
+                verify=False, 
+                allVersions=True, 
+                header=headers, 
+                apiKey='')
 
             # If any dataset metadata was not downloaded...
             if len(dataverseJsonMetadataNotDownloaded) > 0:
@@ -483,8 +389,8 @@ for installation in mapdata['installations']:
                 dataverseJsonMetadataNotDownloadedCount = len(dataverseJsonMetadataNotDownloaded)
                 print(f'Some metadata could not be downloaded: {dataverseJsonMetadataNotDownloadedCount}')
 
-            # Create dataframe from downloadProgressFilePath
-            downloadProgressDF = pd.read_csv(downloadProgressFilePath, sep=',', na_filter = False)
+            # Create dataframe from downloadStatusFilePath
+            downloadProgressDF = pd.read_csv(downloadStatusFilePath, sep=',', na_filter = False)
 
             # Merge datasetPidsFileDF and downloadProgressDF
             merged = pd.merge(datasetPidsFileDF, downloadProgressDF, how='left', on='dataset_pid')
@@ -493,7 +399,7 @@ for installation in mapdata['installations']:
             merged.to_csv(datasetPidsFile, index=False)
 
             # Delete downloadProgress CSV file since its been merged with datasetPidsFile
-            os.remove(downloadProgressFilePath)
+            os.remove(downloadStatusFilePath)
 
     installationProgressCount += 1
     print('\n----------------------')
