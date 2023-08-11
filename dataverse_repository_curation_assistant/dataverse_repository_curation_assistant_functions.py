@@ -914,14 +914,18 @@ def get_dataset_metadata_export(
                 data = 'ERROR'
 
     # For getting metadata from other exports, which are available only for each dataset's latest published
-    # versions (whereas Dataverse JSON export is available for unpublished versions)
+    # versions (whereas Dataverse JSON export is available for all draft and published versions)
     if exportFormat != 'dataverse_json':
         allVersions = False
-        datasetMetadataExportEndpoint = f'{installationUrl}/api/datasets/export?exporter={exportFormat}&persistentId={datasetPid}'
+        datasetMetadataExportEndpoint = f'{installationUrl}/api/datasets/export'
         datasetMetadataExportEndpoint = datasetMetadataExportEndpoint.replace('//api', '/api')
        
         response = requests.get(
             datasetMetadataExportEndpoint,
+            params={
+                'persistentId': datasetPid,
+                'exporter': exportFormat
+                },
             headers=header,
             verify=verify)
 
