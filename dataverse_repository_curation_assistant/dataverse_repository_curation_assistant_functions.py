@@ -569,8 +569,6 @@ def get_value_row_from_search_api_object(item, installationUrl):
             'dataverse_name': item['name_of_dataverse']
             # 'dataverse_url': dataverseUrl
         }
-
-
     if item['type'] == 'dataverse':
         newRow = {
             'dataverse_database_id': item['entity_id'],
@@ -578,7 +576,6 @@ def get_value_row_from_search_api_object(item, installationUrl):
             'dataverse_url': item['url'],
             'dataverse_name': item['name']
         }
-
     if item['type'] == 'file':
         if item.get('file_persistent_id'):
             filePersistentId = item['file_persistent_id']
@@ -593,8 +590,24 @@ def get_value_row_from_search_api_object(item, installationUrl):
     return newRow
 
 
+def get_object_dictionary_from_search_api_page(installationUrl, header, params, start, objectInfoDict):
+    searchApiUrl = f'{installationUrl}/api/search'
+    params['start'] = start
+    params['per_page'] = 10
+    response = requests.get(
+        searchApiUrl,
+        params=params,
+        headers=header
+    )
+    data = response.json()
+
+    for item in data['data']['items']:
+        newRow = get_value_row_from_search_api_object(item, installationUrl)
+        objectInfoDict.append(dict(newRow))
+
+
 # Uses Search API to return dataframe containing info about collectoins, datasets or files in an installation
-# Write progress and results to the tkinter window
+# Write results to the tkinter window
 def get_object_dataframe_from_search_api(
     url, params, objectType, printProgress=False,
     rootWindow=None, progressText=None, progressLabel=None, apiKey=None):
@@ -623,14 +636,7 @@ def get_object_dataframe_from_search_api(
     # print(response.request.url)
 
     data = response.json()
-    total = data['data']['total_count']
-
-    misindexedObjectCount = 0
-    objectInfoDict = []
-
-    # Initialization for paginating through results of Search API calls
-    condition = True
-    params['start'] = 0
+    totalDatasetCount = data['data']['total_count']
 
     if None not in [rootWindow, progressText, progressLabel]:
         text = 'Looking for datasets...'
@@ -639,56 +645,33 @@ def get_object_dataframe_from_search_api(
         progressLabel = progressLabel.grid(sticky='w', row=0)
         rootWindow.update_idletasks()
     
-    while condition:
-        try:
-            params['per_page'] = 10
-            response = requests.get(
-                url,
-                params=params,
-                headers=header
-            )
-            data = response.json()
+    # Create start variables to paginate through SearchAPI results
+    start = 0
+    apiCallsCount = round(totalDatasetCount/10)
+    startsList = [0]
+    for apiCall in range(apiCallsCount):
+        start = start + 10
+        startsList.append(start)
+    startsListCount = len(startsList)
 
-            for item in data['data']['items']:
-                newRow = get_value_row_from_search_api_object(item, installationUrl)
-                objectInfoDict.append(dict(newRow))
-                datasetCount = len(objectInfoDict)
+    # misindexedObjectCount = 0
+    objectInfoDict = []
 
-            if printProgress == True:
-                print(f'Dataset PIDs found: {datasetCount} of {total}')
-                
-            # Update variables to paginate through the search results
-            params['start'] = params['start'] + params['per_page']
+    if None not in [rootWindow, progressText, progressLabel]:
+        Parallel(
+            n_jobs=4, 
+            backend='threading')(delayed(get_object_dictionary_from_search_api_page)(
+                installationUrl, header, params, start, objectInfoDict) for start in startsList)
 
-        # If misindexed datasets break the Search API call where per_page=10,
-        # try calls where per_page=1 then per_page=10 again
-        # (See https://github.com/IQSS/dataverse/issues/4225)
-        except Exception:
-            try:
-                params['per_page'] = 1
-                response = requests.get(
-                    installationUrl,
-                    params=params,
-                    headers=header
-                )
-                data = response.json()
-
-                for item in data['data']['items']:
-                    newRow = get_value_row_from_search_api_object(item, installationUrl)
-                    objectInfoDict.append(dict(newRow))
-                    datasetCount = len(objectInfoDict)
-
-                print(f'Dataset PIDs found: {datasetCount} of {total}')
-
-                # Update variables to paginate through the search results
-                params['start'] = params['start'] + params['per_page']
-
-            # If page fails to load, count a misindexed object and continue to the next page
-            except Exception:
-                misindexedObjectCount += 1
-                params['start'] = params['start'] + params['per_page']
-
-        condition = params['start'] < total
+    else:
+        with tqdm_joblib(
+            tqdm(
+                bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', 
+                total=startsListCount)) as progress_bar:
+            Parallel(
+                n_jobs=4, 
+                backend='threading')(delayed(get_object_dictionary_from_search_api_page)(
+                    installationUrl, header, params, start, objectInfoDict) for start in startsList)        
 
     objectInfoDF = pd.DataFrame(objectInfoDict)
 
