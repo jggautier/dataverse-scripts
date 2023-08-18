@@ -43,15 +43,6 @@ def check_api_endpoint(url, headers, verify=True, json_response=True):
     return status
 
 
-# Not using and haven't tested this function
-# See if installation's API endpoint for getting metadata in given exports is working
-def get_metadata_export_api_status(installationUrl, exportFormat, testDatasetPid):
-    getMetadataExportApiUrl = f'{installationUrl}/api/datasets/export?exporter={exportFormat}&persistentId={testDatasetPid}'
-    getMetadataExportApiUrl = getschemaorgApiUrl.replace('//api', '/api')
-    getMetadataExportApiStatus = check_api_endpoint(getMetadataExportApiUrl, verify=False)
-    return getMetadataExportApiStatus
-
-
 def get_dataset_info_dict(start, headers):
     searchApiUrl = f'{installationUrl}/api/search'
     try:
@@ -400,6 +391,10 @@ for installation in mapData['installations']:
 
             # Delete downloadProgress CSV file since its been merged with datasetPidsFile
             os.remove(downloadStatusFilePath)
+
+            
+
+            
 
     installationProgressCount += 1
     print('\n----------------------')
