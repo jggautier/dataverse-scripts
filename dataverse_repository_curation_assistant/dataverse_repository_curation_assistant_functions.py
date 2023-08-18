@@ -729,6 +729,48 @@ def get_all_subcollection_aliases(collectionUrl, apiKey=''):
     return dataverseAliases
 
 
+def get_collection_info(installationUrl, alias, dataverseCollectionInfoDict, apiKey=''):
+    if apiKey:
+        header = {'X-Dataverse-key': apiKey}
+    else:
+        header = {}
+
+    viewCollectionApiEndpointURL = f'{installationUrl}/api/dataverses/{alias}'
+    response = requests.get(
+        viewCollectionApiEndpointURL,
+        headers=header)
+    data = response.json()
+    creationDate = convert_to_local_tz(data['data']['creationDate'], shortDate=True)
+    contactEmailsList = []
+    for dataverseContact in data['data']['dataverseContacts']:
+        contactEmail = dataverseContact['contactEmail']
+        contactEmailsList.append(contactEmail)
+    contactEmailsString = list_to_string(contactEmailsList)
+    dataverseType = data['data']['dataverseType']
+
+    # Get count of datasets in Journal collections
+
+    newRow = {
+        'dataverse_alias': alias,
+        'dataverse_create_date': creationDate,
+        'contact_emails': contactEmailsString,
+        'dataverse_type': dataverseType
+        }
+    dataverseCollectionInfoDict.append(dict(newRow))
+
+
+def get_collections_info(installationUrl, aliasList, dataverseCollectionInfoDict, apiKey=''):
+    aliasCount = len(aliasList)
+
+    # Use joblib library to use 4 CPU cores to make SearchAPI calls to get info about datasets
+    # and report progress using tqdm progress bars
+    with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=aliasCount)) as progress_bar:
+        Parallel(n_jobs=4, backend='threading')(delayed(get_collection_info)(
+            installationUrl,
+            alias,
+            dataverseCollectionInfoDict,
+            apiKey) for alias in aliasList)
+
 def get_canonical_pid(pidOrUrl):
 
     # If entered dataset PID is the dataset page URL, get canonical PID
@@ -1138,8 +1180,7 @@ def get_listbox_values(listbox):
 
 
 # Get the chiild field database names of compound fields or the database name of primitive fields
-def get_column_names(
-    metadatablockData, parentFieldTitle, parentFieldDBNameAndTitleDict):
+def get_column_names(metadatablockData, parentFieldTitle, parentFieldDBNameAndTitleDict):
     
     compoundFieldsDBNamesList = []
     for parentfield in metadatablockData['data']['fields']:
