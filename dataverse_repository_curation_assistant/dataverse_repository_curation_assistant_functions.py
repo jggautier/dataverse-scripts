@@ -1469,10 +1469,11 @@ def delete_published_dataset(installationUrl, datasetPid, apiKey):
     data = req.json()
 
     status = data.get('status')
+    print(status)
 
     if status:
         message = data.get('message', '')
-        statusMessage = f'{status}: {messsage}'
+        statusMessage = f'{status}: {message}'
         return statusMessage
 
 
