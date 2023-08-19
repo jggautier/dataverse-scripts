@@ -729,11 +729,11 @@ def get_all_subcollection_aliases(collectionUrl, apiKey=''):
     return dataverseAliases
 
 
-def get_collection_info(installationUrl, alias, dataverseCollectionInfoDict, apiKey=''):
-    if apiKey:
-        header = {'X-Dataverse-key': apiKey}
-    else:
-        header = {}
+def get_collection_info(installationUrl, alias, dataverseCollectionInfoDict, header={}, apiKey=''):
+    # if apiKey:
+    #     header = {'X-Dataverse-key': apiKey}
+    # else:
+    #     header = {}
 
     viewCollectionApiEndpointURL = f'{installationUrl}/api/dataverses/{alias}'
     response = requests.get(
@@ -759,7 +759,7 @@ def get_collection_info(installationUrl, alias, dataverseCollectionInfoDict, api
     dataverseCollectionInfoDict.append(dict(newRow))
 
 
-def get_collections_info(installationUrl, aliasList, dataverseCollectionInfoDict, apiKey=''):
+def get_collections_info(installationUrl, aliasList, dataverseCollectionInfoDict, header, apiKey=''):
     aliasCount = len(aliasList)
 
     # Use joblib library to use 4 CPU cores to make SearchAPI calls to get info about datasets
@@ -769,6 +769,7 @@ def get_collections_info(installationUrl, aliasList, dataverseCollectionInfoDict
             installationUrl,
             alias,
             dataverseCollectionInfoDict,
+            header,
             apiKey) for alias in aliasList)
 
 def get_canonical_pid(pidOrUrl):
