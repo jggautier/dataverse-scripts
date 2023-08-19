@@ -384,17 +384,43 @@ for installation in mapData['installations']:
             downloadProgressDF = pd.read_csv(downloadStatusFilePath, sep=',', na_filter = False)
 
             # Merge datasetPidsFileDF and downloadProgressDF
-            merged = pd.merge(datasetPidsFileDF, downloadProgressDF, how='left', on='dataset_pid')
-
-            # Export merged dataframe (overwriting old datasetPidsFile)
-            merged.to_csv(datasetPidsFile, index=False)
+            mergedDF = pd.merge(datasetPidsFileDF, downloadProgressDF, how='left', on='dataset_pid')
 
             # Delete downloadProgress CSV file since its been merged with datasetPidsFile
             os.remove(downloadStatusFilePath)
 
-            
+            print('Getting categories of each Dataverse collection:')
 
-            
+            # Get and deduplicate list of collection aliases from datasetPidsFileDF, 
+            # then use dataaverse collection api endpoint to create dataframe listing 
+            # category of each dataverse. Then merge that dataframe with mergedDF
+            aliasList = datasetPidsFileDF['dataverse_alias'].values.tolist()
+            aliasList = list(set(aliasList))
+
+            dataverseCollectionInfoDict = []
+            get_collections_info(installationUrl, aliasList, dataverseCollectionInfoDict, header=headers, apiKey='')
+
+            # Create dataframe from dictionary
+            dataverseCollectionInfoDF = pd.DataFrame(dataverseCollectionInfoDict)
+
+            # Retain only columns with aliases and categories
+            dataverseCollectionInfoDF = dataverseCollectionInfoDF[['dataverse_alias', 'dataverse_type']]
+
+            # Merge datasetPidsFileDF and downloadProgressDF
+            mergedDF = pd.merge(mergedDF, dataverseCollectionInfoDF, how='left', on='dataverse_alias')
+
+            # Force report's column order
+            mergedDF = mergedDF[[
+                'dataset_pid',
+                'dataset_pid_url', 
+                'dataverse_alias',
+                'dataverse_name',
+                'dataverse_type',
+                'dataverse_json_export_saved'
+                ]]
+
+            # Export merged dataframe (overwriting old datasetPidsFile)
+            mergedDF.to_csv(datasetPidsFile, index=False)
 
     installationProgressCount += 1
     print('\n----------------------')
