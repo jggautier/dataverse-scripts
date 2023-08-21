@@ -114,9 +114,6 @@ def get_dataset_info_dict(start, headers):
                 misindexedDatasetsCount += 1
 
 
-# Get directory that this Python script is in
-currrentWorkingDirectory = os.getcwd()
-
 # Enter a user agent and your email address. Some Dataverse installations block requests from scripts.
 # See https://www.whatismybrowser.com/detect/what-is-my-user-agent to get your user agent
 userAgent = ''
@@ -126,9 +123,11 @@ headers = {
     'User-Agent': userAgent,
     'From': emailAddress}
 
+# Get directory that this Python script is in
+currrentWorkingDirectory = os.getcwd()
+
 # Enter name of CSV file containing list of API keys for installations that require one to use certain API endpoints
 apiKeysFilePath = str(Path(currrentWorkingDirectory + '/' + 'dvinstallations_extra_info.csv'))
-
 
 # Save current time for folder and file timestamps
 currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
