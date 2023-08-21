@@ -1032,37 +1032,43 @@ def save_dataset_export(
                     datasetPid, exportFormat, verify=verify, allVersions=True, header={}, 
                     apiKey=apiKey)
 
-                for datasetVersion in allVersionsMetadata['data']:
-                    datasetVersion = {
-                        'status': latestVersionMetadata['status'],
-                        'data': {
-                            'persistentUrl': persistentUrl,
-                            'publisher': publisher,
-                            'publicationDate': publicationDate,
-                            'datasetVersion': datasetVersion}}
+                if latestVersionMetadata == 'ERROR':
+                    # Add to CSV file that the dataset's metadata was not downloaded
+                    writer.writerow([datasetPid, False])
 
-                    versionState = datasetVersion['data']['datasetVersion']['versionState']
-                    if publicationDate == None:
-                        versionNumber = 'UNPUBLISHED'
-                    elif versionState == 'DRAFT':
-                        versionNumber = 'DRAFT'
-                    elif versionState == 'RELEASED':
-                        majorVersionNumber = datasetVersion['data']['datasetVersion']['versionNumber']
-                        minorVersionNumber = datasetVersion['data']['datasetVersion']['versionMinorNumber']
-                        versionNumber = f'v{majorVersionNumber}.{minorVersionNumber}'
+                elif latestVersionMetadata != 'ERROR':
 
-                    datasetPidForFileName = datasetPidInJson.replace(':', '_').replace('/', '_')
+                    for datasetVersion in allVersionsMetadata['data']:
+                        datasetVersion = {
+                            'status': latestVersionMetadata['status'],
+                            'data': {
+                                'persistentUrl': persistentUrl,
+                                'publisher': publisher,
+                                'publicationDate': publicationDate,
+                                'datasetVersion': datasetVersion}}
 
-                    if latestVersionNumber == versionNumber:
-                        metadataFile = f'{datasetPidForFileName}_{versionNumber}(latest_version).json'
-                    else:
-                        metadataFile = f'{datasetPidForFileName}_{versionNumber}.json'
+                        versionState = datasetVersion['data']['datasetVersion']['versionState']
+                        if publicationDate == None:
+                            versionNumber = 'UNPUBLISHED'
+                        elif versionState == 'DRAFT':
+                            versionNumber = 'DRAFT'
+                        elif versionState == 'RELEASED':
+                            majorVersionNumber = datasetVersion['data']['datasetVersion']['versionNumber']
+                            minorVersionNumber = datasetVersion['data']['datasetVersion']['versionMinorNumber']
+                            versionNumber = f'v{majorVersionNumber}.{minorVersionNumber}'
 
-                    with open(os.path.join(directoryPath, metadataFile), mode='w') as f:
-                        f.write(json.dumps(datasetVersion, indent=4))
+                        datasetPidForFileName = datasetPidInJson.replace(':', '_').replace('/', '_')
 
-            # Add to CSV file that the dataset's metadata was not downloaded
-            writer.writerow([datasetPidInJson, True])  
+                        if latestVersionNumber == versionNumber:
+                            metadataFile = f'{datasetPidForFileName}_{versionNumber}(latest_version).json'
+                        else:
+                            metadataFile = f'{datasetPidForFileName}_{versionNumber}.json'
+
+                        with open(os.path.join(directoryPath, metadataFile), mode='w') as f:
+                            f.write(json.dumps(datasetVersion, indent=4))
+
+                    # Add to CSV file that the dataset's metadata was not downloaded
+                    writer.writerow([datasetPidInJson, True])  
         
 
 def save_dataset_exports(directoryPath, downloadStatusFilePath, installationUrl, datasetPidList, 
