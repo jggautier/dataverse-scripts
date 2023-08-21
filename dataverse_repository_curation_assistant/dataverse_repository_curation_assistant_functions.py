@@ -1040,11 +1040,11 @@ def save_dataset_export(
                     datasetPid, exportFormat, verify=verify, allVersions=True, header={}, 
                     apiKey=apiKey)
 
-                if latestVersionMetadata == 'ERROR':
+                if allVersionsMetadata == 'ERROR':
                     # Add to CSV file that the dataset's metadata was not downloaded
                     writer.writerow([datasetPid, False])
 
-                elif latestVersionMetadata != 'ERROR':
+                elif allVersionsMetadata != 'ERROR':
 
                     for datasetVersion in allVersionsMetadata['data']:
                         datasetVersion = {
