@@ -915,28 +915,34 @@ def get_dataset_metadata_export(
 
     if exportFormat == 'dataverse_json':
         if allVersions is False:
-
-            dataGetLatestVersionUrl = f'{installationUrl}/api/datasets/:persistentId'
-            dataGetLatestVersionUrl = dataGetLatestVersionUrl.replace('//api', '/api')
-            response = requests.get(
-                dataGetLatestVersionUrl,
-                params={'persistentId': datasetPid},
-                headers=header, verify=verify)
-            if response.status_code in (200, 401): # 401 is the unauthorized code. Valid API key is needed
-                data = response.json()
-            else:
+                dataGetLatestVersionUrl = f'{installationUrl}/api/datasets/:persistentId'
+                dataGetLatestVersionUrl = dataGetLatestVersionUrl.replace('//api', '/api')
+            try:
+                response = requests.get(
+                    dataGetLatestVersionUrl,
+                    params={'persistentId': datasetPid},
+                    headers=header, verify=verify)
+                if response.status_code in (200, 401): # 401 is the unauthorized code. Valid API key is needed
+                    data = response.json()
+                else:
+                    data = 'ERROR'
+            except Exception:
                 data = 'ERROR'
 
         elif allVersions is True:
             dataGetAllVersionsUrl = f'{installationUrl}/api/datasets/:persistentId/versions'
-            response = requests.get(
-                dataGetAllVersionsUrl,
-                params={'persistentId': datasetPid},
-                headers=header,
-                verify=verify)
-            if response.status_code in (200, 401): # 401 is the unauthorized code. Valid API key is needed
-                data = response.json()
-            else:
+            dataGetAllVersionsUrl = dataGetAllVersionsUrl.replace('//api', '/api')
+            try:
+                response = requests.get(
+                    dataGetAllVersionsUrl,
+                    params={'persistentId': datasetPid},
+                    headers=header,
+                    verify=verify)
+                if response.status_code in (200, 401): # 401 is the unauthorized code. Valid API key is needed
+                    data = response.json()
+                else:
+                    data = 'ERROR'
+            except Exception:
                 data = 'ERROR'
 
     # For getting metadata from other exports, which are available only for each dataset's latest published
@@ -945,25 +951,27 @@ def get_dataset_metadata_export(
         allVersions = False
         datasetMetadataExportEndpoint = f'{installationUrl}/api/datasets/export'
         datasetMetadataExportEndpoint = datasetMetadataExportEndpoint.replace('//api', '/api')
-       
-        response = requests.get(
-            datasetMetadataExportEndpoint,
-            params={
-                'persistentId': datasetPid,
-                'exporter': exportFormat
-                },
-            headers=header,
-            verify=verify)
+       try:
+            response = requests.get(
+                datasetMetadataExportEndpoint,
+                params={
+                    'persistentId': datasetPid,
+                    'exporter': exportFormat
+                    },
+                headers=header,
+                verify=verify)
 
-        if response.status_code == 200:
-            
-            if exportFormat in ('schema.org' , 'OAI_ORE'):
-                data = response.json()
+            if response.status_code == 200:
+                
+                if exportFormat in ('schema.org' , 'OAI_ORE'):
+                    data = response.json()
 
-            if exportFormat in ('ddi' , 'oai_ddi', 'dcterms', 'oai_dc', 'Datacite', 'oai_datacite'):
-                string = response.text
-                data = BeautifulSoup(string, 'xml').prettify()
-        else:
+                if exportFormat in ('ddi' , 'oai_ddi', 'dcterms', 'oai_dc', 'Datacite', 'oai_datacite'):
+                    string = response.text
+                    data = BeautifulSoup(string, 'xml').prettify()
+            else:
+                data = 'ERROR'
+        except Exception:
             data = 'ERROR'
 
     return data
