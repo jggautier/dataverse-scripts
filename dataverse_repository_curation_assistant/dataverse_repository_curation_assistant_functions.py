@@ -45,19 +45,19 @@ class collapsiblePanel(Frame):
         Label(self.titleFrame, text=text, width=40, anchor='w').pack(side='left', fill='x', expand=1)
 
         self.toggleButton = ttk.Checkbutton(
-        	self.titleFrame, width=5, command=self.toggle,
-			variable=self.show, style='Toolbutton')
+            self.titleFrame, width=5, command=self.toggle,
+            variable=self.show, style='Toolbutton')
         self.toggleButton.pack(side='right')
 
         self.subFrame = Frame(self, borderwidth=1, relief='groove', bg='white', padx=10)
 
         if default == 'open':
-        	self.show.set(1)
-        	self.subFrame.pack(fill='x', expand=1)
-        	self.toggleButton.configure(text='▼')
+            self.show.set(1)
+            self.subFrame.pack(fill='x', expand=1)
+            self.toggleButton.configure(text='▼')
         elif default == 'closed':
-        	self.show.set(0)
-        	self.toggleButton.configure(text='▲')
+            self.show.set(0)
+            self.toggleButton.configure(text='▲')
 
     def toggle(self):
         if bool(self.show.get()):
@@ -915,8 +915,8 @@ def get_dataset_metadata_export(
 
     if exportFormat == 'dataverse_json':
         if allVersions is False:
-                dataGetLatestVersionUrl = f'{installationUrl}/api/datasets/:persistentId'
-                dataGetLatestVersionUrl = dataGetLatestVersionUrl.replace('//api', '/api')
+            dataGetLatestVersionUrl = f'{installationUrl}/api/datasets/:persistentId'
+            dataGetLatestVersionUrl = dataGetLatestVersionUrl.replace('//api', '/api')
             try:
                 response = requests.get(
                     dataGetLatestVersionUrl,
@@ -951,7 +951,7 @@ def get_dataset_metadata_export(
         allVersions = False
         datasetMetadataExportEndpoint = f'{installationUrl}/api/datasets/export'
         datasetMetadataExportEndpoint = datasetMetadataExportEndpoint.replace('//api', '/api')
-       try:
+        try:
             response = requests.get(
                 datasetMetadataExportEndpoint,
                 params={
