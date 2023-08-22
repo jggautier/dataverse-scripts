@@ -730,32 +730,43 @@ def get_all_subcollection_aliases(collectionUrl, apiKey=''):
 
 
 def get_collection_info(installationUrl, alias, dataverseCollectionInfoDict, header={}, apiKey=''):
-    # if apiKey:
-    #     header = {'X-Dataverse-key': apiKey}
-    # else:
-    #     header = {}
 
-    viewCollectionApiEndpointURL = f'{installationUrl}/api/dataverses/{alias}'
-    response = requests.get(
-        viewCollectionApiEndpointURL,
-        headers=header)
-    data = response.json()
-    creationDate = convert_to_local_tz(data['data']['creationDate'], shortDate=True)
-    contactEmailsList = []
-    for dataverseContact in data['data']['dataverseContacts']:
-        contactEmail = dataverseContact['contactEmail']
-        contactEmailsList.append(contactEmail)
-    contactEmailsString = list_to_string(contactEmailsList)
-    dataverseType = data['data']['dataverseType']
+    try:
+        viewCollectionApiEndpointURL = f'{installationUrl}/api/dataverses/{alias}'
+        response = requests.get(
+            viewCollectionApiEndpointURL,
+            headers=header)
+        data = response.json()
 
-    # Get count of datasets in Journal collections
+        if data['status'] == 'ERROR':
+            creationDate = 'N/A'
+            contactEmailsString = 'N/A'
+            dataverseType = 'N/A'
 
-    newRow = {
-        'dataverse_alias': alias,
-        'dataverse_create_date': creationDate,
-        'contact_emails': contactEmailsString,
-        'dataverse_type': dataverseType
-        }
+        elif data['status'] == 'OK':
+            creationDate = convert_to_local_tz(data['data']['creationDate'], shortDate=True)
+            contactEmailsList = []
+            for dataverseContact in data['data']['dataverseContacts']:
+                contactEmail = dataverseContact['contactEmail']
+                contactEmailsList.append(contactEmail)
+            contactEmailsString = list_to_string(contactEmailsList)
+            dataverseType = data['data']['dataverseType']
+
+        newRow = {
+            'dataverse_alias': alias,
+            'dataverse_create_date': creationDate,
+            'contact_emails': contactEmailsString,
+            'dataverse_type': dataverseType
+            }
+        dataverseCollectionInfoDict.append(dict(newRow))
+
+    except Exception as e:
+        newRow = {
+            'dataverse_alias': alias,
+            'dataverse_create_date': 'N/A',
+            'contact_emails': 'N/A',
+            'dataverse_type': 'N/A'
+            }
     dataverseCollectionInfoDict.append(dict(newRow))
 
 
@@ -771,6 +782,7 @@ def get_collections_info(installationUrl, aliasList, dataverseCollectionInfoDict
             dataverseCollectionInfoDict,
             header,
             apiKey) for alias in aliasList)
+
 
 def get_canonical_pid(pidOrUrl):
 
