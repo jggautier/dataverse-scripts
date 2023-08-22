@@ -1046,7 +1046,7 @@ def save_dataset_export(
 
                 datasetPidForFileName = datasetPidInJson.replace(':', '_').replace('/', '_')
 
-                metadataFile = f'{datasetPidForFileName}_{latestVersionNumber}.json'
+                metadataFile = f'{datasetPidForFileName}_{latestVersionNumber}(latest_version).json'
                 with open(os.path.join(directoryPath, metadataFile), mode='w') as f:
                     f.write(json.dumps(datasetVersion, indent=4))
 
@@ -1452,7 +1452,8 @@ def get_dataset_metadata(
             writer.writerow(headerRow)        
 
     # Change passed datasetPidString to a list. Make sure the last newline doesn't mess up the list
-    datasetPidList = [x.strip() for x in datasetPidString.splitlines()][:-1]
+    # datasetPidList = [x.strip() for x in datasetPidString.splitlines()][:-1]
+    datasetPidList = [x.strip() for x in datasetPidString.rstrip().splitlines()]
 
     # Delete any message in the tkinter window about no metadata being found
     # the last time the "Get metadata" button was pressed
@@ -1467,6 +1468,8 @@ def get_dataset_metadata(
     rootWindow.update_idletasks()
 
     for datasetPid in datasetPidList:
+
+        datasetPid = get_canonical_pid(datasetPid)
 
         # Get alias of collection that dataset is in
         searchApiUrl = f'{installationUrl}/api/search?q=dsPersistentId:"{datasetPid}"'
@@ -1485,6 +1488,7 @@ def get_dataset_metadata(
             installationUrl=installationUrl,
             datasetPid=datasetPid, 
             exportFormat='dataverse_json',
+            timeout=60,
             verify=False,
             apiKey=apiKey)
 
