@@ -920,7 +920,7 @@ def get_datasets_from_collection_or_search_url(
 
 
 def get_dataset_metadata_export(
-    installationUrl, datasetPid, exportFormat, verify,
+    installationUrl, datasetPid, exportFormat, timeout, verify,
     allVersions=False, header={}, apiKey=''):
     if apiKey:
         header['X-Dataverse-key'] = apiKey
@@ -933,7 +933,9 @@ def get_dataset_metadata_export(
                 response = requests.get(
                     dataGetLatestVersionUrl,
                     params={'persistentId': datasetPid},
-                    headers=header, verify=verify)
+                    headers=header, 
+                    timeout=timeout, 
+                    verify=verify)
                 if response.status_code in (200, 401): # 401 is the unauthorized code. Valid API key is needed
                     data = response.json()
                 else:
@@ -949,6 +951,7 @@ def get_dataset_metadata_export(
                     dataGetAllVersionsUrl,
                     params={'persistentId': datasetPid},
                     headers=header,
+                    timeout=timeout, 
                     verify=verify)
                 if response.status_code in (200, 401): # 401 is the unauthorized code. Valid API key is needed
                     data = response.json()
@@ -971,6 +974,7 @@ def get_dataset_metadata_export(
                     'exporter': exportFormat
                     },
                 headers=header,
+                timeout=timeout, 
                 verify=verify)
 
             if response.status_code == 200:
@@ -990,7 +994,7 @@ def get_dataset_metadata_export(
 
 def save_dataset_export(
     directoryPath, downloadStatusFilePath, installationUrl, datasetPid, 
-    exportFormat, verify, allVersions=False, header={}, apiKey=''):
+    exportFormat, timeout, verify, allVersions=False, header={}, apiKey=''):
 
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -1000,7 +1004,7 @@ def save_dataset_export(
             quoting=csv.QUOTE_MINIMAL)
 
         latestVersionMetadata = get_dataset_metadata_export(installationUrl, 
-            datasetPid, exportFormat, verify=verify, allVersions=False, 
+            datasetPid, exportFormat, timeout, verify=verify, allVersions=False, 
             header={}, apiKey=apiKey)
         
         if latestVersionMetadata == 'ERROR':
@@ -1046,10 +1050,13 @@ def save_dataset_export(
                 with open(os.path.join(directoryPath, metadataFile), mode='w') as f:
                     f.write(json.dumps(datasetVersion, indent=4))
 
+                # Add to CSV file that the dataset's metadata was not downloaded
+                writer.writerow([datasetPidInJson, True])
+
             elif allVersions == True:
 
                 allVersionsMetadata = get_dataset_metadata_export(installationUrl, 
-                    datasetPid, exportFormat, verify=verify, allVersions=True, header={}, 
+                    datasetPid, exportFormat, timeout, verify=verify, allVersions=True, header={}, 
                     apiKey=apiKey)
 
                 if allVersionsMetadata == 'ERROR':
@@ -1092,7 +1099,7 @@ def save_dataset_export(
         
 
 def save_dataset_exports(directoryPath, downloadStatusFilePath, installationUrl, datasetPidList, 
-    exportFormat, verify, allVersions=False, header={}, apiKey=''):
+    exportFormat, timeout, verify, allVersions=False, header={}, apiKey=''):
     
     currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
     
@@ -1114,6 +1121,7 @@ def save_dataset_exports(directoryPath, downloadStatusFilePath, installationUrl,
             installationUrl=installationUrl,
             datasetPid=datasetPid, 
             exportFormat=exportFormat,
+            timeout=timeout,
             verify=verify,
             allVersions=allVersions, 
             header={}, 
