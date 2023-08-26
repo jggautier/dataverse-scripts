@@ -222,6 +222,7 @@ elif getAllVersionMetadata == 1:
         directoryPath=metadataFileDirectoryPath,
         downloadStatusFilePath=downloadStatusFilePath,
         installationUrl=installationUrl, datasetPidList=datasetPids, 
-        exportFormat='dataverse_json', verify=False, allVersions=True, 
+        exportFormat='dataverse_json', timeout=60,
+        verify=False, allVersions=True, 
         header={}, apiKey=apiKey)
 
