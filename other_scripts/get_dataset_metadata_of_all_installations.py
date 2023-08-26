@@ -368,6 +368,7 @@ for installation in mapData['installations']:
                 installationUrl=installationUrl, 
                 datasetPidList=datasetPids, 
                 exportFormat='dataverse_json', 
+                timeout=60,
                 verify=False, 
                 allVersions=True, 
                 header=headers, 
