@@ -125,7 +125,7 @@ def check_export(file, filesListFromExports):
     datasetPidInJson = improved_get(datasetMetadata, 'data.datasetVersion.datasetPersistentId')
     if datasetPidInJson is None:
         persistentUrl = datasetMetadata['data']['datasetVersion']['persistentUrl']
-        datasetPidInJson = get_canonical_pid(persistentUrl) 
+        datasetPidInJson = get_canonical_pid(persistentUrl)
 
     filesListFromExports.append(datasetPidInJson)
 
