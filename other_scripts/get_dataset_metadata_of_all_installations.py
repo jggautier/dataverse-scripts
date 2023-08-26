@@ -14,6 +14,8 @@ import sys
 import time
 from tqdm import tqdm
 from urllib.parse import urlparse
+
+# Add path to directory where dataverse_repository_curation_assistant_functions.py is
 sys.path.append('/Users/juliangautier/dataverse-scripts/dataverse_repository_curation_assistant')
 
 from dataverse_repository_curation_assistant_functions import *
@@ -114,6 +116,47 @@ def get_dataset_info_dict(start, headers):
                 misindexedDatasetsCount += 1
 
 
+def check_export(file, filesListFromExports):
+    with open(file, 'r') as f:
+        datasetMetadata = f.read()
+        datasetMetadata = json.loads(datasetMetadata)
+
+    # Check if JSON includes datasetPersistentId key
+    datasetPidInJson = improved_get(datasetMetadata, 'data.datasetVersion.datasetPersistentId')
+    if datasetPidInJson is None:
+        persistentUrl = datasetMetadata['data']['datasetVersion']['persistentUrl']
+        datasetPidInJson = get_canonical_pid(persistentUrl) 
+
+    filesListFromExports.append(datasetPidInJson)
+
+
+def check_exports(jsonDirectory, spreadsheetFilePath):
+    filesListFromExports = []
+    jsonFileCountTotal = len(glob.glob(os.path.join(jsonDirectory, '*(latest_version).json')))
+
+    with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=jsonFileCountTotal)) as progress_bar:
+        Parallel(n_jobs=4, backend='threading')(delayed(check_export)(
+            file=file,
+            filesListFromExports=filesListFromExports
+            ) for file in glob.glob(os.path.join(jsonDirectory, '*(latest_version).json')))
+
+    datasetsDF = pd.read_csv(spreadsheetFilePath)
+    datasetPidList = datasetsDF['dataset_pid'].values.tolist()
+
+    countOfPids = len(datasetPidList)
+    countFromFiles = len(filesListFromExports)
+
+    missingDatasets = list(set(datasetPidList) - set(filesListFromExports))
+
+    return(missingDatasets)
+    # if len(missingDatasets) == 0:
+    #     print('\nAll dataset metadata has been downloaded')
+
+    # elif len(missingDatasets) > 0:
+    #     print(f'\nDataset metadata missing from JSON directory \'{jsonDirectory}\': {len(missingDatasets)}')
+    #     print(missingDatasets)
+
+
 # Enter a user agent and your email address. Some Dataverse installations block requests from scripts.
 # See https://www.whatismybrowser.com/detect/what-is-my-user-agent to get your user agent
 userAgent = ''
@@ -148,9 +191,32 @@ mapdata = response.json()
 
 countOfInstallations = len(mapData['installations'])
 
-installationProgressCount = 1
+# Create CSV file for reoporting info about each installation
+headerRow = [
+    'Installation_name',
+    'Installation_URL',
+    'Dataverse_software_version',
+    'Able_to_get_metadata?',
+    'Time_taken_to_download_metadata_(seconds)',
+    'Time_taken_to_download_metadata',
+    'API_token_required?',
+    'Count_of_datasets_metadata_retrieved',
+    'Count_of_datasets_metadata_not_retrieved',
+    'PIDs_of_dataset_metadata_not_retrieved',
+    'Metadata_block_names']
+
+installationInfoFilePath = f'{allInstallationsMetadataDirectory}/installations_report.csv'
+
+with open(installationInfoFilePath, mode='w', newline='', encoding='utf-8') as installationInfo:
+    installationInfoWriter = csv.writer(installationInfo)
+    installationInfoWriter.writerow(headerRow)
+
+installationProgressCount = 0
 
 for installation in mapData['installations']:
+
+    installationProgressCount += 1
+
     installationName = installation['name']
     hostname = installation['hostname']
     
@@ -182,14 +248,28 @@ for installation in mapData['installations']:
         except Exception as e:
             installationStatus = e
 
+            dataverseSoftwareVersion = 'installation_unreachable'
+            ableToGetMetadata = False
+            timeDifferenceInSeconds = 'installation_unreachable',
+            timeDifferencePretty == 'installation_unreachable'
+            apiTokenRequired = 'installation_unreachable'
+            countOfDatasetsMetadataRetrieved = 'installation_unreachable'
+            countOfDatasetsMetadataNotRetrieved = 'installation_unreachable'
+            pidsOfDatasetMetadataNotRetrieved = 'installation_unreachable'
+            metadatablocksNames = 'installation_unreachable'
+
     print(f'Installation status for {installationUrl}: ' + str(installationStatus))
 
     # If there's a good response from the installation, check if Search API works by searching for installation's non-harvested datasets
     if installationStatus == 200:
 
+        apiTokenRequired = False
+
         # If the installation is in the dataframe of API keys, add API key to header dictionary
         # to use installation's API endpoints, which require an API key
         if hostname in installationsRequiringApiKeyList:
+            apiTokenRequired = True
+
             apiKeyDF = apiKeysDF[apiKeysDF.index == hostname]
             apiKey = apiKeyDF.iloc[0]['apikey']
             headers['X-Dataverse-key'] = apiKey
@@ -230,6 +310,7 @@ for installation in mapData['installations']:
         # Report if the installation has no published, non-harvested datasets
         if datasetCount == 0:
             print('\nInstallation has 0 published, non-harvested datasets')
+            ableToGetMetadata = 'No datasets found'
 
         # If there are local published datasets, get the PID of a local dataset (used later to check endpoints for getting dataset metadata)
         if datasetCount != 'NA' and datasetCount > 0:
@@ -245,11 +326,15 @@ for installation in mapData['installations']:
 
         else:
             getDataverseJsonApiStatus = 'NA'
+            ableToGetMetadata = False
+
         print(f'"Get dataset JSON" API status: {getDataverseJsonApiStatus}')
 
         # If the "Get dataset JSON" endpoint works, download the installation's metadatablock JSON files, dataset PIDs, and dataset metadata
 
         if getDataverseJsonApiStatus == 'OK':
+
+            ableToGetMetadata = True
 
             # Save time and date when script started downloading from the installation to append it to the installation's directory and files
             currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
@@ -266,6 +351,8 @@ for installation in mapData['installations']:
             metadatablocksApiEndpointUrl = f'{installationUrl}/api/v1/metadatablocks'
             metadatablocksApiEndpointUrl = metadatablocksApiEndpointUrl.replace('//api', '/api')
             getMetadatablocksApiStatus = check_api_endpoint(metadatablocksApiEndpointUrl, headers, verify=False, json_response=True)
+
+            metadatablockNames = 'API call failed'
 
             # If API endpoint for getting metadatablock files works...
             if getMetadatablocksApiStatus == 'OK':        
@@ -350,9 +437,6 @@ for installation in mapData['installations']:
             # For each dataset PID, download dataset's Dataverse JSON metadata export
             print('\nDownloading Dataverse JSON metadata to Dataverse_JSON_metadata folder:')
 
-            # Initiate counts for progress indicator
-            dataverseJsonMetadataNotDownloaded = []
-
             # Create CSV file for recording if dataset metadata was downloaded
             downloadStatusFilePath = f'{installationDirectory}/download_status_{installationName}_{currentTime}.csv'
 
@@ -362,26 +446,50 @@ for installation in mapData['installations']:
                 writer = csv.writer(downloadStatusFile)
                 writer.writerow(headerRow)
 
+            startJSONMetadataExportDownloadTime = convert_to_local_tz(datetime.now(), shortDate=False)
+
             save_dataset_exports(
                 directoryPath=dataverseJsonMetadataDirectory,
                 downloadStatusFilePath=downloadStatusFilePath,
                 installationUrl=installationUrl, 
                 datasetPidList=datasetPids, 
-                exportFormat='dataverse_json', 
+                exportFormat='dataverse_json',
                 timeout=60,
                 verify=False, 
                 allVersions=True, 
                 header=headers, 
                 apiKey='')
 
-            # If any dataset metadata was not downloaded...
-            if len(dataverseJsonMetadataNotDownloaded) > 0:
-                # ... get and print a count of those dataset's
-                dataverseJsonMetadataNotDownloadedCount = len(dataverseJsonMetadataNotDownloaded)
-                print(f'Some metadata could not be downloaded: {dataverseJsonMetadataNotDownloadedCount}')
+            endJSONMetadataExportDownloadTime = convert_to_local_tz(datetime.now(), shortDate=False)
+
+            timeDifferenceInSeconds = int((endJSONMetadataExportDownloadTime - startJSONMetadataExportDownloadTime).total_seconds())
+            timeDifferencePretty = td_format(endJSONMetadataExportDownloadTime - startJSONMetadataExportDownloadTime)
 
             # Create dataframe from downloadStatusFilePath
             downloadProgressDF = pd.read_csv(downloadStatusFilePath, sep=',', na_filter = False)
+
+            # Get list and count of datasets whose metadata failed to download
+            missingDatasetsDF = downloadProgressDF[downloadProgressDF.dataverse_json_export_saved == False]
+            missingDatasetsList = missingDatasetsDF['dataset_pid'].values.tolist()
+            missingDatasetsCount = len(missingDatasetsList)
+
+            # Check JSON directory to make sure files actually exist for each dataset
+            print('\nChecking JSON directory for files for metadata exports for each dataset')
+            datasetsMissingFromJSONDirectory = check_exports(dataverseJsonMetadataDirectory, downloadStatusFilePath)
+
+            countOfDatasetsMetadataNotRetrieved = len(datasetsMissingFromJSONDirectory)
+            pidsOfDatasetMetadataNotRetrieved = ''
+
+            if len(datasetsMissingFromJSONDirectory) > 0:
+                pidsOfDatasetMetadataNotRetrieved = datasetsMissingFromJSONDirectory
+
+                print('Metadata missing from JSON directory. Updating download status CSV file')
+
+                for datasetPid in datasetsMissingFromJSONDirectory:
+                    downloadProgressDF.loc[ downloadProgressDF['dataset_pid'] == datasetPid, 'dataverse_json_export_saved'] = False
+
+            retrievedDatasetsDF = downloadProgressDF[downloadProgressDF.dataverse_json_export_saved == True]
+            countOfDatasetsMetadataRetrieved = len(retrievedDatasetsDF)
 
             # Merge datasetPidsFileDF and downloadProgressDF
             mergedDF = pd.merge(datasetPidsFileDF, downloadProgressDF, how='left', on='dataset_pid')
@@ -389,7 +497,7 @@ for installation in mapData['installations']:
             # Delete downloadProgress CSV file since its been merged with datasetPidsFile
             os.remove(downloadStatusFilePath)
 
-            print('Getting categories of each Dataverse collection:')
+            print('\nGetting categories of each Dataverse collection:')
 
             # Get and deduplicate list of collection aliases from datasetPidsFileDF, 
             # then use dataaverse collection api endpoint to create dataframe listing 
@@ -408,6 +516,7 @@ for installation in mapData['installations']:
 
             # Merge datasetPidsFileDF and downloadProgressDF
             mergedDF = pd.merge(mergedDF, dataverseCollectionInfoDF, how='left', on='dataverse_alias')
+            mergedDF.drop_duplicates(subset=['dataverse_alias'], keep='first', inplace=True, ignore_index=True)
 
             # Force report's column order
             mergedDF = mergedDF[[
@@ -422,5 +531,19 @@ for installation in mapData['installations']:
             # Export merged dataframe (overwriting old datasetPidsFile)
             mergedDF.to_csv(datasetPidsFile, index=False)
 
-    installationProgressCount += 1
+    with open(installationInfoFilePath, mode='a', newline='', encoding='utf-8') as installationInfo:
+        installationInfoWriter = csv.writer(installationInfo)
+        installationInfoWriter.writerow([
+            installationName, 
+            hostname,
+            dataverseVersion,
+            ableToGetMetadata,
+            timeDifferenceInSeconds,
+            timeDifferencePretty,
+            apiTokenRequired,
+            countOfDatasetsMetadataRetrieved,
+            countOfDatasetsMetadataNotRetrieved,
+            pidsOfDatasetMetadataNotRetrieved,
+            metadatablockNames])
+
     print('\n----------------------')
