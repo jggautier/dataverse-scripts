@@ -178,22 +178,30 @@ def format_size(byteSize):
 # into more human readable string, e.g. 1 year, 8 months, 4 days...
 def td_format(timeDeltaObject):
     seconds = int(timeDeltaObject.total_seconds())
-    periods = [
-        ('year', 60*60*24*365),
-        ('month', 60*60*24*30),
-        ('day', 60*60*24),
-        ('hour', 60*60),
-        ('minute', 60),
-        ('second', 1)]
 
-    strings = []
-    for periodName, periodSeconds in periods:
-        if seconds > periodSeconds:
-            periodValue , seconds = divmod(seconds, periodSeconds)
-            hasSeconds = 's' if periodValue > 1 else ''
-            strings.append(f'{periodValue} {periodName}{hasSeconds}')
+    if seconds < 1:
+        return 'Less than 1 second'
 
-    return ', '.join(strings)
+    elif seconds == 1:
+        return '1 second'
+
+    elif seconds > 1:
+        periods = [
+            ('year', 60*60*24*365),
+            ('month', 60*60*24*30),
+            ('day', 60*60*24),
+            ('hour', 60*60),
+            ('minute', 60),
+            ('second', 1)]
+
+        strings = []
+        for periodName, periodSeconds in periods:
+            if seconds > periodSeconds:
+                periodValue , seconds = divmod(seconds, periodSeconds)
+                hasSeconds = 's' if periodValue > 1 else ''
+                strings.append(f'{periodValue} {periodName}{hasSeconds}')
+
+        return ', '.join(strings)
 
 
 def get_directory_path():
