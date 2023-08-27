@@ -199,7 +199,7 @@ headerRow = [
     'Able_to_get_metadata?',
     'Time_taken_to_download_metadata_(seconds)',
     'Time_taken_to_download_metadata',
-    'API_token_required?',
+    'API_token_used',
     'Count_of_datasets_metadata_retrieved',
     'Count_of_datasets_metadata_not_retrieved',
     'PIDs_of_dataset_metadata_not_retrieved',
@@ -252,7 +252,7 @@ for installation in mapData['installations']:
             ableToGetMetadata = False
             timeDifferenceInSeconds = 'installation_unreachable',
             timeDifferencePretty == 'installation_unreachable'
-            apiTokenRequired = 'installation_unreachable'
+            apiTokenUsed = 'installation_unreachable'
             countOfDatasetsMetadataRetrieved = 'installation_unreachable'
             countOfDatasetsMetadataNotRetrieved = 'installation_unreachable'
             pidsOfDatasetMetadataNotRetrieved = 'installation_unreachable'
@@ -263,12 +263,12 @@ for installation in mapData['installations']:
     # If there's a good response from the installation, check if Search API works by searching for installation's non-harvested datasets
     if installationStatus == 200:
 
-        apiTokenRequired = False
+        apiTokenUsed = False
 
         # If the installation is in the dataframe of API keys, add API key to header dictionary
         # to use installation's API endpoints, which require an API key
         if hostname in installationsRequiringApiKeyList:
-            apiTokenRequired = True
+            apiTokenUsed = True
 
             apiKeyDF = apiKeysDF[apiKeysDF.index == hostname]
             apiKey = apiKeyDF.iloc[0]['apikey']
@@ -540,7 +540,7 @@ for installation in mapData['installations']:
             ableToGetMetadata,
             timeDifferenceInSeconds,
             timeDifferencePretty,
-            apiTokenRequired,
+            apiTokenUsed,
             countOfDatasetsMetadataRetrieved,
             countOfDatasetsMetadataNotRetrieved,
             pidsOfDatasetMetadataNotRetrieved,
