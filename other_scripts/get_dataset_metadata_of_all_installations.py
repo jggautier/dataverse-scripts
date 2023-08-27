@@ -149,12 +149,6 @@ def check_exports(jsonDirectory, spreadsheetFilePath):
     missingDatasets = list(set(datasetPidList) - set(filesListFromExports))
 
     return(missingDatasets)
-    # if len(missingDatasets) == 0:
-    #     print('\nAll dataset metadata has been downloaded')
-
-    # elif len(missingDatasets) > 0:
-    #     print(f'\nDataset metadata missing from JSON directory \'{jsonDirectory}\': {len(missingDatasets)}')
-    #     print(missingDatasets)
 
 
 # Enter a user agent and your email address. Some Dataverse installations block requests from scripts.
@@ -463,6 +457,8 @@ for installation in mapData['installations']:
             endJSONMetadataExportDownloadTime = convert_to_local_tz(datetime.now(), shortDate=False)
 
             timeDifferenceInSeconds = int((endJSONMetadataExportDownloadTime - startJSONMetadataExportDownloadTime).total_seconds())
+            if timeDifferenceInSeconds < 1:
+                timeDifferenceInSeconds = 1
             timeDifferencePretty = td_format(endJSONMetadataExportDownloadTime - startJSONMetadataExportDownloadTime)
 
             # Create dataframe from downloadStatusFilePath
