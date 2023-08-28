@@ -1107,7 +1107,7 @@ def save_dataset_export(
         
 
 def save_dataset_exports(directoryPath, downloadStatusFilePath, installationUrl, datasetPidList, 
-    exportFormat, timeout, verify, allVersions=False, header={}, apiKey=''):
+    exportFormat, n_jobs, timeout, verify, allVersions=False, header={}, apiKey=''):
     
     currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
     
@@ -1123,7 +1123,7 @@ def save_dataset_exports(directoryPath, downloadStatusFilePath, installationUrl,
     # Use joblib library to use 4 CPU cores to make SearchAPI calls to get info about datasets
     # and report progress using tqdm progress bars
     with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=datasetCount)) as progress_bar:
-        Parallel(n_jobs=4, backend='threading')(delayed(save_dataset_export)(
+        Parallel(n_jobs=n_jobs, backend='threading')(delayed(save_dataset_export)(
             directoryPath=directoryPath,
             downloadStatusFilePath=downloadStatusFilePath,
             installationUrl=installationUrl,
