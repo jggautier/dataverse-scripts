@@ -944,7 +944,7 @@ def get_dataset_metadata_export(
                     headers=header, 
                     timeout=timeout, 
                     verify=verify)
-                if response.status_code in (200, 401): # 401 is the unauthorized code. Valid API key is needed
+                if response.status_code == 200 and 'metadataBlocks' in response.json()['data']['latestVersion']:
                     data = response.json()
                 else:
                     data = 'ERROR'
@@ -961,7 +961,7 @@ def get_dataset_metadata_export(
                     headers=header,
                     timeout=timeout, 
                     verify=verify)
-                if response.status_code in (200, 401): # 401 is the unauthorized code. Valid API key is needed
+                if response.status_code == 200 and 'metadataBlocks' in response.json()['data'][0]:
                     data = response.json()
                 else:
                     data = 'ERROR'
