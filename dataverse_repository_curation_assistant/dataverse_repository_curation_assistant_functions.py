@@ -1112,7 +1112,6 @@ def save_dataset_exports(directoryPath, downloadStatusFilePath, installationUrl,
     currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
     
     # Create CSV file and add headerrow
-    # downloadStatusFilePath = f'{installationDirectory}/download_progress_{installationName}_{currentTime}.csv'
     headerRow = ['dataset_pid', 'dataverse_json_export_saved']
     with open(downloadStatusFilePath, mode='w', newline='') as downloadStatusFile:
         writer = csv.writer(downloadStatusFile)
