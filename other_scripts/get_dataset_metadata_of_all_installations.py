@@ -15,8 +15,10 @@ import time
 from tqdm import tqdm
 from urllib.parse import urlparse
 
-# Add path to directory where dataverse_repository_curation_assistant_functions.py is
-sys.path.append('/Users/juliangautier/dataverse-scripts/dataverse_repository_curation_assistant')
+
+# This script uses functions in a Python script at https://github.com/jggautier/dataverse-scripts/tree/main/dataverse_repository_curation_assistant
+# Copy that directory to your computer and add the directory path to sys.path.append
+sys.path.append()
 
 from dataverse_repository_curation_assistant_functions import *
 
@@ -45,7 +47,7 @@ def check_api_endpoint(url, headers, verify=True, json_response=True):
     return status
 
 
-def get_dataset_info_dict(start, headers):
+def get_dataset_info_dict(start, headers, misindexedDatasetsCount):
     searchApiUrl = f'{installationUrl}/api/search'
     try:
         perPage = 10
@@ -81,7 +83,7 @@ def get_dataset_info_dict(start, headers):
     # See https://github.com/IQSS/dataverse/issues/4225
 
     except Exception as e:
-        print(f'per_page=10 url broken: {searchApiUrl}, {e}')
+        print(f'per_page=10 url broken when start is {start}')
 
         # This code hasn't been tested because I haven't encountered Search API results with misindexed objects
         # since rewriting this code to use the joblib library
@@ -112,7 +114,7 @@ def get_dataset_info_dict(start, headers):
                     datasetInfoDict.append(dict(newRow))
 
             except Exception:
-                print(searchApiUrl)
+                print(f'per_page=10 url broken when start is {start}')
                 misindexedDatasetsCount += 1
 
 
@@ -183,7 +185,7 @@ mapDataUrl = 'https://raw.githubusercontent.com/IQSS/dataverse-installations/mai
 response = requests.get(mapDataUrl, headers=headers)
 mapdata = response.json()
 
-countOfInstallations = len(mapData['installations'])
+countOfInstallations = len(mapdata['installations'])
 
 # Create CSV file for reoporting info about each installation
 headerRow = [
@@ -207,7 +209,7 @@ with open(installationInfoFilePath, mode='w', newline='', encoding='utf-8') as i
 
 installationProgressCount = 0
 
-for installation in mapData['installations']:
+for installation in mapdata['installations']:
 
     installationProgressCount += 1
 
@@ -241,16 +243,15 @@ for installation in mapData['installations']:
 
         except Exception as e:
             installationStatus = e
-
-            dataverseSoftwareVersion = 'installation_unreachable'
+            dataverseVersion = f'installation_unreachable: {e}'
             ableToGetMetadata = False
-            timeDifferenceInSeconds = 'installation_unreachable',
-            timeDifferencePretty == 'installation_unreachable'
-            apiTokenUsed = 'installation_unreachable'
-            countOfDatasetsMetadataRetrieved = 'installation_unreachable'
-            countOfDatasetsMetadataNotRetrieved = 'installation_unreachable'
-            pidsOfDatasetMetadataNotRetrieved = 'installation_unreachable'
-            metadatablocksNames = 'installation_unreachable'
+            timeDifferenceInSeconds = 0
+            timeDifferencePretty = f'installation_unreachable: {e}'
+            apiTokenUsed = f'installation_unreachable: {e}'
+            countOfDatasetsMetadataRetrieved = f'installation_unreachable: {e}'
+            countOfDatasetsMetadataNotRetrieved = f'installation_unreachable: {e}'
+            pidsOfDatasetMetadataNotRetrieved = f'installation_unreachable: {e}'
+            metadatablockNames = f'installation_unreachable: {e}'
 
     print(f'Installation status for {installationUrl}: ' + str(installationStatus))
 
@@ -321,12 +322,26 @@ for installation in mapData['installations']:
         else:
             getDataverseJsonApiStatus = 'NA'
             ableToGetMetadata = False
-
+            timeDifferenceInSeconds = 0
+            timeDifferencePretty = 'NA'
+            countOfDatasetsMetadataRetrieved = 0
+            countOfDatasetsMetadataNotRetrieved = 0
+            pidsOfDatasetMetadataNotRetrieved = ''
+            metadatablockNames = 'Didn\'t try retrieving since \'Get Dataverse JSON endpoint failed\''
         print(f'"Get dataset JSON" API status: {getDataverseJsonApiStatus}')
 
         # If the "Get dataset JSON" endpoint works, download the installation's metadatablock JSON files, dataset PIDs, and dataset metadata
 
-        if getDataverseJsonApiStatus == 'OK':
+        if getDataverseJsonApiStatus != 'OK':
+            ableToGetMetadata = False
+            timeDifferenceInSeconds = 0
+            timeDifferencePretty = 'NA'
+            countOfDatasetsMetadataRetrieved = 0
+            countOfDatasetsMetadataNotRetrieved = 0
+            pidsOfDatasetMetadataNotRetrieved = 'NA'
+            metadatablockNames = 'Didn\'t try retrieving since \'Get Dataverse JSON endpoint failed\''
+
+        elif getDataverseJsonApiStatus == 'OK':
 
             ableToGetMetadata = True
 
@@ -334,7 +349,7 @@ for installation in mapData['installations']:
             currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
 
             # Create directory for the installation
-            installationNameTemp = installationName.replace(' ', '_')
+            installationNameTemp = installationName.replace(' ', '_').replace('|', '-')
             installationDirectory = f'{allInstallationsMetadataDirectory}/{installationNameTemp}_{currentTime}'
             os.mkdir(installationDirectory)
 
@@ -400,7 +415,8 @@ for installation in mapData['installations']:
             datasetPids = []
 
             with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=startsListCount)) as progress_bar:
-                Parallel(n_jobs=4, backend='threading')(delayed(get_dataset_info_dict)(start, headers=headers) for start in startsList)   
+                Parallel(n_jobs=4, backend='threading')(delayed(get_dataset_info_dict)(
+                    start, headers, misindexedDatasetsCount) for start in startsList)   
 
             # If there's a difference, print unique count and explain how this might've happened
             datasetPids = list(set(datasetPids))
@@ -411,6 +427,8 @@ for installation in mapData['installations']:
             # And remove duplicate rows from the dataframe. At least one repository has two published versions of the same dataset indexed. 
             # See https://dataverse.rhi.hi.is/dataverse/root/?q=1.00002
             datasetPidsFileDF = pd.DataFrame(datasetInfoDict).set_index('dataset_pid').drop_duplicates()
+
+            # print(datasetPidsFileDF.head(10))
 
             # Export datasetPidsFileDF as a CSV file...
             datasetPidsFile = f'{installationDirectory}/dataset_pids_{installationNameTemp}_{currentTime}.csv'
@@ -432,11 +450,11 @@ for installation in mapData['installations']:
             print('\nDownloading Dataverse JSON metadata to Dataverse_JSON_metadata folder:')
 
             # Create CSV file for recording if dataset metadata was downloaded
-            downloadStatusFilePath = f'{installationDirectory}/download_status_{installationName}_{currentTime}.csv'
+            downloadStatusFilePath = f'{installationDirectory}/download_status_{installationNameTemp}_{currentTime}.csv'
 
             # Create CSV file and add headerrow
             headerRow = ['dataset_pid', 'dataverse_json_export_saved']
-            with open(downloadStatusFilePath, mode='w', newline='', encoding='utf-8') as downloadStatusFile:
+            with open(downloadStatusFilePath, mode='w', newline='', encoding='utf-8-sig') as downloadStatusFile:
                 writer = csv.writer(downloadStatusFile)
                 writer.writerow(headerRow)
 
@@ -448,6 +466,7 @@ for installation in mapData['installations']:
                 installationUrl=installationUrl, 
                 datasetPidList=datasetPids, 
                 exportFormat='dataverse_json',
+                n_jobs=4,
                 timeout=60,
                 verify=False, 
                 allVersions=True, 
@@ -470,7 +489,7 @@ for installation in mapData['installations']:
             missingDatasetsCount = len(missingDatasetsList)
 
             # Check JSON directory to make sure files actually exist for each dataset
-            print('\nChecking JSON directory for files for metadata exports for each dataset')
+            print('\nChecking JSON directory for metadata export files of each dataset')
             datasetsMissingFromJSONDirectory = check_exports(dataverseJsonMetadataDirectory, downloadStatusFilePath)
 
             countOfDatasetsMetadataNotRetrieved = len(datasetsMissingFromJSONDirectory)
@@ -505,14 +524,15 @@ for installation in mapData['installations']:
             get_collections_info(installationUrl, aliasList, dataverseCollectionInfoDict, header=headers, apiKey='')
 
             # Create dataframe from dictionary
-            dataverseCollectionInfoDF = pd.DataFrame(dataverseCollectionInfoDict)
+            dataverseCollectionInfoDF = pd.DataFrame(dataverseCollectionInfoDict).drop_duplicates()
 
             # Retain only columns with aliases and categories
             dataverseCollectionInfoDF = dataverseCollectionInfoDF[['dataverse_alias', 'dataverse_type']]
+            # dataverseCollectionInfoDF.to_csv(f'{installationDirectory}/dataverseCollectionInfoDF.csv', index=False)
 
             # Merge datasetPidsFileDF and downloadProgressDF
-            mergedDF = pd.merge(mergedDF, dataverseCollectionInfoDF, how='left', on='dataverse_alias')
-            mergedDF.drop_duplicates(subset=['dataverse_alias'], keep='first', inplace=True, ignore_index=True)
+            mergedDF = pd.merge(mergedDF, dataverseCollectionInfoDF, how='left', on='dataverse_alias').drop_duplicates()
+            # mergedDF.drop_duplicates()
 
             # Force report's column order
             mergedDF = mergedDF[[
@@ -527,7 +547,7 @@ for installation in mapData['installations']:
             # Export merged dataframe (overwriting old datasetPidsFile)
             mergedDF.to_csv(datasetPidsFile, index=False)
 
-    with open(installationInfoFilePath, mode='a', newline='', encoding='utf-8') as installationInfo:
+    with open(installationInfoFilePath, mode='a', newline='', encoding='utf-8-sig') as installationInfo:
         installationInfoWriter = csv.writer(installationInfo)
         installationInfoWriter.writerow([
             installationName, 
