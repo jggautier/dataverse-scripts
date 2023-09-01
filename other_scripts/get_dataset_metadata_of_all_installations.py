@@ -75,8 +75,8 @@ def get_dataset_info_dict(start, headers, misindexedDatasetsCount):
             newRow = {
                 'dataset_pid': i['global_id'],
                 'dataset_pid_url': i['url'],
-                'dataverse_alias': i.get('identifier_of_dataverse', 'NA'),
-                'dataverse_name': i.get('name_of_dataverse', 'NA')}
+                'dataverse_collection_alias': i.get('identifier_of_dataverse', 'NA'),
+                'dataverse_collection_name': i.get('name_of_dataverse', 'NA')}
             datasetInfoDict.append(dict(newRow))
 
     # Print error message if misindexed datasets break the Search API call, and try the next page.
@@ -109,8 +109,8 @@ def get_dataset_info_dict(start, headers, misindexedDatasetsCount):
                     newRow = {
                         'dataset_pid': i['global_id'],
                         'dataset_pid_url': i['url'],
-                        'dataverse_alias': i.get('identifier_of_dataverse', 'NA'),
-                        'dataverse_name': i.get('name_of_dataverse', 'NA')}
+                        'dataverse_collection_alias': i.get('identifier_of_dataverse', 'NA'),
+                        'dataverse_collection_name': i.get('name_of_dataverse', 'NA')}
                     datasetInfoDict.append(dict(newRow))
 
             except Exception:
@@ -517,7 +517,7 @@ for installation in mapdata['installations']:
             # Get and deduplicate list of collection aliases from datasetPidsFileDF, 
             # then use dataaverse collection api endpoint to create dataframe listing 
             # category of each dataverse. Then merge that dataframe with mergedDF
-            aliasList = datasetPidsFileDF['dataverse_alias'].values.tolist()
+            aliasList = datasetPidsFileDF['dataverse_collection_alias'].values.tolist()
             aliasList = list(set(aliasList))
 
             dataverseCollectionInfoDict = []
@@ -527,20 +527,20 @@ for installation in mapdata['installations']:
             dataverseCollectionInfoDF = pd.DataFrame(dataverseCollectionInfoDict).drop_duplicates()
 
             # Retain only columns with aliases and categories
-            dataverseCollectionInfoDF = dataverseCollectionInfoDF[['dataverse_alias', 'dataverse_type']]
+            dataverseCollectionInfoDF = dataverseCollectionInfoDF[['dataverse_collection_alias', 'dataverse_collection_type']]
             # dataverseCollectionInfoDF.to_csv(f'{installationDirectory}/dataverseCollectionInfoDF.csv', index=False)
 
             # Merge datasetPidsFileDF and downloadProgressDF
-            mergedDF = pd.merge(mergedDF, dataverseCollectionInfoDF, how='left', on='dataverse_alias').drop_duplicates()
+            mergedDF = pd.merge(mergedDF, dataverseCollectionInfoDF, how='left', on='dataverse_collection_alias').drop_duplicates()
             # mergedDF.drop_duplicates()
 
             # Force report's column order
             mergedDF = mergedDF[[
                 'dataset_pid',
                 'dataset_pid_url', 
-                'dataverse_alias',
-                'dataverse_name',
-                'dataverse_type',
+                'dataverse_collection_alias',
+                'dataverse_collection_name',
+                'dataverse_collection_type',
                 'dataverse_json_export_saved'
                 ]]
 
