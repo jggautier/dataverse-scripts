@@ -737,43 +737,50 @@ def get_all_subcollection_aliases(collectionUrl, apiKey=''):
     return dataverseAliases
 
 
-def get_collection_info(installationUrl, alias, dataverseCollectionInfoDict, header={}, apiKey=''):
+def get_collection_info(installationUrl, alias, dataverseCollectionInfoDict, header={}, apiKey='', verify=False):
 
     try:
         viewCollectionApiEndpointURL = f'{installationUrl}/api/dataverses/{alias}'
         response = requests.get(
             viewCollectionApiEndpointURL,
-            headers=header)
+            headers=header,
+            verify=verify)
         data = response.json()
 
         if data['status'] == 'ERROR':
-            creationDate = 'N/A'
-            contactEmailsString = 'N/A'
-            dataverseType = 'N/A'
+            creationDate = 'NA'
+            contactEmailsString = 'NA'
+            dataverseType = 'NA'
 
         elif data['status'] == 'OK':
             creationDate = convert_to_local_tz(data['data']['creationDate'], shortDate=True)
-            contactEmailsList = []
-            for dataverseContact in data['data']['dataverseContacts']:
-                contactEmail = dataverseContact['contactEmail']
-                contactEmailsList.append(contactEmail)
-            contactEmailsString = list_to_string(contactEmailsList)
+            
+            dataverseContacts = improved_get(data, 'data.dataverseContacts')
+            if dataverseContacts is None:
+                contactEmailsString = 'NA'
+            elif dataverseContacts is not None:
+                contactEmailsList = []
+                for dataverseContact in data['data']['dataverseContacts']:
+                    contactEmail = dataverseContact['contactEmail']
+                    contactEmailsList.append(contactEmail)
+                contactEmailsString = list_to_string(contactEmailsList)
             dataverseType = data['data']['dataverseType']
 
         newRow = {
-            'dataverse_alias': alias,
-            'dataverse_create_date': creationDate,
-            'contact_emails': contactEmailsString,
-            'dataverse_type': dataverseType
+            'dataverse_collection_alias': alias,
+            'dataverse_collection_create_date': creationDate,
+            'dataverse_collection_contact_emails': contactEmailsString,
+            'dataverse_collection_type': dataverseType
             }
-        dataverseCollectionInfoDict.append(dict(newRow))
+        # dataverseCollectionInfoDict.append(dict(newRow))
 
     except Exception as e:
+        print(f'\t{e}')
         newRow = {
-            'dataverse_alias': alias,
-            'dataverse_create_date': 'N/A',
-            'contact_emails': 'N/A',
-            'dataverse_type': 'N/A'
+            'dataverse_collection_alias': alias,
+            'dataverse_collection_create_date': 'NA',
+            'dataverse_collection_contact_emails': 'NA',
+            'dataverse_collection_type': 'NA'
             }
     dataverseCollectionInfoDict.append(dict(newRow))
 
