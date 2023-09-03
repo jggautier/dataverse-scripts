@@ -1,5 +1,6 @@
 # Download dataset metadata of as many known Dataverse installations as possible
 
+from bs4 import BeautifulSoup
 import contextlib
 import csv
 from csv import DictReader
@@ -18,7 +19,7 @@ from urllib.parse import urlparse
 
 # This script uses functions in a Python script at https://github.com/jggautier/dataverse-scripts/tree/main/dataverse_repository_curation_assistant
 # Copy that directory to your computer and add the directory path to sys.path.append
-sys.path.append()
+sys.path.append('')
 
 from dataverse_repository_curation_assistant_functions import *
 
@@ -47,7 +48,7 @@ def check_api_endpoint(url, headers, verify=True, json_response=True):
     return status
 
 
-def get_dataset_info_dict(start, headers, misindexedDatasetsCount):
+def get_dataset_info_dict(start, headers, installationName, misindexedDatasetsCount, getCollectionInfo=True):
     searchApiUrl = f'{installationUrl}/api/search'
     try:
         perPage = 10
@@ -72,11 +73,18 @@ def get_dataset_info_dict(start, headers, misindexedDatasetsCount):
 
             datasetPids.append(i['global_id'])
 
-            newRow = {
-                'dataset_pid': i['global_id'],
-                'dataset_pid_url': i['url'],
-                'dataverse_collection_alias': i.get('identifier_of_dataverse', 'NA'),
-                'dataverse_collection_name': i.get('name_of_dataverse', 'NA')}
+            if getCollectionInfo == False:
+                newRow = {
+                    'dataverse_installation_name': installationName,
+                    'dataset_pid': i['global_id'],
+                    'dataset_pid_url': i['url']}
+            elif getCollectionInfo == True:
+                newRow = {
+                    'dataverse_installation_name': installationName,
+                    'dataset_pid': i['global_id'],
+                    'dataset_pid_url': i['url'],
+                    'dataverse_collection_alias': i.get('identifier_of_dataverse', 'NA'),
+                    'dataverse_collection_name': i.get('name_of_dataverse', 'NA')}
             datasetInfoDict.append(dict(newRow))
 
     # Print error message if misindexed datasets break the Search API call, and try the next page.
@@ -116,6 +124,25 @@ def get_dataset_info_dict(start, headers, misindexedDatasetsCount):
             except Exception:
                 print(f'per_page=10 url broken when start is {start}')
                 misindexedDatasetsCount += 1
+
+
+def get_dataverse_collection_info_web_scraping(installationUrl, datasetPid, datasetPidCollectionAliasDict):
+    pageUrl = f'{installationUrl}/dataset.xhtml?persistentId={datasetPid}'
+    response = requests.get(pageUrl)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    mydivs = soup.find_all('a', {'class': 'dataverseHeaderDataverseName'})
+    dataverseHeaderDataverseName = str(mydivs[0])
+    collectionAlias = dataverseHeaderDataverseName.replace('<a class="dataverseHeaderDataverseName" href="/dataverse/', '').split('" style="color:')[0]
+    collectionName = mydivs[0].text
+
+    newRow = {
+        'dataset_pid': datasetPid,
+        'dataverse_collection_alias': collectionAlias,
+        'dataverse_collection_name': collectionName
+    }
+    datasetPidCollectionAliasDict.append(dict(newRow))
+
+    return datasetPidCollectionAliasDict
 
 
 def check_export(file, filesListFromExports):
@@ -308,8 +335,14 @@ for installation in mapdata['installations']:
             ableToGetMetadata = 'No datasets found'
 
         # If there are local published datasets, get the PID of a local dataset (used later to check endpoints for getting dataset metadata)
+        # And check if the installation's Search API results include info about the dataset's Dataverse collection
         if datasetCount != 'NA' and datasetCount > 0:
-            testDatasetPid = searchApiData['data']['items'][0]['global_id']
+            firstItem = searchApiData['data']['items'][0]
+            testDatasetPid = firstItem['global_id']
+            if 'identifier_of_dataverse' in firstItem:
+                searchAPIIncludesCollectionInfo = True
+            else:
+                searchAPIIncludesCollectionInfo = False                
         else:
             testDatasetPid = 'NA'
 
@@ -395,8 +428,8 @@ for installation in mapdata['installations']:
                         with open(metadatablockFile, mode='w') as f:
                             f.write(json.dumps(response.json(), indent=4))
 
-            # Use the Search API to get the installation's dataset PIDs, name and alias of owning 
-            # Dataverse Collection and write them to a CSV file, and use the "Get dataset JSON" 
+            # Use the Search API to get the installation's dataset PIDs, try to get the name and alias of owning 
+            # Dataverse Collection, and write them to a CSV file, and use the "Get dataset JSON" 
             # endpoint to get those datasets' metadata
 
             # Create start variables to paginate through SearchAPI results
@@ -414,33 +447,57 @@ for installation in mapdata['installations']:
             datasetInfoDict = []
             datasetPids = []
 
+            if searchAPIIncludesCollectionInfo == False:
+                getCollectionInfo = False
+            else:
+                getCollectionInfo = True
+
             with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=startsListCount)) as progress_bar:
                 Parallel(n_jobs=4, backend='threading')(delayed(get_dataset_info_dict)(
-                    start, headers, misindexedDatasetsCount) for start in startsList)   
+                    start, headers, installationName, misindexedDatasetsCount, getCollectionInfo) for start in startsList)   
+
+            # Get new dataset count based on number of PIDs saved from Search API
+            datasetCount = len(datasetPids)
 
             # If there's a difference, print unique count and explain how this might've happened
             datasetPids = list(set(datasetPids))
             if len(datasetPids) != datasetCount:
                 print(f'Unique dataset PIDs found: {len(datasetPids)}. The Search API lists one or more datasets more than once')
 
+            if misindexedDatasetsCount > 0:
+                # Print count of unretrievable dataset PIDs due to misindexing
+                print(f'\n\nUnretrievable dataset PIDs due to misindexing: {misindexedDatasetsCount}\n')
+
             # Create dataframe from datasetInfoDict, which lists dataset basic info from Search API.
             # And remove duplicate rows from the dataframe. At least one repository has two published versions of the same dataset indexed. 
             # See https://dataverse.rhi.hi.is/dataverse/root/?q=1.00002
             datasetPidsFileDF = pd.DataFrame(datasetInfoDict).set_index('dataset_pid').drop_duplicates()
 
-            # print(datasetPidsFileDF.head(10))
+            # If Search API results don't include collection identifiers of each dataset,
+            # scrape each dataset page to get them, then merge them with datasetPidsFileDF
+            if searchAPIIncludesCollectionInfo == False:
+                print(f'\rCollection info not included in installation\'s Search API results. Scraping webpages to get collection aliases')
+                
+                datasetPidCollectionAliasDict = []
+                with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=datasetCount)) as progress_bar:
+                    Parallel(n_jobs=4, backend='threading')(delayed(get_dataverse_collection_info_web_scraping)(
+                        installationUrl,
+                        datasetPid,
+                        datasetPidCollectionAliasDict
+                        ) for datasetPid in datasetPids)
+
+                # progressCount = 0
+                # for datasetPid in datasetPids:
+                #     progressCount += 1
+                #     print(f'Scraping {progressCount} of {datasetCount} dataset pages: {datasetPid}')
+                #     datasetPidCollectionAliasDict = get_dataverse_collection_info_web_scraping(installationUrl, datasetPid)
+
+                datasetPidCollectionAliasDF = pd.DataFrame(datasetPidCollectionAliasDict)
+                datasetPidsFileDF = pd.merge(datasetPidsFileDF, datasetPidCollectionAliasDF, how='left', on='dataset_pid')
 
             # Export datasetPidsFileDF as a CSV file...
             datasetPidsFile = f'{installationDirectory}/dataset_pids_{installationNameTemp}_{currentTime}.csv'
             datasetPidsFileDF.to_csv(datasetPidsFile, index=True)
-
-            # Get new dataset count based on number of PIDs saved from Search API
-            datasetCount = len(datasetPids)
-
-            if misindexedDatasetsCount > 0:
-
-                # Print count of unretrievable dataset PIDs due to misindexing
-                print(f'\n\nUnretrievable dataset PIDs due to misindexing: {misindexedDatasetsCount}\n')
 
             # Create directory for dataset JSON metadata
             dataverseJsonMetadataDirectory = f'{installationDirectory}/Dataverse_JSON_metadata_{currentTime}'
@@ -489,6 +546,7 @@ for installation in mapdata['installations']:
             missingDatasetsCount = len(missingDatasetsList)
 
             # Check JSON directory to make sure files actually exist for each dataset
+            # Return list of datasets whose Dataverse JSON files are missing, if any
             print('\nChecking JSON directory for metadata export files of each dataset')
             datasetsMissingFromJSONDirectory = check_exports(dataverseJsonMetadataDirectory, downloadStatusFilePath)
 
@@ -536,6 +594,7 @@ for installation in mapdata['installations']:
 
             # Force report's column order
             mergedDF = mergedDF[[
+                'dataverse_installation_name',
                 'dataset_pid',
                 'dataset_pid_url', 
                 'dataverse_collection_alias',
