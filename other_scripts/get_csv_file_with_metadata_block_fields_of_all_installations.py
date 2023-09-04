@@ -26,7 +26,7 @@ csvFileFolder = ''
 
 csvFile = str(Path(csvFileFolder + '/' + 'metadatablocks.csv'))
 
-with open(csvFile, mode='w') as data:
+with open(csvFile, mode='w', encoding='utf-8-sig') as data:
     data = csv.writer(data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
     # Create header row
@@ -45,6 +45,8 @@ for repositoryFileName in listdir_nohidden(mainDirectory):
     # Get the repository name
     size = len(repositoryFileName)
     repositoryName = repositoryFileName[:size - 20]
+    # print(repositoryName)
+
     print(f'Parsing metadatablocks: {count} of {total}')
 
     # Open each installation folder
@@ -67,7 +69,7 @@ for repositoryFileName in listdir_nohidden(mainDirectory):
 
             metadatablockFilePath = str(Path(metadatablockFolderPath + '/' + metadatablockFile))
 
-            with open(metadatablockFilePath, 'r') as f:  # Open file in read mode
+            with open(metadatablockFilePath, mode='r', encoding='utf-8-sig') as f:  # Open file in read mode
                 metadatablockData = f.read()  # Copy content to dataset_metadata variable
                 metadatablockData = json.loads(metadatablockData)  # Load content as a python dict
 
@@ -90,7 +92,7 @@ for repositoryFileName in listdir_nohidden(mainDirectory):
                             allParentAndChildFields.append(subfield)
 
                             # Add parent and child names to the CSV file
-                            with open(csvFile, mode='a') as data:
+                            with open(csvFile, mode='a', encoding='utf-8-sig') as data:
                                 data = csv.writer(data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                                 # Write new row
@@ -114,7 +116,7 @@ for repositoryFileName in listdir_nohidden(mainDirectory):
                     # Set subfield to an empty string so that Dataverse ingests the CSV file.
                     # (Dataverse's ingest process doesn't seem to like it when there is nothing entered in the fourth column)
                     subfield = ''
-                    with open(csvFile, mode='a') as data:
+                    with open(csvFile, mode='a', encoding='utf-8-sig') as data:
                         data = csv.writer(data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                         # Write new row
