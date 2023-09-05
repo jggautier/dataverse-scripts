@@ -30,24 +30,6 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
-def check_api_endpoint(url, headers, verify=True, json_response=True):
-    try:
-        response = requests.get(url, headers=headers, timeout=60, verify=verify)
-        if response.status_code == 200 and json_response is True:
-            try:
-                status = response.json()['status']
-            except Exception as e:
-                status = e
-        elif response.status_code == 200 and json_response is False:
-            status = 'OK'
-        else:
-            status = response.status_code
-    except Exception as e:
-        status = e
-
-    return status
-
-
 def get_dataset_info_dict(start, headers, installationName, misindexedDatasetsCount, getCollectionInfo=True):
     searchApiUrl = f'{installationUrl}/api/search'
     try:

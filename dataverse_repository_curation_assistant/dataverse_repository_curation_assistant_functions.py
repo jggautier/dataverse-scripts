@@ -256,6 +256,24 @@ def get_installation_list():
     return installationsList
 
 
+def check_api_endpoint(url, headers, verify=False, json_response=True):
+    try:
+        response = requests.get(url, headers=headers, timeout=60, verify=verify)
+        if response.status_code == 200 and json_response is True:
+            try:
+                status = response.json()['status']
+            except Exception as e:
+                status = e
+        elif response.status_code == 200 and json_response is False:
+            status = 'OK'
+        else:
+            status = response.status_code
+    except Exception as e:
+        status = e
+
+    return status
+
+
 # Function for getting name of installation's root collection 
 # (assumming root dataverse's ID is 1, which isn't the case with UVA Dataverse)
 def get_root_alias_name(url):
