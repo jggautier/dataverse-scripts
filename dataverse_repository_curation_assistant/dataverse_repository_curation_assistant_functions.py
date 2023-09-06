@@ -1283,12 +1283,10 @@ def get_metadata_values_lists(
         versions = 'datasetVersion'
     rowVariablesList = []
 
-
-
     if datasetMetadata['status'] == 'OK':
 
-        for metadatablockName in datasetMetadata['data']['datasetVersion']['metadataBlocks']:
-            if 'citation' in metadatablockName:
+        for metadatablock in datasetMetadata['data']['datasetVersion']['metadataBlocks']:
+            if metadatablockName in metadatablock:
 
                 # (metadatablockName in datasetMetadata['data'][versions]['metadataBlocks']):
 
