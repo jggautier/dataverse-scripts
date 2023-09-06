@@ -1,5 +1,7 @@
-# For each dataset whose Dataverse JSON export is in a given folder, #
+# For each dataset whose Dataverse JSON export is in a given folder,
 # save the terms of use and access metadata to a CSV file
+# Script looks for Dataverse JSON file of each dataset's latest version 
+# (with "(latesst_version)" in the file name
 
 import csv
 import json
@@ -101,12 +103,12 @@ print('Getting metadata:')
 
 
 # Save count of files in the given directory and initialize count variable to track progress of script and for debugging
-path, dirs, files = next(os.walk(jsonDirectory))
-fileCount = len(files)
+# path, dirs, files = next(os.walk(jsonDirectory))
+fileCount = len(glob.glob(os.path.join(jsonDirectory, '*(latest_version).json')))
 count = 0
 
 # For each JSON file in the given directory...
-for file in glob.glob(os.path.join(jsonDirectory, '*.json')):  # For each JSON file in a folder
+for file in glob.glob(os.path.join(jsonDirectory, '*(latest_version).json')):  # For each JSON file in a folder
     count += 1
 
     # Save the name of the file to print to the terminal with the current and total counts
