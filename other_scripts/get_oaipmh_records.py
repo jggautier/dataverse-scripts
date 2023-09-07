@@ -116,12 +116,14 @@ mainloop()
 
 currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
 metadataPrefix = 'oai_dc'
+verb = 'ListIdentifiers'
+verb = 'ListRecords'
 
 if oaiSet:
-    oaiUrl = f'{baseUrl}?verb=ListIdentifiers&set={oaiSet}&metadataPrefix={metadataPrefix}'
+    oaiUrl = f'{baseUrl}?verb={verb}&set={oaiSet}&metadataPrefix={metadataPrefix}'
 else:
     oaiSet = 'no_set'
-    oaiUrl = f'{baseUrl}?verb=ListIdentifiers&metadataPrefix={metadataPrefix}'
+    oaiUrl = f'{baseUrl}?verb={verb}&metadataPrefix={metadataPrefix}'
 
 csvFile = f'harvested_records_{oaiSet}_{currentTime}.csv'
 csvFilePath = os.path.join(directory, csvFile)
@@ -138,53 +140,10 @@ with open(csvFilePath, mode='w', encoding='utf-8', newline='') as f:
     f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     f.writerow(['record_identifier', 'record_status', 'data_stamp'])
 
-    if 'resumptionToken' not in dictData['OAI-PMH']['ListIdentifiers']:
-        for record in dictData['OAI-PMH']['ListIdentifiers']['header']:
-            recordIdentifier = record['identifier']
-            dateStamp = record['datestamp']
-            recordStatus = record.get('@status')
-            if recordStatus != 'deleted':
-                recordStatus = 'present'
-                recordCount += 1
-            elif recordStatus == 'deleted':
-                recordStatus = 'deleted'
-                deletedRecordCount +=1
+    if verb == 'ListIdentifiers':
 
-            f.writerow([recordIdentifier, recordStatus, dateStamp])
-
-        print(f'Record count in {oaiSet} set: {recordCount}')
-        print(f'Count of deleted records: {deletedRecordCount}')
-
-    elif 'resumptionToken' in dictData['OAI-PMH']['ListIdentifiers']:
-        pageCount = 1
-        print(f'Counting records in page {pageCount}', end='\r', flush=True)
-
-        resumptionToken = improved_get(dictData, 'OAI-PMH.ListIdentifiers.resumptionToken.#text')
-
-        for record in dictData['OAI-PMH']['ListIdentifiers']['header']:
-            recordIdentifier = record['identifier']
-            dateStamp = record['datestamp']
-            recordStatus = record.get('@status')
-            if recordStatus != 'deleted':
-                recordStatus = 'present'
-                recordCount += 1
-            elif recordStatus == 'deleted':
-                recordStatus = 'deleted'
-                deletedRecordCount +=1
-
-            f.writerow([recordIdentifier, recordStatus, dateStamp])
-
-            resumptionToken = improved_get(dictData, 'OAI-PMH.ListIdentifiers.resumptionToken.#text')
-
-        while resumptionToken is not None:
-            pageCount += 1
-            print(f'Counting records in page {pageCount}', end='\r', flush=True)
-
-            oaiUrlResume = f'{baseUrl}?verb=ListIdentifiers&resumptionToken={resumptionToken}'
-            response = requests.get(oaiUrlResume)
-            dictData = xmltodict.parse(response.content)
-
-            for record in dictData['OAI-PMH']['ListIdentifiers']['header']:
+        if 'resumptionToken' not in dictData['OAI-PMH'][verb]:
+            for record in dictData['OAI-PMH'][verb]['record']['header']:
                 recordIdentifier = record['identifier']
                 dateStamp = record['datestamp']
                 recordStatus = record.get('@status')
@@ -197,11 +156,131 @@ with open(csvFilePath, mode='w', encoding='utf-8', newline='') as f:
 
                 f.writerow([recordIdentifier, recordStatus, dateStamp])
 
-            resumptionToken = improved_get(dictData, 'OAI-PMH.ListIdentifiers.resumptionToken.#text')
+            print(f'Record count in {oaiSet} set: {recordCount}')
+            print(f'Count of deleted records: {deletedRecordCount}')
 
-        if oaiSet != 'no_set':
-            print(f'\nRecord count in {oaiSet} set: {recordCount}')
-        else:
-            print(f'\nRecord count: {recordCount}')
-        print(f'Count of deleted records: {deletedRecordCount}')
-        print(f'Record identifiers saved to {csvFilePath}')
+        elif 'resumptionToken' in dictData['OAI-PMH'][verb]:
+            pageCount = 1
+            print(f'Counting records in page {pageCount}', end='\r', flush=True)
+
+            resumptionToken = improved_get(dictData, f'OAI-PMH.{verb}.resumptionToken.#text')
+            for record in dictData['OAI-PMH'][verb]['header']:
+                recordIdentifier = record['identifier']
+                dateStamp = record['datestamp']
+                recordStatus = record.get('@status')
+                if recordStatus != 'deleted':
+                    recordStatus = 'present'
+                    recordCount += 1
+                elif recordStatus == 'deleted':
+                    recordStatus = 'deleted'
+                    deletedRecordCount +=1
+
+                f.writerow([recordIdentifier, recordStatus, dateStamp])
+
+            resumptionToken = improved_get(dictData, f'OAI-PMH.{verb}.resumptionToken.#text')
+
+            while resumptionToken is not None:
+                pageCount += 1
+                print(f'Counting records in page {pageCount}. Resumption token: {resumptionToken}', end='\r', flush=True)
+
+                oaiUrlResume = f'{baseUrl}?verb={verb}&resumptionToken={resumptionToken}'
+                response = requests.get(oaiUrlResume)
+                dictData = xmltodict.parse(response.content)
+
+                for record in dictData['OAI-PMH'][verb]['header']:
+                    recordIdentifier = record['identifier']
+                    dateStamp = record['datestamp']
+                    recordStatus = record.get('@status')
+                    if recordStatus != 'deleted':
+                        recordStatus = 'present'
+                        recordCount += 1
+                    elif recordStatus == 'deleted':
+                        recordStatus = 'deleted'
+                        deletedRecordCount +=1
+
+                    f.writerow([recordIdentifier, recordStatus, dateStamp])
+
+                resumptionToken = improved_get(dictData, f'OAI-PMH.{verb}.resumptionToken.#text')
+
+            if oaiSet != 'no_set':
+                print(f'\nRecord count in {oaiSet} set: {recordCount}')
+            else:
+                print(f'\nRecord count: {recordCount}')
+            print(f'Count of deleted records: {deletedRecordCount}')
+            print(f'Record identifiers saved to {csvFilePath}')
+
+    elif verb == 'ListRecords':
+
+        if 'resumptionToken' not in dictData['OAI-PMH'][verb]:
+            for record in dictData['OAI-PMH'][verb]['record']:
+                recordIdentifier = record['header']['identifier']
+                dateStamp = record['header']['datestamp']
+                recordStatus = record['header'].get('@status')
+                if recordStatus != 'deleted':
+                    recordStatus = 'present'
+                    recordCount += 1
+                elif recordStatus == 'deleted':
+                    recordStatus = 'deleted'
+                    deletedRecordCount +=1
+
+                f.writerow([recordIdentifier, recordStatus, dateStamp])
+
+            print(f'Record count in {oaiSet} set: {recordCount}')
+            print(f'Count of deleted records: {deletedRecordCount}')
+
+        elif 'resumptionToken' in dictData['OAI-PMH'][verb]:
+            pageCount = 1
+            print(f'Counting records in page {pageCount}', end='\r', flush=True)
+
+            resumptionToken = improved_get(dictData, f'OAI-PMH.{verb}.resumptionToken.#text')
+            for record in dictData['OAI-PMH'][verb]['record']:
+                recordIdentifier = record['header']['identifier']
+                dateStamp = record['header']['datestamp']
+                recordStatus = record['header'].get('@status')
+                if recordStatus != 'deleted':
+                    recordStatus = 'present'
+                    recordCount += 1
+                elif recordStatus == 'deleted':
+                    recordStatus = 'deleted'
+                    deletedRecordCount +=1
+
+                f.writerow([recordIdentifier, recordStatus, dateStamp])
+
+            resumptionToken = improved_get(dictData, f'OAI-PMH.{verb}.resumptionToken.#text')
+            
+            while resumptionToken is not None:
+                pageCount += 1
+                print(f'Counting records in page {pageCount}', end='\r', flush=True)
+                print(f'\t{resumptionToken}')
+                oaiUrlResume = f'{baseUrl}?verb={verb}&resumptionToken={resumptionToken}'
+                response = requests.get(oaiUrlResume)
+                dictData = xmltodict.parse(response.content)
+
+                for record in dictData['OAI-PMH'][verb]['record']:
+                    recordIdentifier = record['header']['identifier']
+                    dateStamp = record['header']['datestamp']
+                    recordStatus = record['header'].get('@status')
+                    if recordStatus != 'deleted':
+                        recordStatus = 'present'
+                        recordCount += 1
+                    elif recordStatus == 'deleted':
+                        recordStatus = 'deleted'
+                        deletedRecordCount +=1
+
+                    f.writerow([recordIdentifier, recordStatus, dateStamp])
+
+                resumptionToken = improved_get(dictData, f'OAI-PMH.{verb}.resumptionToken.#text')
+
+            if oaiSet != 'no_set':
+                print(f'\nRecord count in {oaiSet} set: {recordCount}')
+            else:
+                print(f'\nRecord count: {recordCount}')
+            print(f'Count of deleted records: {deletedRecordCount}')
+            print(f'Record identifiers saved to {csvFilePath}')
+
+
+
+
+
+
+
