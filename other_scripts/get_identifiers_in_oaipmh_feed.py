@@ -57,6 +57,19 @@ def retrieve_input():
         label_baseUrlReqiured.grid(sticky='w', column=0, row=3, padx=20)
 
 
+# def get_dataset_oaipmh_status(datasetPersistentUrl):
+#     datasetPid = get_canonical_pid(datasetPersistentUrl)
+#     url = f'https://dataverse.harvard.edu/oai?verb=GetRecord&metadataPrefix={metadataPrefix}&identifier={datasetPid}'
+#     try:
+#         response = requests.get(url)
+#         dictData = xmltodict.parse(response.content)
+#         record = dictData['OAI-PMH']['GetRecord']
+#     except Exception:
+#         badDatasetPids.append(datasetPid)
+#         # print(f'\tBad: {url}')
+#         f.write(f'{datasetPid}: {url}\n')
+
+
 # Create label for BaseUrl field
 label_baseUrl = Label(window, text='OAI-PMH Base URL:', anchor='w')
 label_baseUrl.grid(sticky='w', column=0, row=0, padx=20)
@@ -114,10 +127,27 @@ button_Submit.grid(sticky='w', column=0, row=15, pady=40, padx=20)
 mainloop()
 
 
+'''
+To-do: Rewrite script so that it only uses ListIdentifiers verb to get IDs of records in a set,
+then uses GetRecord verb to try to get the oai_dc record of each identifier
+'''
+
+# metadataPrefix = 'oai_dc'
+# metadataPrefix = 'oai_datacite'
+
+
+# with open('/Users/juliangautier/Desktop/dataset_errors_in_oaipmh_feed_2.txt', 'w') as f:
+
+#     with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=datasetPidListCount)) as progress_bar:
+#         Parallel(n_jobs=4, backend='threading')(delayed(get_dataset_oaipmh_status)(
+#             datasetPersistentUrl,
+#             ) for datasetPersistentUrl in datasetPidList)
+
+
 currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
 metadataPrefix = 'oai_dc'
 verb = 'ListIdentifiers'
-verb = 'ListRecords'
+# verb = 'ListRecords'
 
 if oaiSet:
     oaiUrl = f'{baseUrl}?verb={verb}&set={oaiSet}&metadataPrefix={metadataPrefix}'
