@@ -62,7 +62,7 @@ class getMetadataAsCSVsFrame(Frame):
 
         self.labelMoreInformationLink = Label(
             self.frameTaskDescription,
-            text='https://doi.org/10.7910/DVN/DCDKZQ',
+            text='https://doi.org/10.7910/DVN/8FEGUV',
             justify='left',
             fg='blue', bg='white', anchor='w',
             cursor='pointinghand')
@@ -73,7 +73,7 @@ class getMetadataAsCSVsFrame(Frame):
         self.labelMoreInformationLink.grid(sticky='w', row=1)
         self.labelMoreInformationLink.bind(
             '<Button-1>',
-            lambda e: self.open_url('https://doi.org/10.7910/DVN/DCDKZQ'))
+            lambda e: self.open_url('https://doi.org/10.7910/DVN/8FEGUV'))
 
         # Create collapsible panel for account credentials
         self.collapsibleAccountCredentials = collapsiblePanel(
