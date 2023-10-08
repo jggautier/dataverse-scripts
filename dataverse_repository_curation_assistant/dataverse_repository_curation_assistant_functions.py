@@ -276,7 +276,7 @@ def check_api_endpoint(url, headers, verify=False, json_response=True):
 
 # Function for getting name of installation's root collection 
 # (assumming root dataverse's ID is 1, which isn't the case with UVA Dataverse)
-def get_root_alias_name(url):
+def get_root_alias(url):
 
     # If it's the UVA homepage URL, it's root alias is uva (whose database ID is not 1)
     if 'dataverse.lib.virginia.edu' in url:
@@ -331,9 +331,9 @@ def get_alias_from_collection_url(url):
 # Returns True if collection alias is the installation's root collection or
 # False if not (doesn't work with UVA)
 def is_root_collection(url):
-    if get_alias_from_collection_url(url) == get_root_alias_name(url):
+    if get_alias_from_collection_url(url) == get_root_alias(url):
         return True
-    elif get_alias_from_collection_url(url) != get_root_alias_name(url):
+    elif get_alias_from_collection_url(url) != get_root_alias(url):
         return False
 
 
@@ -1453,7 +1453,7 @@ def get_dataset_metadata(
     data = req.json()
     installationName = data['data']['name'].replace(' ', '_').replace('__', '_')
 
-    # installationName = get_root_alias_name(installationUrl)
+    # installationName = get_root_alias(installationUrl)
 
 
     mainDirectoryName = f'{installationName}_dataset_metadata_{currentTime}'
