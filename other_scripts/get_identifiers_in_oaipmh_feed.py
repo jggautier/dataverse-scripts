@@ -307,10 +307,3 @@ with open(csvFilePath, mode='w', encoding='utf-8', newline='') as f:
                 print(f'\nRecord count: {recordCount}')
             print(f'Count of deleted records: {deletedRecordCount}')
             print(f'Record identifiers saved to {csvFilePath}')
-
-
-
-
-
-
-
