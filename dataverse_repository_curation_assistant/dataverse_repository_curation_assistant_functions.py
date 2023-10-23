@@ -90,9 +90,9 @@ def tqdm_joblib(tqdm_object):
 def import_credentials(filePath, installationURLField=None, apiKeyField=None, forCurationApp=False):
 
     with open(filePath, 'r') as file:
-        credsDict = yaml.safe_load(file)
-        installationURL = credsDict['installationURL']
-        apiKey = credsDict['apiToken']
+        credentialsDict = yaml.safe_load(file)
+        installationURL = credentialsDict['installationURL']
+        apiKey = credentialsDict['apiToken']
 
     if forCurationApp is True:
         # Clear installationURLField and insert installationURL from YAML file
@@ -104,7 +104,7 @@ def import_credentials(filePath, installationURLField=None, apiKeyField=None, fo
         apiKeyField.insert(END, apiKey)
 
     elif forCurationApp is False:
-        return credsDict
+        return credentialsDict
 
 
 def forget_widget(widget):
