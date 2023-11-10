@@ -952,6 +952,80 @@ def get_datasets_from_collection_or_search_url(
             print(text)
 
 
+def get_int_from_size_message(sizeEndpointJson):
+    message = sizeEndpointJson['data']['message']
+
+    if 'dataverse' in message:
+        byteSizeString = message.lstrip('Total size of the files stored in this dataverse: ').rstrip(' bytes')
+        byteSizeInt = int(byteSizeString.replace(',', ''))
+
+    elif 'dataset' in message:
+        byteSizeString = message.lstrip('Total size of the files stored in this dataset: ').rstrip(' bytes')
+        byteSizeInt = int(byteSizeString.replace(',', ''))
+
+    return byteSizeInt
+
+
+# Get byte size of files in dataset
+def get_dataset_size(installationUrl, apiKey, datasetIdorPid):
+
+    if isinstance(datasetIdorPid, str):
+        datasetSizeEndpointUrl = f'{installationUrl}/api/datasets/:persistentId/storagesize?persistentId={datasetIdorPid}'
+    elif isinstance(datasetIdorPid, int):
+        datasetSizeEndpointUrl = f'{installationUrl}/api/datasets/{datasetIdorPid}/storagesize'
+    response = requests.get(
+        datasetSizeEndpointUrl, headers={'X-Dataverse-key': apiKey})
+    byteSizeInt = get_int_from_size_message(sizeEndpointJson=response.json())
+    byteSizePretty = format_size(byteSizeInt)
+
+    sizeFormats = {
+        'byteSizeInt': byteSizeInt,
+        'byteSizePretty': byteSizePretty
+    }
+    return sizeFormats
+
+# Get byte size of files in collection
+def get_collection_size(installationUrl, apiKey, collectionIdOrAlias, includeSubCollections=True):
+
+    if includeSubCollections is True:
+        collectionSizeEndpointUrl = f'{installationUrl}/api/dataverses/{collectionIdOrAlias}/storagesize'
+        response = requests.get(
+            collectionSizeEndpointUrl, headers={'X-Dataverse-key': apiKey})
+        byteSizeInt = get_int_from_size_message(sizeEndpointJson=response.json())
+        byteSizePretty = format_size(byteSizeInt)
+
+    # If we don't want to include sizes of files in collection's subcollections...
+    elif includeSubCollections is False:
+        # Use Get Contents API endpoint to get a list of PIDs of datasets published in the given collection
+        datasetPids = []
+        dataverseGetContentsEndpoint = f'{installationUrl}/api/dataverses/{collectionIdOrAlias}/contents'
+        response = requests.get(
+            dataverseGetContentsEndpoint,
+            headers={'X-Dataverse-key': apiKey})
+        data = response.json()
+
+        for content in data['data']:
+            if content['type'] == 'dataset':
+                datasetPid = get_canonical_pid(content['persistentUrl'])
+                datasetPids.append(datasetPid)
+
+        # Get the sum of byte sizes of all datasets in datasetPids list
+        datasetsSizeSum = 0
+        for datasetPid in datasetPids:
+            datasetSizeInt = get_dataset_size(installationUrl, apiKey, datasetIdorPid=datasetPid)['byteSizeInt']
+            datasetsSizeSum = datasetsSizeSum + datasetSizeInt
+
+        byteSizeInt = datasetsSizeSum
+        byteSizePretty = format_size(byteSizeInt)
+
+    sizeFormats = {
+        'byteSizeInt': byteSizeInt,
+        'byteSizePretty': byteSizePretty
+    }
+
+    return sizeFormats
+
+
 def get_dataset_metadata_export(
     installationUrl, datasetPid, exportFormat, timeout, verify,
     allVersions=False, header={}, apiKey=''):
