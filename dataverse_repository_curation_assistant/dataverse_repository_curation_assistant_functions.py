@@ -1018,6 +1018,7 @@ def get_collection_size(installationUrl, apiKey, collectionIdOrAlias, includeSub
         byteSizeInt = datasetsSizeSum
         byteSizePretty = format_size(byteSizeInt)
 
+    # Create dictionary that includes byte size as an int and a human readable string, e.g. 4MB
     sizeFormats = {
         'byteSizeInt': byteSizeInt,
         'byteSizePretty': byteSizePretty
