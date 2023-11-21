@@ -173,7 +173,7 @@ with open(csvFilePath, mode='w', encoding='utf-8', newline='') as f:
     if verb == 'ListIdentifiers':
 
         if 'resumptionToken' not in dictData['OAI-PMH'][verb]:
-            for record in dictData['OAI-PMH'][verb]['record']['header']:
+            for record in dictData['OAI-PMH'][verb]['header']:
                 recordIdentifier = record['identifier']
                 dateStamp = record['datestamp']
                 recordStatus = record.get('@status')
