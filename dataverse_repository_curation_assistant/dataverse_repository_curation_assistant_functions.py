@@ -635,10 +635,10 @@ def get_object_dictionary_from_search_api_page(installationUrl, header, params, 
 # Uses Search API to return dataframe containing info about collectoins, datasets or files in an installation
 # Write results to the tkinter window
 def get_object_dataframe_from_search_api(
-    url, params, objectType, printProgress=False,
+    baseUrl, params, objectType, printProgress=False,
     rootWindow=None, progressText=None, progressLabel=None, apiKey=None):
 
-    installationUrl = get_installation_url(url)
+    installationUrl = get_installation_url(baseUrl)
 
     if apiKey:
         header = {'X-Dataverse-key': apiKey}
@@ -654,7 +654,7 @@ def get_object_dataframe_from_search_api(
     params['per_page'] = 1
 
     response = requests.get(
-        url,
+        baseUrl,
         params=params,
         headers=header
     )
@@ -863,7 +863,7 @@ def get_datasets_from_collection_or_search_url(
     params = requestsGetProperties['params']
 
     datasetInfoDF = get_object_dataframe_from_search_api(
-        url=baseUrl, rootWindow=rootWindow, progressLabel=progressLabel, progressText=progressText,
+        baseUrl=baseUrl, rootWindow=rootWindow, progressLabel=progressLabel, progressText=progressText,
         params=params, objectType='dataset', apiKey=apiKey)
     datasetCount = len(datasetInfoDF.index)
 
@@ -1589,7 +1589,7 @@ def get_dataset_metadata(
         params = requestsGetProperties['params']
 
         datasetInfoDF = get_object_dataframe_from_search_api(
-            url=baseUrl, rootWindow=rootWindow, progressLabel=None, progressText=None,
+            baseUrl=baseUrl, rootWindow=rootWindow, progressLabel=None, progressText=None,
             params=params, objectType='dataset', apiKey=apiKey)
 
         dataverseAlias = datasetInfoDF.iloc[0]['dataverse_collection_alias']
