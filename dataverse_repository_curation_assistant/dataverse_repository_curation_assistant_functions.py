@@ -1529,9 +1529,6 @@ def get_dataset_metadata(
     data = req.json()
     installationName = data['data']['name'].replace(' ', '_').replace('__', '_')
 
-    # installationName = get_root_alias(installationUrl)
-
-
     mainDirectoryName = f'{installationName}_dataset_metadata_{currentTime}'
     mainDirectoryPath = str(Path(directoryPath + '/' + mainDirectoryName))
     os.mkdir(mainDirectoryPath)
