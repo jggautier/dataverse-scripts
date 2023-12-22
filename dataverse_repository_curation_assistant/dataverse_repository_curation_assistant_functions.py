@@ -230,10 +230,15 @@ def get_installation_url(string):
     if string.startswith('http'):
         parsed = urlparse(string)
         installationUrl = parsed.scheme + '://' + parsed.netloc
+        # Use requests to get the final redirect URL. At least on installation, sodha, redirects to www.sodha.be
+        installationUrl = requests.get(installationUrl).url
+
         return installationUrl
     elif '(' in string:
         installationUrl = re.search(r'\(.*\)', string).group()
         installationUrl = re.sub('\(|\)', '', installationUrl)
+        # Use requests to get the final redirect URL. At least on installation, sodha, redirects to www.sodha.be
+        installationUrl = requests.get(installationUrl).url
         return installationUrl
 
 
@@ -658,8 +663,6 @@ def get_object_dataframe_from_search_api(
         params=params,
         headers=header
     )
-
-    # print(response.request.url)
 
     data = response.json()
     totalDatasetCount = data['data']['total_count']
