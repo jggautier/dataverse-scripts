@@ -1363,7 +1363,7 @@ def get_metadata_values_lists(
 
     if datasetMetadata['status'] == 'OK':
 
-        for metadatablock in datasetMetadata['data']['datasetVersion']['metadataBlocks']:
+        for metadatablock in datasetMetadata['data'][versions]['metadataBlocks']:
             if metadatablockName in metadatablock:
 
                 # (metadatablockName in datasetMetadata['data'][versions]['metadataBlocks']):
