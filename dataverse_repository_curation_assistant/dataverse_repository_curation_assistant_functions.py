@@ -1366,8 +1366,6 @@ def get_metadata_values_lists(
         for metadatablock in datasetMetadata['data'][versions]['metadataBlocks']:
             if metadatablockName in metadatablock:
 
-                # (metadatablockName in datasetMetadata['data'][versions]['metadataBlocks']):
-
                 datasetPersistentUrl = datasetMetadata['data']['persistentUrl']
                 datasetPid = get_canonical_pid(datasetPersistentUrl)
                 datasetUrl = installationUrl + '/dataset.xhtml?persistentId=' + datasetPid
