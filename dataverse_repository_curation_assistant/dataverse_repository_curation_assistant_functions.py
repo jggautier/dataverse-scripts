@@ -225,21 +225,30 @@ def clear_selections(listbox):
 
 
 # Function for getting the server URL from a collection URL
-# or what's entered in the Installatio URL field
+# or what's entered in the Dataverse Curation App's Installation URL field
 def get_installation_url(string):
     if string.startswith('http'):
         parsed = urlparse(string)
         installationUrl = parsed.scheme + '://' + parsed.netloc
-        # Use requests to get the final redirect URL. At least on installation, sodha, redirects to www.sodha.be
-        installationUrl = requests.get(installationUrl).url
+        # Use requests to get the final redirect URL. At least on installation, sodha, redirects to and www.sodha.be and requires the www
+        try:
+            installationUrl = requests.get(installationUrl, verify=False).url
+            parsed = urlparse(installationUrl)
+            installationUrl = parsed.scheme + '://' + parsed.netloc
+        except Exception as e:
+            installationUrl = 'ERROR'
 
         return installationUrl
     elif '(' in string:
         installationUrl = re.search(r'\(.*\)', string).group()
         installationUrl = re.sub('\(|\)', '', installationUrl)
         # Use requests to get the final redirect URL. At least on installation, sodha, redirects to www.sodha.be
-        installationUrl = requests.get(installationUrl).url
-        return installationUrl
+        try:
+            installationUrl = requests.get(installationUrl, verify=False).url
+            parsed = urlparse(installationUrl)
+            installationUrl = parsed.scheme + '://' + parsed.netloc
+        except Exception as e:
+            installationUrl = 'ERROR'
 
 
 # Gets list of URLs from Dataverse map JSON data and add Demo Dataverse url
@@ -264,13 +273,16 @@ def get_installation_list():
 def check_api_endpoint(url, headers, verify=False, json_response=True):
     try:
         response = requests.get(url, headers=headers, timeout=60, verify=verify)
-        if response.status_code == 200 and json_response is True:
+        if response.status_code == 200:
+            status = 'OK'
+        elif response.status_code != 200 and json_response is True:
             try:
-                status = response.json()['status']
+                data = response.json()
+                statusCode = data['status']
+                statusMessage = data['message']
+                status = f'{statusCode}: {statusMessage}'
             except Exception as e:
                 status = e
-        elif response.status_code == 200 and json_response is False:
-            status = 'OK'
         else:
             status = response.status_code
     except Exception as e:
