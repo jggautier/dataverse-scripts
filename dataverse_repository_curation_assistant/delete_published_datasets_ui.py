@@ -360,7 +360,7 @@ class deletePublishedDatasetsFrame(Frame):
                     progressLabel=self.labelProgressTextDeleteDatasets,
                     notDeletedText=self.notDeletedText,
                     notDeletedLabel=self.labelNotDeletedDatasets,
-                    installationUrl=get_installation_url(self.comboboxInstallationUrl.get().strip()),
+                    installationUrl=check_installation_url_status(self.comboboxInstallationUrl.get().strip())['installationUrl'],
                     datasetPidString=self.textBoxCollectionDatasetPIDs.get('1.0', END),
                     apiKey=self.entryApiToken.get().strip()
                     )

@@ -285,7 +285,7 @@ for installation in mapdata['installations']:
         # Use the "Get Version" endpoint to get installation's Dataverse version (or set version as 'NA')
         getInstallationVersionApiUrl = f'{installationUrl}/api/v1/info/version'
         getInstallationVersionApiUrl = getInstallationVersionApiUrl.replace('//api', '/api')
-        getInstallationVersionApiStatus = check_api_endpoint(getInstallationVersionApiUrl, headers, verify=False, json_response=True)
+        getInstallationVersionApiStatus = check_api_endpoint(getInstallationVersionApiUrl, headers, verify=False, json_response_expected=True)
 
         if getInstallationVersionApiStatus == 'OK':
             response = requests.get(getInstallationVersionApiUrl, headers=headers, timeout=20, verify=False)
@@ -300,7 +300,7 @@ for installation in mapdata['installations']:
         # Check if Search API works for the installation
         searchApiCheckUrl = f'{installationUrl}/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&sort=date&order=desc'
         searchApiCheckUrl = searchApiCheckUrl.replace('//api', '/api')
-        searchApiStatus = check_api_endpoint(searchApiCheckUrl, headers, verify=False, json_response=True)
+        searchApiStatus = check_api_endpoint(searchApiCheckUrl, headers, verify=False, json_response_expected=True)
 
         # If Search API works, from Search API query results, get count of local (non-harvested) datasets
         if searchApiStatus == 'OK':
@@ -332,7 +332,7 @@ for installation in mapdata['installations']:
         if testDatasetPid != 'NA':
             getJsonApiUrl = f'{installationUrl}/api/v1/datasets/:persistentId/?persistentId={testDatasetPid}'
             getJsonApiUrl = getJsonApiUrl.replace('//api', '/api')
-            getDataverseJsonApiStatus = check_api_endpoint(getJsonApiUrl, headers, verify=False, json_response=True)
+            getDataverseJsonApiStatus = check_api_endpoint(getJsonApiUrl, headers, verify=False, json_response_expected=True)
 
         else:
             getDataverseJsonApiStatus = 'NA'
@@ -374,7 +374,7 @@ for installation in mapdata['installations']:
             # Check API endpoint for getting metadatablock data
             metadatablocksApiEndpointUrl = f'{installationUrl}/api/v1/metadatablocks'
             metadatablocksApiEndpointUrl = metadatablocksApiEndpointUrl.replace('//api', '/api')
-            getMetadatablocksApiStatus = check_api_endpoint(metadatablocksApiEndpointUrl, headers, verify=False, json_response=True)
+            getMetadatablocksApiStatus = check_api_endpoint(metadatablocksApiEndpointUrl, headers, verify=False, json_response_expected=True)
 
             metadatablockNames = 'API call failed'
 

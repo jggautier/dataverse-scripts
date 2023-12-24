@@ -203,7 +203,7 @@ class findAndUnlockDatasetsFrame(Frame):
             text='Get locked datasets report',
             bg=appPrimaryGreyColor, fg='white',
             command=lambda: save_locked_dataset_report(
-                    installationUrl=get_installation_url(self.comboboxInstallationUrl.get().strip()),
+                    installationUrl=check_installation_url_status(self.comboboxInstallationUrl.get().strip())['installationUrl'],
                     apiKey=self.entryApiToken.get().strip(),
                     # self.entryApiToken.get().strip()
                     directoryPath=get_directory_path()) # function that asks user for directory
@@ -288,7 +288,7 @@ class findAndUnlockDatasetsFrame(Frame):
                     progressLabel=self.labelProgressTextGetMetadata,
                     notUnlockedText=self.fieldsWithNoMetadataText,
                     notUnlockedLabel=self.labelFieldsWithNoMetadata,
-                    installationUrl=get_installation_url(self.comboboxInstallationUrl.get().strip()),
+                    installationUrl=check_installation_url_status(self.comboboxInstallationUrl.get().strip())['installationUrl'],
                     datasetPidString=self.textBoxCollectionDatasetPIDs.get('1.0', END),
                     # parentFieldTitleList=get_listbox_values(self.listboxSelectFieldNames),
                     # directoryPath=get_directory_path(), # function that asks user for directory

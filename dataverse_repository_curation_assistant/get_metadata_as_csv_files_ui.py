@@ -350,7 +350,7 @@ class getMetadataAsCSVsFrame(Frame):
             bg=appPrimaryGreyColor, fg='white',
             command=lambda: get_parent_field_names(
                 metadatablockData=get_metadatablock_data(
-                    installationUrl=get_installation_url(self.comboboxInstallationUrl.get().strip()),
+                    installationUrl=check_installation_url_status(self.comboboxInstallationUrl.get().strip())['installationUrl'],
                     metadatablockName='citation'),
                 listbox=self.listboxSelectFieldNames))
 
@@ -437,7 +437,7 @@ class getMetadataAsCSVsFrame(Frame):
                     progressLabel=self.labelProgressTextGetMetadata,
                     noMetadataText=self.fieldsWithNoMetadataText,
                     noMetadataLabel=self.labelFieldsWithNoMetadata,
-                    installationUrl=get_installation_url(self.comboboxInstallationUrl.get().strip()),
+                    installationUrl=check_installation_url_status(self.comboboxInstallationUrl.get().strip())['installationUrl'],
                     datasetPidString=self.textBoxCollectionDatasetPIDs.get('1.0', END),
                     parentFieldTitleList=get_listbox_values(self.listboxSelectFieldNames),
                     directoryPath=get_directory_path(), # function that asks user for directory
