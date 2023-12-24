@@ -226,19 +226,22 @@ def clear_selections(listbox):
 
 # Function for getting the server URL from a collection URL
 # or what's entered in the Dataverse Curation App's Installation URL field
-def get_installation_url(string):
+def check_installation_url_status(string, headers={}):
+    statusDict = {}
+
     if string.startswith('http'):
         parsed = urlparse(string)
         installationUrl = parsed.scheme + '://' + parsed.netloc
         # Use requests to get the final redirect URL. At least on installation, sodha, redirects to and www.sodha.be and requires the www
         try:
-            installationUrl = requests.get(installationUrl, verify=False).url
-            parsed = urlparse(installationUrl)
-            installationUrl = parsed.scheme + '://' + parsed.netloc
+            response = requests.get(installationUrl, headers=headers, timeout=60, verify=False)
+            parsed = urlparse(response.url)
+            statusDict['statusCode'] = response.status_code
+            statusDict['installationUrl'] = parsed.scheme + '://' + parsed.netloc
         except Exception as e:
-            installationUrl = 'ERROR'
+            statusDict['statusCode'] = f'ERROR: {e}'
+            statusDict['installationUrl'] = parsed.scheme + '://' + parsed.netloc
 
-        return installationUrl
     elif '(' in string:
         installationUrl = re.search(r'\(.*\)', string).group()
         installationUrl = re.sub('\(|\)', '', installationUrl)
@@ -246,9 +249,14 @@ def get_installation_url(string):
         try:
             installationUrl = requests.get(installationUrl, verify=False).url
             parsed = urlparse(installationUrl)
-            installationUrl = parsed.scheme + '://' + parsed.netloc
+            statusDict['statusCode'] = response.status_code
+            statusDict['installationUrl'] = parsed.scheme + '://' + parsed.netloc
+
         except Exception as e:
-            installationUrl = 'ERROR'
+            statusDict['statusCode'] = 'ERROR'
+            statusDict['installationUrl'] = parsed.scheme + '://' + parsed.netloc
+
+    return statusDict
 
 
 # Gets list of URLs from Dataverse map JSON data and add Demo Dataverse url
@@ -270,21 +278,22 @@ def get_installation_list():
     return installationsList
 
 
-def check_api_endpoint(url, headers, verify=False, json_response=True):
+def check_api_endpoint(url, headers, verify=False, json_response_expected=True):
     try:
         response = requests.get(url, headers=headers, timeout=60, verify=verify)
         if response.status_code == 200:
             status = 'OK'
-        elif response.status_code != 200 and json_response is True:
-            try:
-                data = response.json()
-                statusCode = data['status']
-                statusMessage = data['message']
-                status = f'{statusCode}: {statusMessage}'
-            except Exception as e:
-                status = e
-        else:
-            status = response.status_code
+        elif response.status_code != 200:
+            if json_response_expected is True:
+                try:
+                    data = response.json()
+                    statusCode = data['status']
+                    statusMessage = data['message']
+                    status = f'{statusCode}: {statusMessage}'
+                except Exception as e:
+                    status = e
+            elif json_response_expected is False:
+                status = response.status_code
     except Exception as e:
         status = e
 
@@ -327,7 +336,8 @@ def get_alias_from_collection_url(url):
 
         # If's it's not the UVA homepage URL, get the alias of the collection whose database is 1
         elif 'dataverse.lib.virginia.edu' not in url:
-            installationUrl = get_installation_url(url)
+            installationStatusDict = check_installation_url_status(url)
+            installationUrl = installationStatusDict['installationUrl']
             url = f'{installationUrl}/api/dataverses/1'
             response = requests.get(url)
             dataverseData = response.json()
@@ -655,7 +665,8 @@ def get_object_dataframe_from_search_api(
     baseUrl, params, objectType, printProgress=False,
     rootWindow=None, progressText=None, progressLabel=None, apiKey=None):
 
-    installationUrl = get_installation_url(baseUrl)
+    installationStatusDict = check_installation_url_status(baseUrl)
+    installationUrl = installationStatusDict['installationUrl']
 
     if apiKey:
         header = {'X-Dataverse-key': apiKey}
@@ -1682,7 +1693,8 @@ def delete_published_datasets(
     rootWindow, progressLabel, progressText, notDeletedText, notDeletedLabel,
     installationUrl, datasetPidString, apiKey):
 
-    installationUrl = get_installation_url(installationUrl)
+    installationStatusDict = check_installation_url_status(installationUrl)
+    installationUrl = installationStatusDict['installationUrl']
     
     # Change passed datasetPidString to a list. Make sure the last newline doesn't mess up the list
     datasetPidList = [x.strip() for x in datasetPidString.splitlines()]
@@ -1937,7 +1949,8 @@ def unlock_datasets(
     rootWindow, progressLabel, progressText, notUnlockedText, notUnlockedLabel,
     installationUrl, datasetPidString, apiKey):
     
-    installationUrl = get_installation_url(installationUrl)
+    installationStatusDict = check_installation_url_status(installationUrl)
+    installationUrl = installationStatusDict['installationUrl']
     
     # Change passed datasetPidString to a list. Make sure the last newline doesn't mess up the list
     datasetPidList = [x.strip() for x in datasetPidString.splitlines()]
