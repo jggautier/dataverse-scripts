@@ -711,7 +711,7 @@ def get_object_dataframe_from_search_api(
 
     if None not in [rootWindow, progressText, progressLabel]:
         Parallel(
-            n_jobs=4, 
+            n_jobs=2, 
             backend='threading')(delayed(get_object_dictionary_from_search_api_page)(
                 installationUrl, header, params, start, objectInfoDict) for start in startsList)
 
@@ -721,7 +721,7 @@ def get_object_dataframe_from_search_api(
                 bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', 
                 total=startsListCount)) as progress_bar:
             Parallel(
-                n_jobs=4, 
+                n_jobs=2, 
                 backend='threading')(delayed(get_object_dictionary_from_search_api_page)(
                     installationUrl, header, params, start, objectInfoDict) for start in startsList)        
 
@@ -993,21 +993,52 @@ def get_int_from_size_message(sizeEndpointJson):
 
 
 # Get byte size of files in dataset
-def get_dataset_size(installationUrl, apiKey, datasetIdorPid):
+def get_dataset_size(installationUrl, datasetIdOrPid, onlyPublishedFiles=False, apiKey=''):
 
-    if isinstance(datasetIdorPid, str):
-        datasetSizeEndpointUrl = f'{installationUrl}/api/datasets/:persistentId/storagesize?persistentId={datasetIdorPid}'
-    elif isinstance(datasetIdorPid, int):
-        datasetSizeEndpointUrl = f'{installationUrl}/api/datasets/{datasetIdorPid}/storagesize'
-    response = requests.get(
-        datasetSizeEndpointUrl, headers={'X-Dataverse-key': apiKey})
-    byteSizeInt = get_int_from_size_message(sizeEndpointJson=response.json())
-    byteSizePretty = format_size(byteSizeInt)
+    if onlyPublishedFiles == False:
+        if apiKey=='':
+            print('API key required to get sizes of all dataset versions')
+            exit()
 
+        if isinstance(datasetIdOrPid, str):
+            datasetSizeEndpointUrl = f'{installationUrl}/api/datasets/:persistentId/storagesize?persistentId={datasetIdOrPid}'
+        elif isinstance(datasetIdOrPid, int):
+            datasetSizeEndpointUrl = f'{installationUrl}/api/datasets/{datasetIdOrPid}/storagesize'
+        response = requests.get(
+            datasetSizeEndpointUrl, headers={'X-Dataverse-key': apiKey})
+        byteSizeTotalInt = get_int_from_size_message(sizeEndpointJson=response.json())
+
+    elif onlyPublishedFiles == True:
+        if isinstance(datasetIdOrPid, int):
+            print('datasetIdOrPid must be a PID')
+            exit()
+
+        # Get metadata of all published versions
+        allVersionMetadata = get_dataset_metadata_export(
+            installationUrl, datasetPid=datasetIdOrPid, exportFormat='dataverse_json', timeout=60, verify=False,
+            allVersions=True, header={}, apiKey='')
+
+        # Get sum of sizes of all unique files in all dataset versions
+        byteSizeTotalInt = 0
+        fileIdList = []
+
+        for version in allVersionMetadata['data']:
+            if len(version['files']) == 0:
+                byteSizeInt = 0
+            elif len(version['files']) > 0:
+                for file in version['files']:
+                    fileId = file['dataFile']['id']
+                    if fileId not in fileIdList:
+                        fileIdList.append(fileId)
+                        byteSizeInt = file['dataFile']['filesize']
+                        byteSizeTotalInt = byteSizeTotalInt + byteSizeInt 
+        
+    byteSizeTotalPretty = format_size(byteSizeTotalInt)
     sizeFormats = {
-        'byteSizeInt': byteSizeInt,
-        'byteSizePretty': byteSizePretty
+        'byteSizeTotalInt': byteSizeTotalInt,
+        'byteSizeTotalPretty': byteSizeTotalPretty
     }
+
     return sizeFormats
 
 # Get byte size of files in collection
