@@ -131,13 +131,13 @@ def improved_get(_dict, path, default=None):
         return _dict[:10000].replace('\r', ' - ')
 
 
-def list_to_string(lst): 
-    string = ', '.join(lst)
+def list_to_string(lst, delimiter=','):
+    string = f'{delimiter} '.join(lst)
     return string
 
 
-def string_to_list(string):
-    stringToList = list(string.split(','))
+def string_to_list(string, delimiter=','):
+    stringToList = list(string.split(f'{delimiter}'))
     stringToList = [s.strip() for s in stringToList]
     return stringToList
 
