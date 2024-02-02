@@ -224,15 +224,13 @@ def clear_selections(listbox):
     listbox.selection_clear(0, END)
 
 
-# Function for getting the server URL from a collection URL
-# or what's entered in the Dataverse Curation App's Installation URL field
 def check_installation_url_status(string, headers={}):
     statusDict = {}
 
     if string.startswith('http'):
         parsed = urlparse(string)
         installationUrl = parsed.scheme + '://' + parsed.netloc
-        # Use requests to get the final redirect URL. At least on installation, sodha, redirects to and www.sodha.be and requires the www
+
         try:
             response = requests.get(installationUrl, headers=headers, timeout=60, verify=False)
             parsed = urlparse(response.url)
@@ -610,9 +608,9 @@ def get_params(apiSearchURL):
 # Gets info from Search API about a given dataverse, dataset or file
 def get_value_row_from_search_api_object(item, installationUrl):
     if item['type'] == 'dataset':
-        datasetUrl = installationUrl + '/dataset.xhtml?persistentId=' + item['global_id']
-        dataverseUrl = installationUrl + '/dataverse/' + item['identifier_of_dataverse']
-        fileCount = improved_get(item, '')
+        # datasetUrl = installationUrl + '/dataset.xhtml?persistentId=' + item['global_id']
+        # dataverseUrl = installationUrl + '/dataverse/' + item['identifier_of_dataverse']
+        # fileCount = improved_get(item, '')
         newRow = {
             'dataset_pid': item['global_id'],
             'version_state': item['versionState'],
