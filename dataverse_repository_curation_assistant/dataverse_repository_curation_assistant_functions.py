@@ -542,7 +542,7 @@ def convert_utf8bytes_to_characters(string):
     return string
 
 # Function that returns the params of a given Search API URL, to be used in requests calls
-def get_params(apiSearchURL):
+def get_params(apiSearchURL, metadataFieldsList=None):
     params = {
         'baseUrl': '',
         'params': {}
@@ -602,15 +602,15 @@ def get_params(apiSearchURL):
     if len(fq) > 0:
         params['params']['fq'] = fq
 
+    if metadataFieldsList is not None:
+        params['params']['metadata_fields'] = metadataFieldsList
+
     return params
 
 
 # Gets info from Search API about a given dataverse, dataset or file
-def get_value_row_from_search_api_object(item, installationUrl):
+def get_value_row_from_search_api_object(item, installationUrl, metadataFieldsList=None):
     if item['type'] == 'dataset':
-        # datasetUrl = installationUrl + '/dataset.xhtml?persistentId=' + item['global_id']
-        # dataverseUrl = installationUrl + '/dataverse/' + item['identifier_of_dataverse']
-        # fileCount = improved_get(item, '')
         newRow = {
             'dataset_pid': item['global_id'],
             'version_state': item['versionState'],
@@ -618,8 +618,13 @@ def get_value_row_from_search_api_object(item, installationUrl):
             'file_count': item['fileCount'],
             'dataverse_collection_alias': item['identifier_of_dataverse'],
             'dataverse_name': item['name_of_dataverse']
-            # 'dataverse_url': dataverseUrl
         }
+        # if metadataFieldsList is not None:
+        #     for metadataField in metadataFieldsList:
+        #         metadatablockName = metadataField.split(':')[0]
+        #         parentFieldName = metadataField.split(':')[1]
+        #         newRow[parentFieldName] = 
+        #         if item['metadataBlocks']
     if item['type'] == 'dataverse':
         newRow = {
             'dataverse_database_id': item['entity_id'],
@@ -628,10 +633,11 @@ def get_value_row_from_search_api_object(item, installationUrl):
             'dataverse_name': item['name']
         }
     if item['type'] == 'file':
-        if item.get('file_persistent_id'):
-            filePersistentId = item['file_persistent_id']
-        else:
-            filePersistentId = ''
+        filePersistentId = improved_get(item, 'file_persistent_id', default='')
+        # if item.get('file_persistent_id'):
+        #     filePersistentId = item['file_persistent_id']
+        # else:
+        #     filePersistentId = ''
         newRow = {
             'file_database_id': item['file_id'],
             'file persistent_id': filePersistentId,
@@ -641,7 +647,7 @@ def get_value_row_from_search_api_object(item, installationUrl):
     return newRow
 
 
-def get_object_dictionary_from_search_api_page(installationUrl, header, params, start, objectInfoDict):
+def get_object_dictionary_from_search_api_page(installationUrl, header, params, start, objectInfoDict, metadataFieldsList=None):
     searchApiUrl = f'{installationUrl}/api/search'
     params['start'] = start
     params['per_page'] = 10
@@ -653,15 +659,16 @@ def get_object_dictionary_from_search_api_page(installationUrl, header, params, 
     data = response.json()
 
     for item in data['data']['items']:
-        newRow = get_value_row_from_search_api_object(item, installationUrl)
+        newRow = get_value_row_from_search_api_object(item, installationUrl, metadataFieldsList=metadataFieldsList)
         objectInfoDict.append(dict(newRow))
 
 
 # Uses Search API to return dataframe containing info about collectoins, datasets or files in an installation
 # Write results to the tkinter window
 def get_object_dataframe_from_search_api(
-    baseUrl, params, objectType, printProgress=False,
-    rootWindow=None, progressText=None, progressLabel=None, apiKey=None):
+    baseUrl, params, objectType, metadataFieldsList=None,
+    printProgress=False, rootWindow=None, progressText=None,
+    progressLabel=None, apiKey=None):
 
     installationStatusDict = check_installation_url_status(baseUrl)
     installationUrl = installationStatusDict['installationUrl']
@@ -711,7 +718,7 @@ def get_object_dataframe_from_search_api(
         Parallel(
             n_jobs=2, 
             backend='threading')(delayed(get_object_dictionary_from_search_api_page)(
-                installationUrl, header, params, start, objectInfoDict) for start in startsList)
+                installationUrl, header, params, start, objectInfoDict, metadataFieldsList) for start in startsList)
 
     else:
         with tqdm_joblib(
@@ -721,7 +728,7 @@ def get_object_dataframe_from_search_api(
             Parallel(
                 n_jobs=2, 
                 backend='threading')(delayed(get_object_dictionary_from_search_api_page)(
-                    installationUrl, header, params, start, objectInfoDict) for start in startsList)        
+                    installationUrl, header, params, start, objectInfoDict, metadataFieldsList) for start in startsList)        
 
     objectInfoDF = pd.DataFrame(objectInfoDict)
 
@@ -1376,7 +1383,7 @@ def get_listbox_values(listbox):
     return selectedFields
 
 
-# Get the chiild field database names of compound fields or the database name of primitive fields
+# Get the child field database names of compound fields or the database name of primitive fields
 def get_column_names(metadatablockData, parentFieldTitle, parentFieldDBNameAndTitleDict):
     
     compoundFieldsDBNamesList = []
@@ -1398,7 +1405,7 @@ def get_column_names(metadatablockData, parentFieldTitle, parentFieldDBNameAndTi
             for field in dbNameProperties['childFields']:
                 columns.append(field)
 
-        # # Other the field is a primitive field. Use its names as the column
+        # Other the field is a primitive field. Use its names as the column
         else:
             columns.append(chosenDBName)
 
