@@ -10,6 +10,7 @@ import json
 import joblib
 from joblib import Parallel, delayed
 import glob
+import math
 import os
 from os import listdir
 import math
@@ -702,9 +703,9 @@ def get_object_dataframe_from_search_api(
         progressLabel = progressLabel.grid(sticky='w', row=0)
         rootWindow.update_idletasks()
     
-    # Create start variables to paginate through SearchAPI results
+    # Create start variables to paginate through Search API results
     start = 0
-    apiCallsCount = round(totalDatasetCount/10)
+    apiCallsCount = math.ceil(totalDatasetCount/10) - 1
     startsList = [0]
     for apiCall in range(apiCallsCount):
         start = start + 10
