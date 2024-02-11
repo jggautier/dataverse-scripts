@@ -664,6 +664,24 @@ def get_object_dictionary_from_search_api_page(installationUrl, header, params, 
         objectInfoDict.append(dict(newRow))
 
 
+# Get variables for the Search API's "start" parameter to paginate through search results
+def get_search_api_start_list(itemCount):
+    start = 0
+    apiCallsCount = math.ceil(totalCountFromSearchApiResults/10) - 1
+    startsList = [0]
+    for apiCall in range(apiCallsCount):
+        start = start + 10
+        startsList.append(start)
+    startsListCount = len(startsList)
+
+    startInfo = {
+        'startsListCount': startsListCount,
+        'startsList': startsList
+    }
+
+    return startInfo
+
+
 # Uses Search API to return dataframe containing info about collectoins, datasets or files in an installation
 # Write results to the tkinter window
 def get_object_dataframe_from_search_api(
@@ -704,13 +722,9 @@ def get_object_dataframe_from_search_api(
         rootWindow.update_idletasks()
     
     # Create start variables to paginate through Search API results
-    start = 0
-    apiCallsCount = math.ceil(totalDatasetCount/10) - 1
-    startsList = [0]
-    for apiCall in range(apiCallsCount):
-        start = start + 10
-        startsList.append(start)
-    startsListCount = len(startsList)
+    startInfo = get_search_api_start_list(totalDatasetCount)
+    startsListCount = startInfo['startsListCount']
+    startsList = startInfo['startsList']
 
     # misindexedObjectCount = 0
     objectInfoDict = []
