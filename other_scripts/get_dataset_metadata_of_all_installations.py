@@ -415,13 +415,9 @@ for installation in mapdata['installations']:
             # endpoint to get those datasets' metadata
 
             # Create start variables to paginate through SearchAPI results
-            start = 0
-            apiCallsCount = round(datasetCount/10)
-            startsList = [0]
-            for apiCall in range(apiCallsCount):
-                start = start + 10
-                startsList.append(start)
-            startsListCount = len(startsList)
+            startInfo = get_search_api_start_list(datasetCount)
+            startsListCount = startInfo['startsListCount']
+            startsList = startInfo['startsList']
 
             print(f'\nSearching through {startsListCount} Search API page(s) to save info of {datasetCount} dataset(s) to CSV file:')
 
