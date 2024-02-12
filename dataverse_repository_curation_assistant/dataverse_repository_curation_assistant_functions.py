@@ -667,7 +667,7 @@ def get_object_dictionary_from_search_api_page(installationUrl, header, params, 
 # Get variables for the Search API's "start" parameter to paginate through search results
 def get_search_api_start_list(itemCount):
     start = 0
-    apiCallsCount = math.ceil(totalCountFromSearchApiResults/10) - 1
+    apiCallsCount = math.ceil(itemCount/10) - 1
     startsList = [0]
     for apiCall in range(apiCallsCount):
         start = start + 10
