@@ -124,9 +124,10 @@ def improved_get(_dict, path, default=None):
     for key in path.split('.'):
         try:
             _dict = _dict[key]
+            print(_dict)
         except KeyError:
             return default
-    if isinstance(_dict, int) or isinstance(_dict, dict):
+    if isinstance(_dict, (int, dict, list)):
         return _dict
     elif isinstance(_dict, str):
         return _dict[:10000].replace('\r', ' - ')
