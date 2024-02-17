@@ -119,7 +119,7 @@ def forget_widget(widget):
 # Function for getting value of nested key or returning nothing if nested key
 # doesn't exist. If the value is a string, this truncates 
 # the value to 10,000 characters, the character limit for many spreadsheet 
-# applications, and removes carriage returns
+# applications, and replaces carriage returns with dashes
 def improved_get(_dict, path, default=None):
     for key in path.split('.'):
         try:
