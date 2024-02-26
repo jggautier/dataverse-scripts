@@ -2073,4 +2073,15 @@ def get_monthly_counts(installationUrl, objects, directoryPath):
             cr = csv.reader(decodedContent.splitlines(), delimiter=',')
             countList = list(cr)
             for row in countList[1:]:
-                writer.writerow(row)  
+                writer.writerow(row)
+
+
+def get_citation_counts(datasetPid):
+    pidForDatacite = datasetPid.replace('doi:', '')
+    dataciteEventsAPI = f'https://api.datacite.org/dois/{pidForDatacite}'
+    response = requests.get(dataciteEventsAPI)
+    if response.status_code != 200:
+        citationCount = response.json()['errors'][0]['title']
+    elif response.status_code == 200:
+        citationCount = response.json()['data']['attributes']['citationCount']
+    return citationCount
