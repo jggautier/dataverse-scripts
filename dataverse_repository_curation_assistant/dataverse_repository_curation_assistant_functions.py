@@ -2076,12 +2076,16 @@ def get_monthly_counts(installationUrl, objects, directoryPath):
                 writer.writerow(row)
 
 
-def get_citation_counts(datasetPid):
+def get_citation_count(datasetPid):
     pidForDatacite = datasetPid.replace('doi:', '')
     dataciteEventsAPI = f'https://api.datacite.org/dois/{pidForDatacite}'
-    response = requests.get(dataciteEventsAPI)
-    if response.status_code != 200:
-        citationCount = response.json()['errors'][0]['title']
-    elif response.status_code == 200:
+    print(dataciteEventsAPI)
+    try:
+        response = requests.get(dataciteEventsAPI)
         citationCount = response.json()['data']['attributes']['citationCount']
+    except Exception:
+        try:
+            citationCount = response.json()['errors'][0]['title']
+        except Exception as e:
+            citationCount = e
     return citationCount
