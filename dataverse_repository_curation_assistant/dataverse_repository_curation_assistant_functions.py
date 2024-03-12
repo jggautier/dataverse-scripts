@@ -125,7 +125,6 @@ def improved_get(_dict, path, default=None):
     for key in path.split('.'):
         try:
             _dict = _dict[key]
-            print(_dict)
         except KeyError:
             return default
     if isinstance(_dict, (int, dict, list)):
