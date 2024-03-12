@@ -6,6 +6,7 @@ from dateutil import tz
 from dateutil.parser import parse
 from functools import reduce
 from fuzzywuzzy import fuzz, process
+import io
 import json
 import joblib
 from joblib import Parallel, delayed
@@ -2091,7 +2092,7 @@ def get_citation_count(datasetPid):
     return citationCount
 
 
-def get_all_guestbooks(installationUrl, collectionAlias, apiKey, directoryPath):
+def get_all_guestbooks(installationUrl, collectionAlias, apiKey):
     dataverseAliasList = get_all_subcollection_aliases(
         collectionUrl = f'{installationUrl}/dataverse/{collectionAlias}', 
         apiKey=apiKey)
@@ -2133,9 +2134,9 @@ def get_all_guestbooks(installationUrl, collectionAlias, apiKey, directoryPath):
         if len(guestbookDF) > 0: 
             guestbookDFsList.append(guestbookDF)
             count = len(guestbookDF)
-            print(f'Guestbook for {dataverseAlias} saved')
+            print(f'\tGuestbook for {dataverseAlias} saved')
 
-    # Combine all guestbooks
+    # Combine all guestbooks into one dataframe
     allGuestbooksDF = pd.concat(guestbookDFsList, ignore_index=True)
 
     # Remove empty Column Question columns from the allGuestbooksDF dataframe
@@ -2145,9 +2146,6 @@ def get_all_guestbooks(installationUrl, collectionAlias, apiKey, directoryPath):
             emptyColumns.remove(column)
     allGuestbooksDF.drop(emptyColumns, axis=1, inplace=True)
 
-    # Save the allGuestbooksDF dataframe as a CSV
-    currentTime = time.strftime('%Y.%m.%d')
-    fileName = f'{directoryPath}/all_{collectionAlias}_guestbook_responses_{currentTime}.csv'
-    allGuestbooksDF.to_csv(fileName, index=False)
+    print(f'\nAll guestbooks saved to dataframe')
 
-    print(f'\nAll guestbooks exported to {fileName}')
+    return allGuestbooksDF
