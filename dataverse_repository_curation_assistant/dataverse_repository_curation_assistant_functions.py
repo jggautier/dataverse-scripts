@@ -2089,3 +2089,65 @@ def get_citation_count(datasetPid):
         except Exception as e:
             citationCount = e
     return citationCount
+
+
+def get_all_guestbooks(installationUrl, collectionAlias, apiKey, directoryPath):
+    dataverseAliasList = get_all_subcollection_aliases(
+        collectionUrl = f'{installationUrl}/dataverse/{collectionAlias}', 
+        apiKey=apiKey)
+
+    dataverseCount = len(dataverseAliasList)
+    if dataverseCount == 1:
+        print(f'Getting the guestbooks for {dataverseCount} collection')
+    elif dataverseCount > 1:
+        print(f'Getting the guestbooks for {dataverseCount} collections')
+
+    # Hard code list of column names so that extra columns are added for potential 
+    # custom questions and answers
+    customQuestionAnswerColumns = []
+    for column in range(20):
+        customQuestion = 'Custom Question %s' %(column+1)
+        customAnswer = 'Custom Answer %s' %(column+1)
+        customQuestionAnswerColumns.append(customQuestion)
+        customQuestionAnswerColumns.append(customAnswer)
+
+    columnNames = [
+        'Guestbook', 'Dataset', 'Dataset PID', 'Date', 'Type', 'File Name', 'File Id',
+        'File PID', 'User Name', 'Email', 'Institution', 'Position']
+
+    columnNames = columnNames + customQuestionAnswerColumns
+
+    guestbookDFsList = []
+    for dataverseAlias in dataverseAliasList:
+        getGuestbooksApiEndpoint = f'{installationUrl}/api/dataverses/{dataverseAlias}/guestbookResponses'
+
+        guestbook = requests.get(
+            getGuestbooksApiEndpoint,
+            headers={'X-Dataverse-key': apiKey}).content
+
+        guestbookDF = pd.read_csv(io.StringIO(guestbook.decode('utf-8')), names=columnNames)
+
+        # Remove first row from dataframe since the column names have been replaced with columnNames
+        guestbookDF = guestbookDF.iloc[1: , :]
+
+        if len(guestbookDF) > 0: 
+            guestbookDFsList.append(guestbookDF)
+            count = len(guestbookDF)
+            print(f'Guestbook for {dataverseAlias} saved')
+
+    # Combine all guestbooks
+    allGuestbooksDF = pd.concat(guestbookDFsList, ignore_index=True)
+
+    # Remove empty Column Question columns from the allGuestbooksDF dataframe
+    emptyColumns = [col for col in allGuestbooksDF.columns if allGuestbooksDF[col].isnull().all()]
+    for column in emptyColumns:
+        if 'Custom ' not in column:
+            emptyColumns.remove(column)
+    allGuestbooksDF.drop(emptyColumns, axis=1, inplace=True)
+
+    # Save the allGuestbooksDF dataframe as a CSV
+    currentTime = time.strftime('%Y.%m.%d')
+    fileName = f'{directoryPath}/all_{collectionAlias}_guestbook_responses_{currentTime}.csv'
+    allGuestbooksDF.to_csv(fileName, index=False)
+
+    print(f'\nAll guestbooks exported to {fileName}')
