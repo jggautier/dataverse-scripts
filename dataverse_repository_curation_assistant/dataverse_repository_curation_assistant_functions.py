@@ -1089,8 +1089,9 @@ def get_collection_size(installationUrl, apiKey, collectionIdOrAlias, includeSub
 
         # Get the sum of byte sizes of all datasets in datasetPids list
         datasetsSizeSum = 0
+
         for datasetPid in datasetPids:
-            datasetSizeInt = get_dataset_size(installationUrl, apiKey, datasetIdorPid=datasetPid)['byteSizeInt']
+            datasetSizeInt = get_dataset_size(installationUrl, datasetIdOrPid=datasetPid, apiKey=apiKey)['byteSizeTotalInt']
             datasetsSizeSum = datasetsSizeSum + datasetSizeInt
 
         byteSizeInt = datasetsSizeSum
