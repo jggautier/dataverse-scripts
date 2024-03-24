@@ -25,6 +25,7 @@ from tkinter import Listbox, MULTIPLE, StringVar, END, INSERT, N, E, S, W
 from tkinter.ttk import Entry, Progressbar, OptionMenu, Combobox
 from tqdm import tqdm
 from urllib.parse import urlparse
+import xmltodict
 import yaml
 
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -2151,3 +2152,64 @@ def get_all_guestbooks(installationUrl, collectionAlias, apiKey):
     print(f'\nAll guestbooks saved to dataframe')
 
     return allGuestbooksDF
+
+
+def get_record_count_from_oai_pmh_page(dictData, verb):
+    recordCountInPage = 0
+    if isinstance(dictData['OAI-PMH'][verb]['header'], dict):
+        if '@status' not in dictData['OAI-PMH'][verb]['header']:
+            recordCountInPage += 1
+    elif isinstance(dictData['OAI-PMH'][verb]['header'], list):
+        for record in dictData['OAI-PMH'][verb]['header']:
+            if '@status' not in record:
+                recordCountInPage += 1
+
+    return recordCountInPage
+
+
+def get_oai_pmh_record_count(harvestUrl, verb, metadataFormat, harvestingSet):
+
+    if harvestingSet is None:
+        oaiUrl = f'{harvestUrl}?verb={verb}&metadataPrefix={metadataFormat}'
+    elif harvestingSet is not None:
+        oaiUrl = f'{harvestUrl}?verb={verb}&set={harvestingSet}&metadataPrefix={metadataFormat}'    
+
+    response = requests.get(oaiUrl, verify=False)
+
+    if response.status_code == 503:
+        countOfRecordsInOAIFeed = 'NA - 503 Service Unavailable'
+
+    elif response.status_code == 200:
+        dictData = xmltodict.parse(response.content)
+
+        countOfRecordsInOAIFeed = 0
+        deletedRecordCount = 0
+
+        if 'resumptionToken' not in dictData['OAI-PMH'][verb]:
+            recordCountInPage = get_record_count_from_oai_pmh_page(dictData, verb)
+            countOfRecordsInOAIFeed = countOfRecordsInOAIFeed + recordCountInPage
+
+        elif 'resumptionToken' in dictData['OAI-PMH'][verb]:
+            pageCount = 1
+            print(f'\tCounting records in page {pageCount}', end='\r', flush=True)
+
+            recordCountInPage = get_record_count_from_oai_pmh_page(dictData, verb)
+            countOfRecordsInOAIFeed = countOfRecordsInOAIFeed + recordCountInPage
+
+            resumptionToken = improved_get(dictData, f'OAI-PMH.{verb}.resumptionToken.#text')
+
+            while resumptionToken is not None:
+                pageCount += 1
+                print(f'\tCounting records in page {pageCount}. Resumption token: {resumptionToken}', end='\r', flush=True)
+
+                oaiUrlResume = f'{harvestUrl}?verb={verb}&resumptionToken={resumptionToken}'
+                response = requests.get(oaiUrlResume, verify=False)
+                dictData = xmltodict.parse(response.content)
+
+                recordCountInPage = get_record_count_from_oai_pmh_page(dictData, verb)
+                countOfRecordsInOAIFeed = countOfRecordsInOAIFeed + recordCountInPage
+
+                resumptionToken = improved_get(dictData, f'OAI-PMH.{verb}.resumptionToken.#text')
+
+    return countOfRecordsInOAIFeed
+
