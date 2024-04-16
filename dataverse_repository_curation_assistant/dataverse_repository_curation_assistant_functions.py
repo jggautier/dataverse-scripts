@@ -2184,9 +2184,6 @@ def get_oai_pmh_record_count(harvestUrl, verb, metadataFormat, harvestingSet):
     elif response.status_code == 200:
         dictData = xmltodict.parse(response.content)
 
-        countOfRecordsInOAIFeed = 0
-        deletedRecordCount = 0
-
         if 'resumptionToken' not in dictData['OAI-PMH'][verb]:
             identifierList = get_identifiers_from_oai_pmh_page(dictData, verb)
             countOfRecordsInOAIFeed = len(identifierList)
