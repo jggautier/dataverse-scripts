@@ -2154,21 +2154,23 @@ def get_all_guestbooks(installationUrl, collectionAlias, apiKey):
     return allGuestbooksDF
 
 
-def get_record_count_from_oai_pmh_page(dictData, verb):
-    recordCountInPage = 0
+def get_identifiers_from_oai_pmh_page(dictData, verb):
+    identifierList = []
+
     if isinstance(dictData['OAI-PMH'][verb]['header'], dict):
         if '@status' not in dictData['OAI-PMH'][verb]['header']:
-            recordCountInPage += 1
+            identifierList.append(dictData['OAI-PMH'][verb]['header']['identifier'])
+
     elif isinstance(dictData['OAI-PMH'][verb]['header'], list):
         for record in dictData['OAI-PMH'][verb]['header']:
             if '@status' not in record:
-                recordCountInPage += 1
+                identifierList.append(record['identifier'])
 
-    return recordCountInPage
+    identifierList = list(set(identifierList))
+    return identifierList
 
 
 def get_oai_pmh_record_count(harvestUrl, verb, metadataFormat, harvestingSet):
-
     if harvestingSet is None:
         oaiUrl = f'{harvestUrl}?verb={verb}&metadataPrefix={metadataFormat}'
     elif harvestingSet is not None:
@@ -2186,15 +2188,16 @@ def get_oai_pmh_record_count(harvestUrl, verb, metadataFormat, harvestingSet):
         deletedRecordCount = 0
 
         if 'resumptionToken' not in dictData['OAI-PMH'][verb]:
-            recordCountInPage = get_record_count_from_oai_pmh_page(dictData, verb)
-            countOfRecordsInOAIFeed = countOfRecordsInOAIFeed + recordCountInPage
+            identifierList = get_identifiers_from_oai_pmh_page(dictData, verb)
+            countOfRecordsInOAIFeed = len(identifierList)
 
         elif 'resumptionToken' in dictData['OAI-PMH'][verb]:
+            identifierList = []
             pageCount = 1
             print(f'\tCounting records in page {pageCount}', end='\r', flush=True)
 
-            recordCountInPage = get_record_count_from_oai_pmh_page(dictData, verb)
-            countOfRecordsInOAIFeed = countOfRecordsInOAIFeed + recordCountInPage
+            identifierListinPage = get_identifiers_from_oai_pmh_page(dictData, verb)
+            identifierList = identifierList + identifierListinPage
 
             resumptionToken = improved_get(dictData, f'OAI-PMH.{verb}.resumptionToken.#text')
 
@@ -2206,10 +2209,12 @@ def get_oai_pmh_record_count(harvestUrl, verb, metadataFormat, harvestingSet):
                 response = requests.get(oaiUrlResume, verify=False)
                 dictData = xmltodict.parse(response.content)
 
-                recordCountInPage = get_record_count_from_oai_pmh_page(dictData, verb)
-                countOfRecordsInOAIFeed = countOfRecordsInOAIFeed + recordCountInPage
+                identifierListinPage = get_identifiers_from_oai_pmh_page(dictData, verb)
+                identifierList = identifierList + identifierListinPage
 
                 resumptionToken = improved_get(dictData, f'OAI-PMH.{verb}.resumptionToken.#text')
+
+            countOfRecordsInOAIFeed = len(list(set(identifierList)))
 
     return countOfRecordsInOAIFeed
 
