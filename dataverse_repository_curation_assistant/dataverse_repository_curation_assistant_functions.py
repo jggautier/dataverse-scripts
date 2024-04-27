@@ -159,7 +159,8 @@ def convert_to_local_tz(timestamp, shortDate=False):
 
     if shortDate is True:
         # Return timestamp in YYYY-MM-DD format
-        timestamp = timestamp.strftime('%Y-%m-%d')
+        timestring = timestamp.strftime('%Y-%m-%d')
+        timestamp = parse(timestring, tzinfos=tzinfos)
 
     return timestamp
 
