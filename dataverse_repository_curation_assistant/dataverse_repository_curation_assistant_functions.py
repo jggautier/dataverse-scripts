@@ -734,7 +734,7 @@ def get_object_dataframe_from_search_api(
 
     if None not in [rootWindow, progressText, progressLabel]:
         Parallel(
-            n_jobs=2, 
+            n_jobs=1, 
             backend='threading')(delayed(get_object_dictionary_from_search_api_page)(
                 installationUrl, header, params, start, objectInfoDict, metadataFieldsList) for start in startsList)
 
@@ -744,7 +744,7 @@ def get_object_dataframe_from_search_api(
                 bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', 
                 total=startsListCount)) as progress_bar:
             Parallel(
-                n_jobs=2, 
+                n_jobs=1, 
                 backend='threading')(delayed(get_object_dictionary_from_search_api_page)(
                     installationUrl, header, params, start, objectInfoDict, metadataFieldsList) for start in startsList)        
 
