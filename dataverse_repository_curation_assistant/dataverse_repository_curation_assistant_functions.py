@@ -1693,7 +1693,7 @@ def get_dataset_metadata(
                     chosenFields=get_column_names(
                         metadatablockData, parentFieldTitle, allFieldsDBNamesDict))                
                 citationMetadataCsvFileName =  parentFieldTitle.lower().strip().replace(' ', '_')
-                citationMetadataCsvFileName = citationMetadataCsvFileName + '(citation)'
+                citationMetadataCsvFileName = citationMetadataCsvFileName + f'({metadatablockName})'
                 citationMetadataCsvFilePath = str(Path(mainDirectoryPath, citationMetadataCsvFileName)) + '.csv'
 
                 for valueList in valueLists:
