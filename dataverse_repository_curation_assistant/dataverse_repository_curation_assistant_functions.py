@@ -1004,8 +1004,8 @@ def get_datasets_from_collection_or_search_url(
 def get_int_from_size_message(sizeEndpointJson):
     message = sizeEndpointJson['data']['message']
 
-    if 'dataverse' in message:
-        byteSizeString = message.lstrip('Total size of the files stored in this dataverse: ').rstrip(' bytes')
+    if 'collection' in message:
+        byteSizeString = message.lstrip('Total recorded size of the files stored in this collection (user-uploaded files plus the versions in the archival tab-delimited format when applicable): ').rstrip(' bytes')
         byteSizeInt = int(byteSizeString.replace(',', ''))
 
     elif 'dataset' in message:
@@ -1068,7 +1068,8 @@ def get_dataset_size(installationUrl, datasetIdOrPid, onlyPublishedFiles=False, 
 def get_collection_size(installationUrl, apiKey, collectionIdOrAlias, includeSubCollections=True):
 
     if includeSubCollections is True:
-        collectionSizeEndpointUrl = f'{installationUrl}/api/dataverses/{collectionIdOrAlias}/storagesize'
+        collectionSizeEndpointUrl = f'{installationUrl}/api/dataverses/{collectionIdOrAlias}/storage/use'
+
         response = requests.get(
             collectionSizeEndpointUrl, headers={'X-Dataverse-key': apiKey})
         byteSizeInt = get_int_from_size_message(sizeEndpointJson=response.json())
