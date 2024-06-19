@@ -1177,7 +1177,7 @@ def get_dataset_metadata_export(
                     string = response.text
                     data = BeautifulSoup(string, 'xml').prettify()
             else:
-                data = 'ERROR'
+                data = f'ERROR: {response.status_code}; {response.text}'
         except Exception as e:
             data = f'ERROR: {e}'
 
