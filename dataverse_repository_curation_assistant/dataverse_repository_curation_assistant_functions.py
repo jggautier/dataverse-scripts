@@ -1,4 +1,5 @@
 # Functions for the curation app
+from bs4 import BeautifulSoup
 import contextlib
 import csv
 from datetime import datetime
@@ -1177,8 +1178,8 @@ def get_dataset_metadata_export(
                     data = BeautifulSoup(string, 'xml').prettify()
             else:
                 data = 'ERROR'
-        except Exception:
-            data = 'ERROR'
+        except Exception as e:
+            data = f'ERROR: {e}'
 
     return data
 
