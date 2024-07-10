@@ -11,6 +11,12 @@ import xmltodict
 sys.path.append('/Users/juliangautier/dataverse-scripts/dataverse_repository_curation_assistant')
 from dataverse_repository_curation_assistant_functions import *
 
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+# The requests module isn't able to verify the SSL cert of some installations,
+# so all requests calls in this script are set to not verify certs (verify=False)
+# This suppresses the warning messages that are thrown when requests are made without verifying SSL certs
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
 ####################################################################################
 
 # Create GUI for getting user input
@@ -160,7 +166,7 @@ csvFilePath = os.path.join(directory, csvFile)
 
 print('Counting current and deleted records:')
 
-response = requests.get(oaiUrl)
+response = requests.get(oaiUrl, verify=False)
 dictData = xmltodict.parse(response.content)
 
 recordCount = 0
@@ -214,7 +220,7 @@ with open(csvFilePath, mode='w', encoding='utf-8', newline='') as f:
                 print(f'Counting records in page {pageCount}. Resumption token: {resumptionToken}', end='\r', flush=True)
 
                 oaiUrlResume = f'{baseUrl}?verb={verb}&resumptionToken={resumptionToken}'
-                response = requests.get(oaiUrlResume)
+                response = requests.get(oaiUrlResume, verify=False)
                 dictData = xmltodict.parse(response.content)
 
                 for record in dictData['OAI-PMH'][verb]['header']:
@@ -283,7 +289,7 @@ with open(csvFilePath, mode='w', encoding='utf-8', newline='') as f:
                 print(f'Counting records in page {pageCount}', end='\r', flush=True)
                 print(f'\t{resumptionToken}')
                 oaiUrlResume = f'{baseUrl}?verb={verb}&resumptionToken={resumptionToken}'
-                response = requests.get(oaiUrlResume)
+                response = requests.get(oaiUrlResume, verify=False)
                 dictData = xmltodict.parse(response.content)
 
                 for record in dictData['OAI-PMH'][verb]['record']:
