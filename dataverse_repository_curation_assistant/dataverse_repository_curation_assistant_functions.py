@@ -1001,6 +1001,8 @@ def get_datasets_from_collection_or_search_url(
         else:
             print(text)
 
+        return datasetInfoDF
+
 
 def get_int_from_size_message(sizeEndpointJson):
     message = sizeEndpointJson['data']['message']
