@@ -913,8 +913,9 @@ def get_datasets_from_collection_or_search_url(
     params = requestsGetProperties['params']
 
     datasetInfoDF = get_object_dataframe_from_search_api(
-        baseUrl=baseUrl, rootWindow=rootWindow, progressLabel=progressLabel, progressText=progressText,
-        params=params, objectType='dataset', apiKey=apiKey)
+        baseUrl=baseUrl, params=params, objectType='dataset', metadataFieldsList=None,
+        printProgress=False, rootWindow=rootWindow, progressText=progressText, 
+        progressLabel=progressLabel, apiKey=apiKey)
     datasetCount = len(datasetInfoDF.index)
 
     if datasetCount == 0:
