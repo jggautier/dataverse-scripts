@@ -237,7 +237,7 @@ def check_installation_url_status(string, headers={}):
         installationUrl = parsed.scheme + '://' + parsed.netloc
 
         try:
-            response = requests.get(installationUrl, headers=headers, timeout=60, verify=False)
+            response = requests.get(installationUrl, headers=headers, timeout=20, verify=False)
             parsed = urlparse(response.url)
             statusDict['statusCode'] = response.status_code
             statusDict['installationUrl'] = parsed.scheme + '://' + parsed.netloc
@@ -250,7 +250,7 @@ def check_installation_url_status(string, headers={}):
         installationUrl = re.sub('\(|\)', '', installationUrl)
         # Use requests to get the final redirect URL. At least on installation, sodha, redirects to www.sodha.be
         try:
-            installationUrl = requests.get(installationUrl, verify=False).url
+            installationUrl = requests.get(installationUrl, timeout=20, verify=False).url
             parsed = urlparse(installationUrl)
             statusDict['statusCode'] = response.status_code
             statusDict['installationUrl'] = parsed.scheme + '://' + parsed.netloc
