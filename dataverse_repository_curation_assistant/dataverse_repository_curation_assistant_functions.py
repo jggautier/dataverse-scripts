@@ -303,6 +303,16 @@ def check_api_endpoint(url, headers, verify=False, json_response_expected=True):
     return status
 
 
+def sanitize_version(version):
+    # Specifically look for a major/minor semver-formatted version
+    # https://stackoverflow.com/questions/15340582/python-extract-pattern-matches
+    # Adapted from code by Goeff Thomas. See https://www.kaggle.com/code/goefft/check-dataverse-installation-versions
+    result = re.compile('(\d+\.)?(\d+\.)?(\*|\d+)').search(version)
+    if result is None:
+        return 'NA'
+    return result.group()
+
+
 # Function for getting name of installation's root collection 
 # (assumming root dataverse's ID is 1, which isn't the case with UVA Dataverse)
 def get_root_alias(url):
