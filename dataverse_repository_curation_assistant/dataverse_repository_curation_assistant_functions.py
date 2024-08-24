@@ -283,7 +283,7 @@ def get_installation_list():
 
 def check_api_endpoint(url, headers, verify=False, json_response_expected=True):
     try:
-        response = requests.get(url, headers=headers, timeout=60, verify=verify)
+        response = requests.get(url, headers=headers, timeout=20, verify=verify)
         if response.status_code == 200:
             status = 'OK'
         elif response.status_code != 200:
