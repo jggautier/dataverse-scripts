@@ -2232,7 +2232,7 @@ def get_oai_pmh_record_count(harvestUrl, verb, metadataFormat, harvestingSet):
     return countOfRecordsInOAIFeed
 
 
-def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeysFilePath, installationHostnamesList, nJobsForApiCalls, headers):
+def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeysFilePath, installationHostnamesList, nJobsForApiCalls, requestTimeout, headers):
 
     # Function for getting metadata and other information from known Dataverse installations.
     # Used for publishing the datasets in the collection at https://dataverse.harvard.edu/dataverse/dataverse-ux-research-dataverse
@@ -2490,7 +2490,7 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
             getInstallationVersionApiStatus = check_api_endpoint(getInstallationVersionApiUrl, headers, verify=False, json_response_expected=True)
 
             if getInstallationVersionApiStatus == 'OK':
-                response = requests.get(getInstallationVersionApiUrl, headers=headers, timeout=20, verify=False)
+                response = requests.get(getInstallationVersionApiUrl, headers=headers, timeout=requestTimeout, verify=False)
                 getInstallationVersionApiData = response.json()
                 dataverseVersion = getInstallationVersionApiData['data']['version']
                 dataverseVersion = str(dataverseVersion.lstrip('v'))
@@ -2508,7 +2508,7 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
 
             # If Search API works, from Search API query results, get count of local (non-harvested) datasets
             if searchApiStatus == 'OK':
-                response = requests.get(searchApiCheckUrl, headers=headers, timeout=20, verify=False)
+                response = requests.get(searchApiCheckUrl, headers=headers, timeout=requestTimeout, verify=False)
                 searchApiData = response.json()
                 datasetCount = searchApiData['data']['total_count']
             else:
@@ -2549,7 +2549,7 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
                 os.mkdir(metadatablockFileDirectoryPath)
 
                 # Download metadata block JSON files
-                response = requests.get(metadatablocksApiEndpointUrl, headers=headers, timeout=20, verify=False)
+                response = requests.get(metadatablocksApiEndpointUrl, headers=headers, timeout=requestTimeout, verify=False)
                 metadatablockData = response.json()
 
                 # Get list of the installation's metadata block names
@@ -2562,7 +2562,7 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
 
                 for metadatablockName in metadatablockNames:
                     metadatablockApiEndpointUrl = f'{metadatablocksApiEndpointUrl}/{metadatablockName}'
-                    response = requests.get(metadatablockApiEndpointUrl, headers=headers, timeout=20, verify=False)
+                    response = requests.get(metadatablockApiEndpointUrl, headers=headers, timeout=requestTimeout, verify=False)
                     metadata = response.json()
 
                     # If the metadata block has fields, download the metadata block data into a JSON file
