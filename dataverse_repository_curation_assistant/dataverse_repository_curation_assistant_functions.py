@@ -229,7 +229,7 @@ def clear_selections(listbox):
     listbox.selection_clear(0, END)
 
 
-def check_installation_url_status(string, headers={}):
+def check_installation_url_status(string, requestTimeout=20, headers={}):
     statusDict = {}
 
     if string.startswith('http'):
@@ -237,7 +237,7 @@ def check_installation_url_status(string, headers={}):
         installationUrl = parsed.scheme + '://' + parsed.netloc
 
         try:
-            response = requests.get(installationUrl, headers=headers, timeout=20, verify=False)
+            response = requests.get(installationUrl, headers=headers, timeout=requestTimeout, verify=False)
             parsed = urlparse(response.url)
             statusDict['statusCode'] = response.status_code
             statusDict['installationUrl'] = parsed.scheme + '://' + parsed.netloc
@@ -250,7 +250,7 @@ def check_installation_url_status(string, headers={}):
         installationUrl = re.sub('\(|\)', '', installationUrl)
         # Use requests to get the final redirect URL. At least on installation, sodha, redirects to www.sodha.be
         try:
-            installationUrl = requests.get(installationUrl, timeout=20, verify=False).url
+            installationUrl = requests.get(installationUrl, timeout=requestTimeout, verify=False).url
             parsed = urlparse(installationUrl)
             statusDict['statusCode'] = response.status_code
             statusDict['installationUrl'] = parsed.scheme + '://' + parsed.netloc
@@ -2439,7 +2439,7 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
         
         print(f'\nChecking {installationProgressCount} of {countOfInstallations} installations: {installationName}')
 
-        installationStatusDict = check_installation_url_status(f'https://{hostname}', headers=headers)
+        installationStatusDict = check_installation_url_status(f'https://{hostname}', requestTimeout, headers=headers)
         installationUrl = installationStatusDict['installationUrl']
         installationUrlStatusCode = installationStatusDict['statusCode']
 
