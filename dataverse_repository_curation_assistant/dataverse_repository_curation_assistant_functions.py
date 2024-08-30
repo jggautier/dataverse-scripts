@@ -1554,7 +1554,9 @@ def get_metadata_values_lists(
 # If file has fewer than 2 rows, delete it.
 def delete_empty_csv_files(csvDirectory):
     fieldsWithNoMetadata = []
-    for file in glob.glob(str(Path(csvDirectory)) + '/' + '*.csv'):
+    # for file in glob.glob(str(Path(csvDirectory)) + '/' + '*.csv'):
+    for file in glob.glob(os.path.join(csvDirectory, '*.csv')):
+
         with open(file, mode='r', encoding='utf-8') as f:
             reader = csv.reader(f, delimiter=',')
             data = list(reader)
@@ -2377,9 +2379,14 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
 
     # Create the main directory that will store a directory for each installation
     mainInstallationsDirectoryPath = Path(mainInstallationsDirectoryPath)
-    allInstallationsMetadataDirectory = Path(mainInstallationsDirectoryPath + '/' + f'all_installation_metadata_{currentTime}')
+    # allInstallationsMetadataDirectory = Path(mainInstallationsDirectoryPath + '/' + f'all_installation_metadata_{currentTime}')
+
+    allInstallationsMetadataDirectory = os.path.join(mainInstallationsDirectoryPath, f'all_installation_metadata_{currentTime}')
+
     os.mkdir(allInstallationsMetadataDirectory)
-    installationsDirectory = Path(allInstallationsMetadataDirectory + '/' + 'installations')
+    # installationsDirectory = Path(allInstallationsMetadataDirectory + '/' + 'installations')
+    installationsDirectory = os.path.join(allInstallationsMetadataDirectory, 'installationsList')
+
     os.mkdir(installationsDirectory)
 
     # Read CSV file containing apikeys into a dataframe and convert to list to compare each installation name
@@ -2567,7 +2574,8 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
                     # If the metadata block has fields, download the metadata block data into a JSON file
                     if len(metadata['data']['fields']) > 0:
 
-                        metadatablockFile = f'{str(Path(metadatablockFileDirectoryPath))}/{metadatablockName}_v{dataverseVersion}.json'
+                        # metadatablockFile = f'{str(Path(metadatablockFileDirectoryPath))}/{metadatablockName}_v{dataverseVersion}.json'
+                        metadatablockFile = os.path.join(metadatablockFileDirectoryPath, f'{metadatablockName}_v{dataverseVersion}.json')
 
                         with open(metadatablockFile, mode='w') as f:
                             f.write(json.dumps(response.json(), indent=4))
