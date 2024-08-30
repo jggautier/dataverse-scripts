@@ -45,19 +45,21 @@ sys.path.append(functionsDirectoryPath)
 from dataversescriptfunctions import *
 
 
-userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'
-emailAddress = 'juliangautier@g.harvard.edu'
+userAgent = ''
+emailAddress = ''
 
 headers = {
     'User-Agent': userAgent,
     'From': emailAddress}
 
+installationHostnamesList = [
+    ]
 
 get_dataverse_installations_metadata(
-    mainInstallationsDirectoryPath='/Users/juliangautier/Desktop', 
-    apiKeysFilePath='/Users/juliangautier/Library/CloudStorage/Dropbox/python_scripts/dataverse-scripts/get_dataset_metadata_of_all_installations/dvinstallations_extra_info.csv', 
-    installationHostnamesList=['repositoriopesquisas.ibict.br'], 
-    nJobsForApiCalls=1,
+    mainInstallationsDirectoryPath='', 
+    apiKeysFilePath='', 
+    installationHostnamesList=installationHostnamesList, 
+    nJobsForApiCalls=3,
     requestTimeout=60,
     headers=headers)
 
