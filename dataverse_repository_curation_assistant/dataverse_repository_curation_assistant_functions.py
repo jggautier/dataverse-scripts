@@ -2417,7 +2417,7 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
         'PIDs_of_dataset_metadata_not_retrieved',
         'Metadata_block_names']
 
-    installationInfoFilePath = f'{allInstallationsMetadataDirectory}/installations_report.csv'
+    installationInfoFilePath = os.path.join(allInstallationsMetadataDirectory, f'installations_report_{currrentWorkingDirectory}.csv')
 
     with open(installationInfoFilePath, mode='w', newline='', encoding='utf-8') as installationInfo:
         installationInfoWriter = csv.writer(
