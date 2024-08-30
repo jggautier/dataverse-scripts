@@ -2372,19 +2372,18 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
     # Get directory that this Python script is in
     currrentWorkingDirectory = os.getcwd()
 
-    # Enter name of CSV file containing list of API keys for installations that require one to use certain API endpoints
-    # apiKeysFilePath = str(Path(currrentWorkingDirectory + '/' + 'dvinstallations_extra_info.csv'))
-
     # Save current time for folder and file timestamps
     currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
 
     # Create the main directory that will store a directory for each installation
-    allInstallationsMetadataDirectory = str(Path(mainInstallationsDirectoryPath + '/' + f'all_installation_metadata_{currentTime}'))
+    mainInstallationsDirectoryPath = Path(mainInstallationsDirectoryPath)
+    allInstallationsMetadataDirectory = Path(mainInstallationsDirectoryPath + '/' + f'all_installation_metadata_{currentTime}')
     os.mkdir(allInstallationsMetadataDirectory)
-    installationsDirectory = str(Path(allInstallationsMetadataDirectory + '/' + 'installations'))
+    installationsDirectory = Path(allInstallationsMetadataDirectory + '/' + 'installations')
     os.mkdir(installationsDirectory)
 
     # Read CSV file containing apikeys into a dataframe and convert to list to compare each installation name
+    apiKeysFilePath = Path(apiKeysFilePath)
     apiKeysDF = pd.read_csv(apiKeysFilePath).set_index('hostname')
     installationsRequiringApiKeyList = apiKeysDF.index.tolist()
 
