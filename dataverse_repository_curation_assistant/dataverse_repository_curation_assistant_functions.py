@@ -1554,7 +1554,6 @@ def get_metadata_values_lists(
 # If file has fewer than 2 rows, delete it.
 def delete_empty_csv_files(csvDirectory):
     fieldsWithNoMetadata = []
-    # for file in glob.glob(str(Path(csvDirectory)) + '/' + '*.csv'):
     for file in glob.glob(os.path.join(csvDirectory, '*.csv')):
 
         with open(file, mode='r', encoding='utf-8') as f:
@@ -1625,7 +1624,7 @@ def get_dataset_metadata(
     installationName = data['data']['name'].replace(' ', '_').replace('__', '_')
 
     mainDirectoryName = f'{installationName}_dataset_metadata_{currentTime}'
-    mainDirectoryPath = str(Path(directoryPath + '/' + mainDirectoryName))
+    mainDirectoryPath = os.path.join(directoryPath, mainDirectoryName)
     os.mkdir(mainDirectoryPath)
 
     # For each field the user chose:
@@ -1636,8 +1635,8 @@ def get_dataset_metadata(
         # Create file name and path
         csvFileName =  parentFieldTitle.lower().strip().replace(' ', '_')
         csvFileName = csvFileName + '(citation)'
-        mainDirectoryPath = str(Path(directoryPath + '/' + mainDirectoryName))
-        csvFilePath = str(Path(mainDirectoryPath, csvFileName)) + '.csv'
+        mainDirectoryPath = os.path.join(directoryPath, mainDirectoryName)
+        csvFilePath = os.path.join(mainDirectoryPath, csvFileName, '.csv')
           
         # Create header row for the CSV file
         headerRow = [
@@ -1711,7 +1710,7 @@ def get_dataset_metadata(
                         metadatablockData, parentFieldTitle, allFieldsDBNamesDict))                
                 citationMetadataCsvFileName =  parentFieldTitle.lower().strip().replace(' ', '_')
                 citationMetadataCsvFileName = citationMetadataCsvFileName + f'({metadatablockName})'
-                citationMetadataCsvFilePath = str(Path(mainDirectoryPath, citationMetadataCsvFileName)) + '.csv'
+                citationMetadataCsvFilePath = os.path.join(mainDirectoryPath, citationMetadataCsvFileName, '.csv')
 
                 for valueList in valueLists:
 
@@ -2379,13 +2378,10 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
 
     # Create the main directory that will store a directory for each installation
     mainInstallationsDirectoryPath = Path(mainInstallationsDirectoryPath)
-    # allInstallationsMetadataDirectory = Path(mainInstallationsDirectoryPath + '/' + f'all_installation_metadata_{currentTime}')
-
     allInstallationsMetadataDirectory = os.path.join(mainInstallationsDirectoryPath, f'all_installation_metadata_{currentTime}')
 
     os.mkdir(allInstallationsMetadataDirectory)
-    # installationsDirectory = Path(allInstallationsMetadataDirectory + '/' + 'installations')
-    installationsDirectory = os.path.join(allInstallationsMetadataDirectory, 'installationsList')
+    installationsDirectory = os.path.join(allInstallationsMetadataDirectory, 'installations')
 
     os.mkdir(installationsDirectory)
 
@@ -2399,11 +2395,6 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
     mapDataUrl = 'https://raw.githubusercontent.com/IQSS/dataverse-installations/main/data/data.json'
     response = requests.get(mapDataUrl, headers=headers)
     mapdata = response.json()
-
-    # keep = [
-    #     'dataverse.unc.edu',
-    #     'dataverse.harvard.edu'
-    # ]
     installations = [x for x in mapdata['installations'] if x['hostname'] in installationHostnamesList]
     mapadata = []
     mapdata['installations'] = installations
@@ -2573,10 +2564,7 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
 
                     # If the metadata block has fields, download the metadata block data into a JSON file
                     if len(metadata['data']['fields']) > 0:
-
-                        # metadatablockFile = f'{str(Path(metadatablockFileDirectoryPath))}/{metadatablockName}_v{dataverseVersion}.json'
                         metadatablockFile = os.path.join(metadatablockFileDirectoryPath, f'{metadatablockName}_v{dataverseVersion}.json')
-
                         with open(metadatablockFile, mode='w') as f:
                             f.write(json.dumps(response.json(), indent=4))
 
