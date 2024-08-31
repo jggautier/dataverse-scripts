@@ -24,7 +24,7 @@ mainDirectory = ''
 # Enter path to directory to store CSV file that this script will create
 csvFileFolder = ''
 
-csvFile = os.path.join(csvFileFolder, 'metadatablocks.csv')
+csvFile = os.path.join(csvFileFolder, 'metadatablocks_from_most_known_dataverse_installations.csv')
 
 with open(csvFile, mode='w', encoding='utf-8-sig') as data:
     data = csv.writer(data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
