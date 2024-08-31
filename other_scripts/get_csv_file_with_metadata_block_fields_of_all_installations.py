@@ -24,7 +24,7 @@ mainDirectory = ''
 # Enter path to directory to store CSV file that this script will create
 csvFileFolder = ''
 
-csvFile = str(Path(csvFileFolder + '/' + 'metadatablocks.csv'))
+csvFile = os.path.join(csvFileFolder, 'metadatablocks.csv')
 
 with open(csvFile, mode='w', encoding='utf-8-sig') as data:
     data = csv.writer(data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -50,24 +50,24 @@ for repositoryFileName in listdir_nohidden(mainDirectory):
     print(f'Parsing metadatablocks: {count} of {total}')
 
     # Open each installation folder
-    repositoryFolderPath = str(Path(mainDirectory + '/' + repositoryFileName))
+    repositoryFolderPath = os.path.join(mainDirectory, repositoryFileName)
     if os.path.isdir(repositoryFolderPath):
 
         for subFolder in os.listdir(repositoryFolderPath):
             if 'metadatablocks' in subFolder:
-                metadatablockFolderPath = str(Path(repositoryFolderPath + '/' + subFolder))
+                metadatablockFolderPath = os.path.join(repositoryFolderPath, subFolder)
 
         # Open each .json file
         for metadatablockFile in os.listdir(metadatablockFolderPath):
 
             # Get only the metadatablock name from the name of each metadatablock JSON file
-            metadatablockName = metadatablockFile.split('_', 1)[0]
+            metadatablockName = metadatablockFile.split('_v', 1)[0]
             version = metadatablockFile.split('_v', 1)[1].rstrip('.json')
 
             # Get repository name and combine with version
-            repositoryNameVersion = '%s_(%s)' % (repositoryName, version)
+            repositoryNameVersion = f'{repositoryName}_({version})'
 
-            metadatablockFilePath = str(Path(metadatablockFolderPath + '/' + metadatablockFile))
+            metadatablockFilePath = os.path.join(metadatablockFolderPath, metadatablockFile)
 
             with open(metadatablockFilePath, mode='r', encoding='utf-8-sig') as f:  # Open file in read mode
                 metadatablockData = f.read()  # Copy content to dataset_metadata variable
