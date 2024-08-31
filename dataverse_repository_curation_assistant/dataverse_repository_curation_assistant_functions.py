@@ -1260,8 +1260,8 @@ def save_dataset_export(
             elif allVersions == True:
 
                 allVersionsMetadata = get_dataset_metadata_export(installationUrl, 
-                    datasetPid, exportFormat, timeout, verify=verify, allVersions=True, header={}, 
-                    apiKey=apiKey)
+                    datasetPid, exportFormat, timeout, verify=verify, allVersions=True,
+                    header={}, apiKey=apiKey)
 
                 if allVersionsMetadata == 'ERROR':
                     # Add to CSV file that the dataset's metadata was not downloaded
