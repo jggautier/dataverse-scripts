@@ -1455,97 +1455,118 @@ def get_metadata_values_lists(
     rowVariablesList = []
 
     if datasetMetadata['status'] == 'OK':
+        
+        # Get names of metadata blocks and name of first metadata block whose name matches the give metadatablockName
+        matchingMetadataBlockName = None
+        metadataBlockNamesList = []
+        for metadatablock in datasetMetadata['data']['datasetVersion']['metadataBlocks']:
+            metadataBlockNamesList.append(metadatablock)
+        if metadatablockName in metadataBlockNamesList:
+            matchingMetadataBlockName = metadatablockName
+        elif metadatablockName not in metadataBlockNamesList:
+            matchingMetadataBlockNames = [s for idx, s in enumerate(metadataBlockNamesList) if metadatablockName in s]
+            if matchingMetadataBlockNames:
+                matchingMetadataBlockName = matchingMetadataBlockNames[0]
+            else:
+                matchingMetadataBlockName is None
 
-        for metadatablock in datasetMetadata['data'][versions]['metadataBlocks']:
-            if metadatablockName in metadatablock:
+        if matchingMetadataBlockName is not None:
 
-                datasetPersistentUrl = datasetMetadata['data']['persistentUrl']
-                datasetPid = get_canonical_pid(datasetPersistentUrl)
-                datasetUrl = installationUrl + '/dataset.xhtml?persistentId=' + datasetPid
+            datasetPersistentUrl = datasetMetadata['data']['persistentUrl']
+            datasetPid = get_canonical_pid(datasetPersistentUrl)
+            datasetUrl = installationUrl + '/dataset.xhtml?persistentId=' + datasetPid
 
-                versionCreateTime = datasetMetadata['data'][versions]['createTime']
+            versionCreateTime = datasetMetadata['data'][versions]['createTime']
 
-                if 'publicationDate' not in datasetMetadata['data']:
-                    publicationDate = ''
-                elif 'publicationDate' in datasetMetadata['data']:
-                    publicationDate = datasetMetadata['data']['publicationDate']
+            if 'publicationDate' not in datasetMetadata['data']:
+                publicationDate = ''
+            elif 'publicationDate' in datasetMetadata['data']:
+                publicationDate = datasetMetadata['data']['publicationDate']
 
-                if 'versionNumber' in datasetMetadata['data'][versions]:
-                    majorVersionNumber = datasetMetadata['data'][versions]['versionNumber']
-                    minorVersionNumber = datasetMetadata['data'][versions]['versionMinorNumber']
-                    datasetVersionNumber = f'{majorVersionNumber}.{minorVersionNumber}'
-                else:
-                    datasetVersionNumber = 'DRAFT'
+            if 'versionNumber' in datasetMetadata['data'][versions]:
+                majorVersionNumber = datasetMetadata['data'][versions]['versionNumber']
+                minorVersionNumber = datasetMetadata['data'][versions]['versionMinorNumber']
+                datasetVersionNumber = f'{majorVersionNumber}.{minorVersionNumber}'
+            else:
+                datasetVersionNumber = 'DRAFT'
 
-                for fields in datasetMetadata['data'][versions]['metadataBlocks'][metadatablockName]['fields']:
-                    if fields['typeName'] == chosenTitleDBName:
+            for fields in datasetMetadata['data'][versions]['metadataBlocks'][matchingMetadataBlockName]['fields']:
+                if fields['typeName'] == chosenTitleDBName:
 
-                        # Save the field's typeClass and if it allows multiple values 
-                        typeClass = fields['typeClass']
-                        allowsMultiple = fields['multiple']
+                    # Save the field's typeClass and if it allows multiple values 
+                    typeClass = fields['typeClass']
+                    allowsMultiple = fields['multiple']
 
-                        if typeClass in ('primitive', 'controlledVocabulary') and allowsMultiple is True:
-                            for value in fields['value']:
-                                rowVariables = [
-                                    datasetPid, datasetPersistentUrl, datasetUrl,
-                                    publicationDate, datasetVersionNumber, 
-                                    versionCreateTime,
-                                    value[:10000].replace('\r', ' - ')]
-                                rowVariablesList.append(rowVariables)
-
-                        elif typeClass in ('primitive', 'controlledVocabulary') and allowsMultiple is False:
-                            value = fields['value'][:10000].replace('\r', ' - ')
+                    if typeClass in ('primitive', 'controlledVocabulary') and allowsMultiple is True:
+                        for value in fields['value']:
                             rowVariables = [
-                                datasetPid, datasetPersistentUrl, datasetUrl, 
+                                datasetPid, datasetPersistentUrl, datasetUrl,
                                 publicationDate, datasetVersionNumber, 
-                                versionCreateTime, value]
-
+                                versionCreateTime,
+                                value[:10000].replace('\r', ' - ')]
                             rowVariablesList.append(rowVariables)
 
-                        elif typeClass == 'compound' and allowsMultiple is True:          
-                            
-                            index = 0
-                            condition = True
+                    elif typeClass in ('primitive', 'controlledVocabulary') and allowsMultiple is False:
+                        value = fields['value'][:10000].replace('\r', ' - ')
+                        rowVariables = [
+                            datasetPid, datasetPersistentUrl, datasetUrl, 
+                            publicationDate, datasetVersionNumber, 
+                            versionCreateTime, value]
 
-                            while condition:
-                                rowVariables = [
-                                    datasetPid, datasetPersistentUrl, datasetUrl, 
-                                    publicationDate, datasetVersionNumber,
-                                    versionCreateTime]
+                        rowVariablesList.append(rowVariables)
 
-                                # Get number of multiples
-                                total = len(fields['value'])
+                    elif typeClass == 'compound' and allowsMultiple is True:          
+                        
+                        index = 0
+                        condition = True
 
-                                # For each child field...
-                                for chosenField in chosenFields:
-                                    # Try getting the value of that child field
-                                    try:
-                                        value = fields['value'][index][chosenField]['value'][:10000].replace('\r', ' - ')
-                                    # Otherwise, save an empty string as the value
-                                    except KeyError:
-                                        value = ''
-                                    # Append value to the rowVariables list to add to the CSV file
-                                    rowVariables.append(value)
-
-                                rowVariablesList.append(rowVariables)
-
-                                index += 1
-                                condition = index < total
-
-                        elif typeClass == 'compound' and allowsMultiple is False:
+                        while condition:
                             rowVariables = [
                                 datasetPid, datasetPersistentUrl, datasetUrl, 
                                 publicationDate, datasetVersionNumber,
                                 versionCreateTime]
 
+                            # Get number of multiples
+                            total = len(fields['value'])
+
+                            # For each child field...
                             for chosenField in chosenFields:
+                                # Try getting the value of that child field
                                 try:
-                                    # Get value from compound field
-                                    value = fields['value'][chosenField]['value'][:10000].replace('\r', ' - ')
+                                    value = fields['value'][index][chosenField]['value']
+                                    if isinstance(value, list):
+                                        value = f'[{list_to_string(value)}]' 
+                                    elif isinstance(value, str):
+                                        value = value[:10000].replace('\r', ' - ')
+                                # Otherwise, save an empty string as the value
                                 except KeyError:
                                     value = ''
+                                # Append value to the rowVariables list to add to the CSV file
                                 rowVariables.append(value)
+
                             rowVariablesList.append(rowVariables)
+
+                            index += 1
+                            condition = index < total
+
+                    elif typeClass == 'compound' and allowsMultiple is False:
+                        rowVariables = [
+                            datasetPid, datasetPersistentUrl, datasetUrl, 
+                            publicationDate, datasetVersionNumber,
+                            versionCreateTime]
+
+                        for chosenField in chosenFields:
+                            try:
+                                value = fields['value'][index][chosenField]['value']
+                                if isinstance(value, list):
+                                    value = f'[{list_to_string(value)}]' 
+                                elif isinstance(value, str):
+                                    value = value[:10000].replace('\r', ' - ')
+                                # Otherwise, save an empty string as the value
+                            except KeyError:
+                                value = ''
+                            rowVariables.append(value)
+                        rowVariablesList.append(rowVariables)
 
     return rowVariablesList
 
