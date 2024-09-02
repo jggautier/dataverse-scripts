@@ -1461,8 +1461,10 @@ def get_metadata_values_lists(
         metadataBlockNamesList = []
         for metadatablock in datasetMetadata['data']['datasetVersion']['metadataBlocks']:
             metadataBlockNamesList.append(metadatablock)
+
         if metadatablockName in metadataBlockNamesList:
             matchingMetadataBlockName = metadatablockName
+
         elif metadatablockName not in metadataBlockNamesList:
             matchingMetadataBlockNames = [s for idx, s in enumerate(metadataBlockNamesList) if metadatablockName in s]
             if matchingMetadataBlockNames:
