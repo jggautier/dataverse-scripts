@@ -16,6 +16,7 @@ import math
 import os
 from os import listdir
 import math
+from packaging.version import Version
 import pandas as pd
 from pathlib import Path
 import re
@@ -1124,23 +1125,26 @@ def get_collection_size(installationUrl, apiKey, collectionIdOrAlias, includeSub
 
 
 def get_dataset_metadata_export(
-    installationUrl, datasetPid, exportFormat, timeout, verify,
+    installationUrl, datasetPid, exportFormat, 
+    timeout, verify, excludeFiles,
     allVersions=False, header={}, apiKey=''):
     if apiKey:
         header['X-Dataverse-key'] = apiKey
 
     if exportFormat == 'dataverse_json':
         if allVersions is False:
-            dataGetLatestVersionUrl = f'{installationUrl}/api/datasets/:persistentId'
+            dataGetLatestVersionUrl = f'{installationUrl}/api/datasets/:persistentId/versions/:latest'
             dataGetLatestVersionUrl = dataGetLatestVersionUrl.replace('//api', '/api')
             try:
                 response = requests.get(
                     dataGetLatestVersionUrl,
-                    params={'persistentId': datasetPid},
+                    params={
+                        'persistentId': datasetPid,
+                        'excludeFiles': excludeFiles},
                     headers=header, 
                     timeout=timeout, 
                     verify=verify)
-                if response.status_code == 200 and 'metadataBlocks' in response.json()['data']['latestVersion']:
+                if response.status_code == 200 and 'metadataBlocks' in response.json()['data']:
                     data = response.json()
                 else:
                     data = 'ERROR'
@@ -1153,7 +1157,9 @@ def get_dataset_metadata_export(
             try:
                 response = requests.get(
                     dataGetAllVersionsUrl,
-                    params={'persistentId': datasetPid},
+                    params={
+                        'persistentId': datasetPid,
+                        'excludeFiles': excludeFiles},
                     headers=header,
                     timeout=timeout, 
                     verify=verify)
@@ -1193,6 +1199,18 @@ def get_dataset_metadata_export(
                 data = f'ERROR: {response.status_code}; {response.text}'
         except Exception as e:
             data = f'ERROR: {e}'
+
+    if data != 'ERROR' and exportFormat == 'dataverse_json' and excludeFiles is True:
+        if allVersions is False:
+            fileMetadata = improved_get(data, 'data.files', False)
+        elif allVersions is True:
+            latestVersionMetadata = data['data'][0]
+            fileMetadata = improved_get(latestVersionMetadata, 'files', False)
+
+        if fileMetadata is not False:
+            print(
+                'Warning: Installation may not support "excludeFiles" paramter.'\
+                'File metadata may be included.')
 
     return data
 
