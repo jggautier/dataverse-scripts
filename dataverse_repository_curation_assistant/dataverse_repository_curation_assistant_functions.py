@@ -2641,7 +2641,7 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
                     getCollectionInfo = True
 
                 with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=startsListCount)) as progress_bar:
-                    Parallel(n_jobs=nJobsForApiCalls, backend='threading')(delayed(get_dataset_info_dict)(
+                    Parallel(n_jobs=1, backend='threading')(delayed(get_dataset_info_dict)(
                         start, headers, installationName, misindexedDatasetsCount, getCollectionInfo) for start in startsList)   
 
                 # Get new dataset count based on number of PIDs saved from Search API
