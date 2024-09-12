@@ -317,20 +317,16 @@ def sanitize_version(version):
 # Function for getting name of installation's root collection 
 # (assumming root dataverse's ID is 1, which isn't the case with UVA Dataverse)
 def get_root_alias(url):
-
-    # If it's the UVA homepage URL, it's root alias is uva (whose database ID is not 1)
-    if 'dataverse.lib.virginia.edu' in url:
-        rootAlias = 'uva'
-
-    # If's it's not the UVA homepage URL, get the alias of the collection whose database is 1
-    elif '/dataverse/' in url:
+    if '/dataverse/' in url:
         parsed = urlparse(url)
-        url = parsed.scheme + '://' + parsed.netloc + '/api/dataverses/1'
+        url = f'{parsed.scheme}://{parsed.netloc}/api/dataverses/:root'
+        url = url.replace('//api', '/api')
         response = requests.get(url)
         dataverseData = response.json()
         rootAlias = dataverseData['data']['alias']
     elif '/dataverse/' not in url:
-        url = f'{url}/api/dataverses/1'
+        url = f'{url}/api/dataverses/:root'
+        url = url.replace('//api', '/api')
         response = requests.get(url)
         dataverseData = response.json()
         rootAlias = dataverseData['data']['alias']
