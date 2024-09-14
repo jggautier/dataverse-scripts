@@ -1134,21 +1134,36 @@ def get_collection_size(installationUrl, apiKey, collectionIdOrAlias, includeSub
 
 def get_dataset_metadata_export(
     installationUrl, datasetPid, exportFormat, 
-    timeout, verify, excludeFiles,
+    timeout, verify, excludeFiles, returnOwners,
     allVersions=False, header={}, apiKey=''):
+
+    installationUrl = installationUrl.rstrip('/')
+
     if apiKey:
         header['X-Dataverse-key'] = apiKey
 
+    params = {
+        'excludeFiles': excludeFiles,
+        'returnOwners': returnOwners,
+        'includeDeaccessioned': True
+    }
+
+    if isinstance(datasetPid, int):
+        dataGetLatestVersionUrl = f'{installationUrl}/api/datasets/{datasetPid}/versions/:latest'
+        dataGetAllVersionsUrl = f'{installationUrl}/api/datasets/{datasetPid}/versions'
+
+    elif isinstance(datasetPid, str):
+        dataGetLatestVersionUrl = f'{installationUrl}/api/datasets/:persistentId/versions/:latest'
+        dataGetAllVersionsUrl = f'{installationUrl}/api/datasets/:persistentId/versions'
+        
+        params['persistentId'] = datasetPid 
+
     if exportFormat == 'dataverse_json':
         if allVersions is False:
-            dataGetLatestVersionUrl = f'{installationUrl}/api/datasets/:persistentId/versions/:latest'
-            dataGetLatestVersionUrl = dataGetLatestVersionUrl.replace('//api', '/api')
             try:
                 response = requests.get(
                     dataGetLatestVersionUrl,
-                    params={
-                        'persistentId': datasetPid,
-                        'excludeFiles': excludeFiles},
+                    params=params,
                     headers=header, 
                     timeout=timeout, 
                     verify=verify)
@@ -1160,14 +1175,10 @@ def get_dataset_metadata_export(
                 data = 'ERROR'
 
         elif allVersions is True:
-            dataGetAllVersionsUrl = f'{installationUrl}/api/datasets/:persistentId/versions'
-            dataGetAllVersionsUrl = dataGetAllVersionsUrl.replace('//api', '/api')
             try:
                 response = requests.get(
                     dataGetAllVersionsUrl,
-                    params={
-                        'persistentId': datasetPid,
-                        'excludeFiles': excludeFiles},
+                    params=params,
                     headers=header,
                     timeout=timeout, 
                     verify=verify)
