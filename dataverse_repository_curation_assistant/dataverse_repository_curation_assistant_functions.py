@@ -1061,7 +1061,7 @@ def get_dataset_size(installationUrl, datasetIdOrPid, onlyPublishedFiles=False, 
         # Get metadata of all published versions
         allVersionMetadata = get_dataset_metadata_export(
             installationUrl, datasetPid=datasetIdOrPid, exportFormat='dataverse_json', 
-            timeout=60, verify=False, excludeFiles=False,
+            timeout=60, verify=False, excludeFiles=False, returnOwners=False,
             allVersions=True, header={}, apiKey='')
 
         # Get sum of sizes of all unique files in all dataset versions
@@ -1248,8 +1248,9 @@ def save_dataset_export(
         if allVersions == False:
             latestVersionMetadata = get_dataset_metadata_export(
                 installationUrl, datasetPid, exportFormat, 
-                timeout, verify=verify, excludeFiles=excludeFiles,
-                allVersions=False, header={}, apiKey=apiKey)
+                timeout, verify=verify, 
+                excludeFiles=excludeFiles, allVersions=False, returnOwners=False,
+                header={}, apiKey=apiKey)
 
             if latestVersionMetadata == 'ERROR':
                 # Add to CSV file that the dataset's metadata was not downloaded
@@ -1281,7 +1282,7 @@ def save_dataset_export(
 
             allVersionsMetadata = get_dataset_metadata_export(
                 installationUrl, datasetPid, exportFormat, 
-                timeout, verify, excludeFiles,
+                timeout, verify, excludeFiles, returnOwners=False,
                 allVersions=True, header={}, apiKey=apiKey)
 
             if allVersionsMetadata == 'ERROR':
@@ -1742,6 +1743,7 @@ def get_dataset_metadata(
             timeout=60,
             verify=False,
             excludeFiles=True,
+            returnOwners=False,
             allVersions=False,
             apiKey=apiKey)
 
@@ -1923,8 +1925,8 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
                 datasetMetadata = get_dataset_metadata_export(
                     installationUrl=installationUrl, datasetPid=lockedDatasetPid, 
                     exportFormat='dataverse_json', timeout=30,
-                    verify=True, excludeFiles=True, allVersions=False,
-                    apiKey=apiKey)
+                    verify=True, excludeFiles=True, returnOwners=False,
+                    allVersions=False, apiKey=apiKey)
 
                 # Get title of latest version of the dataset
                 for field in datasetMetadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
@@ -2032,7 +2034,7 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
                             datasetMetadata = get_dataset_metadata_export(
                                 installationUrl=installationUrl, datasetPid=createdDatasetPid, 
                                 exportFormat='dataverse_json', timeout=30, verify=True,
-                                excludeFiles=True, allVersions=False,
+                                excludeFiles=True, allVersions=False, returnOwners=False,
                                 header={}, apiKey=apiKey)
 
                             # Get title of latest version of the dataset
