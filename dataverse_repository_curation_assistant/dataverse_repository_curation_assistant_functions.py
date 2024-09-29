@@ -2154,7 +2154,6 @@ def get_monthly_counts(installationUrl, objects, directoryPath):
 def get_citation_count(datasetPid):
     pidForDatacite = datasetPid.replace('doi:', '')
     dataciteEventsAPI = f'https://api.datacite.org/dois/{pidForDatacite}'
-    print(dataciteEventsAPI)
     try:
         response = requests.get(dataciteEventsAPI)
         citationCount = response.json()['data']['attributes']['citationCount']
