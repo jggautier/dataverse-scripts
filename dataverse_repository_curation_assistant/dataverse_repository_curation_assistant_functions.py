@@ -1077,7 +1077,8 @@ def get_dataset_size(installationUrl, datasetIdOrPid, onlyPublishedFiles=False, 
                     if fileId not in fileIdList:
                         fileIdList.append(fileId)
                         byteSizeInt = file['dataFile']['filesize']
-                        byteSizeTotalInt = byteSizeTotalInt + byteSizeInt 
+                        originalFileSize = improved_get(file, 'dataFile.originalFileSize', 0)
+                        byteSizeTotalInt = byteSizeTotalInt + byteSizeInt + originalFileSize
         
     byteSizeTotalPretty = format_size(byteSizeTotalInt)
     sizeFormats = {
