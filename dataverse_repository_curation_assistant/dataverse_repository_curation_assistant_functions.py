@@ -1477,8 +1477,13 @@ def get_metadata_values_lists(
     installationUrl, datasetMetadata, metadatablockName,
     chosenTitleDBName, chosenFields=None, versions='latestVersion'):
 
+    # Get dictionary containing metadata block data
     if versions == 'allVersions':
-        versions = 'datasetVersion'
+        # versions = 'datasetVersion'
+        metadatablockDict = datasetMetadata['data']['datasetVersion']['metadataBlocks']
+    elif versions == 'latestVersion':
+        metadatablockDict = datasetMetadata['data']['metadataBlocks']
+
     rowVariablesList = []
 
     if datasetMetadata['status'] == 'OK':
@@ -1486,7 +1491,7 @@ def get_metadata_values_lists(
         # Get names of metadata blocks and name of first metadata block whose name matches the give metadatablockName
         matchingMetadataBlockName = None
         metadataBlockNamesList = []
-        for metadatablock in datasetMetadata['data']['datasetVersion']['metadataBlocks']:
+        for metadatablock in metadatablockDict:
             metadataBlockNamesList.append(metadatablock)
 
         if metadatablockName in metadataBlockNamesList:
@@ -1501,25 +1506,26 @@ def get_metadata_values_lists(
 
         if matchingMetadataBlockName is not None:
 
-            datasetPersistentUrl = datasetMetadata['data']['persistentUrl']
-            datasetPid = get_canonical_pid(datasetPersistentUrl)
+            # datasetPersistentUrl = datasetMetadata['data']['persistentUrl']
+            datasetPid = datasetMetadata['data']['datasetPersistentId']
+            datasetPersistentUrl = get_url_form_of_pid(datasetPid, installationUrl)
             datasetUrl = installationUrl + '/dataset.xhtml?persistentId=' + datasetPid
 
-            versionCreateTime = datasetMetadata['data'][versions]['createTime']
+            versionCreateTime = datasetMetadata['data']['createTime']
 
             if 'publicationDate' not in datasetMetadata['data']:
                 publicationDate = ''
             elif 'publicationDate' in datasetMetadata['data']:
                 publicationDate = datasetMetadata['data']['publicationDate']
 
-            if 'versionNumber' in datasetMetadata['data'][versions]:
-                majorVersionNumber = datasetMetadata['data'][versions]['versionNumber']
-                minorVersionNumber = datasetMetadata['data'][versions]['versionMinorNumber']
+            if 'versionNumber' in datasetMetadata['data']:
+                majorVersionNumber = datasetMetadata['data']['versionNumber']
+                minorVersionNumber = datasetMetadata['data']['versionMinorNumber']
                 datasetVersionNumber = f'{majorVersionNumber}.{minorVersionNumber}'
             else:
                 datasetVersionNumber = 'DRAFT'
 
-            for fields in datasetMetadata['data'][versions]['metadataBlocks'][matchingMetadataBlockName]['fields']:
+            for fields in metadatablockDict[matchingMetadataBlockName]['fields']:
                 if fields['typeName'] == chosenTitleDBName:
 
                     # Save the field's typeClass and if it allows multiple values 
@@ -1654,12 +1660,12 @@ def join_metadata_csv_files(csvDirectory):
 
 # Get the metadata of datasets. Function passed to tkinter button
 def get_dataset_metadata(
-    rootWindow, progressLabel, progressText, noMetadataText, noMetadataLabel,
-    installationUrl='', datasetPidString='', 
+    rootWindow=None, progressLabel=None, progressText=None, noMetadataText=None, noMetadataLabel=None,
+    metadatablockName='citation', installationUrl='', datasetPidString='', 
     parentFieldTitleList='', directoryPath='', apiKey=''):
 
     # Use metadatablock API endpoint to get metadatablock data
-    metadatablockData = get_metadatablock_data(installationUrl, 'citation')
+    metadatablockData = get_metadatablock_data(installationUrl, metadatablockName)
 
     # From metadatablockData, get the database and display names of each parent field
     allFieldsDBNamesDict = get_metadatablock_db_field_name_and_title(metadatablockData)
@@ -1684,9 +1690,10 @@ def get_dataset_metadata(
 
         # Create file name and path
         csvFileName =  parentFieldTitle.lower().strip().replace(' ', '_')
-        csvFileName = csvFileName + '(citation)'
+        csvFileName = csvFileName + f'({metadatablockName})'
         mainDirectoryPath = os.path.join(directoryPath, mainDirectoryName)
-        csvFilePath = os.path.join(mainDirectoryPath, csvFileName, '.csv')
+        csvFilePath = os.path.join(mainDirectoryPath, csvFileName) + '.csv'
+        # print(csvFilePath)
           
         # Create header row for the CSV file
         headerRow = [
@@ -1710,15 +1717,17 @@ def get_dataset_metadata(
 
     # Delete any message in the tkinter window about no metadata being found
     # the last time the "Get metadata" button was pressed
-    noMetadataLabel.grid_forget()
+    if rootWindow is not None:
+        noMetadataLabel.grid_forget()
 
     count = 0
     datasetTotalCount = len(datasetPidList)
 
     text = f'Dataset metadata retrieved: 0 of {datasetTotalCount}'
-    progressText.set(text)
-    progressLabel.grid(sticky='w', row=1, columnspan=2)
-    rootWindow.update_idletasks()
+    if rootWindow is not None:
+        progressText.set(text)
+        progressLabel.grid(sticky='w', row=1, columnspan=2)
+        rootWindow.update_idletasks()
 
     for datasetPid in datasetPidList:
 
@@ -1731,7 +1740,7 @@ def get_dataset_metadata(
         params = requestsGetProperties['params']
 
         datasetInfoDF = get_object_dataframe_from_search_api(
-            baseUrl=baseUrl, rootWindow=rootWindow, progressLabel=None, progressText=None,
+            baseUrl=baseUrl, rootWindow=rootWindow, progressLabel=progressLabel, progressText=progressText,
             params=params, objectType='dataset', apiKey=apiKey)
 
         dataverseAlias = datasetInfoDF.iloc[0]['dataverse_collection_alias']
@@ -1757,13 +1766,13 @@ def get_dataset_metadata(
                 valueLists = get_metadata_values_lists(
                     installationUrl=installationUrl,
                     datasetMetadata=datasetMetadata,
-                    metadatablockName='citation',
+                    metadatablockName=metadatablockName,
                     chosenTitleDBName=dbName, 
                     chosenFields=get_column_names(
                         metadatablockData, parentFieldTitle, allFieldsDBNamesDict))                
                 citationMetadataCsvFileName =  parentFieldTitle.lower().strip().replace(' ', '_')
                 citationMetadataCsvFileName = citationMetadataCsvFileName + f'({metadatablockName})'
-                citationMetadataCsvFilePath = os.path.join(mainDirectoryPath, citationMetadataCsvFileName, '.csv')
+                citationMetadataCsvFilePath = os.path.join(mainDirectoryPath, citationMetadataCsvFileName) + '.csv'
 
                 for valueList in valueLists:
 
@@ -1777,8 +1786,9 @@ def get_dataset_metadata(
 
         count += 1
         text = f'Dataset metadata retrieved: {count} of {datasetTotalCount}'
-        progressText.set(text)
-        rootWindow.update_idletasks()
+        if rootWindow is not None:
+            progressText.set(text)
+            rootWindow.update_idletasks()
 
     # Delete any CSV files in the mainDirectory that are empty and 
     # report in the app the deleted CSV files
@@ -1789,9 +1799,10 @@ def get_dataset_metadata(
         fieldsWithNoMetadataString = list_to_string(fieldsWithNoMetadata)
         fieldsWithNoMetadataString = (
             'No metadata found for the following fields:\r' + fieldsWithNoMetadataString)
-        noMetadataText.set(fieldsWithNoMetadataString)
-        noMetadataLabel.grid(sticky='w', row=2)
-        rootWindow.update_idletasks()
+        if rootWindow is not None:
+            noMetadataText.set(fieldsWithNoMetadataString)
+            noMetadataLabel.grid(sticky='w', row=2)
+            rootWindow.update_idletasks()
 
     # Full outer join all CSV files to create a CSV with all metadata
     join_metadata_csv_files(mainDirectoryPath)
