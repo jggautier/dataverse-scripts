@@ -1592,7 +1592,7 @@ def get_metadata_values_lists(
 
                         for chosenField in chosenFields:
                             try:
-                                value = fields['value'][index][chosenField]['value']
+                                value = fields['value'][chosenField]['value']
                                 if isinstance(value, list):
                                     value = f'[{list_to_string(value)}]' 
                                 elif isinstance(value, str):
@@ -1652,7 +1652,7 @@ def join_metadata_csv_files(csvDirectory):
             dataframe.set_index(indexList, inplace=True)
 
         # Full outer join all dataframes and save to the 'joined' variable
-        joined = reduce(lambda left, right: left.join(right, how='outer'), dataframes)
+        joined = reduce(lambda left, right: left.join(right, how='outer', sort=False), dataframes)
 
         # Export joined dataframe to a CSV file
         joined.to_csv(allMetadataFileName, encoding='utf-8-sig')
@@ -1661,7 +1661,7 @@ def join_metadata_csv_files(csvDirectory):
 # Get the metadata of datasets. Function passed to tkinter button
 def get_dataset_metadata(
     rootWindow=None, progressLabel=None, progressText=None, noMetadataText=None, noMetadataLabel=None,
-    metadatablockName='citation', installationUrl='', datasetPidString='', 
+    installationUrl='', datasetPidString='', metadatablockName='citation',
     parentFieldTitleList='', directoryPath='', apiKey=''):
 
     # Use metadatablock API endpoint to get metadatablock data
@@ -1693,7 +1693,6 @@ def get_dataset_metadata(
         csvFileName = csvFileName + f'({metadatablockName})'
         mainDirectoryPath = os.path.join(directoryPath, mainDirectoryName)
         csvFilePath = os.path.join(mainDirectoryPath, csvFileName) + '.csv'
-        # print(csvFilePath)
           
         # Create header row for the CSV file
         headerRow = [
@@ -1711,9 +1710,10 @@ def get_dataset_metadata(
             writer = csv.writer(f)
             writer.writerow(headerRow)        
 
-    # Change passed datasetPidString to a list. Make sure the last newline doesn't mess up the list
-    # datasetPidList = [x.strip() for x in datasetPidString.splitlines()][:-1]
-    datasetPidList = [x.strip() for x in datasetPidString.rstrip().splitlines()]
+    # Change passed datasetPidString to a list by converting line breaks to commas, then using string_to_list function
+    datasetPidString = datasetPidString.replace('\n', ',')
+    datasetPidList = string_to_list(datasetPidString)
+    datasetPidList = list(filter(None, datasetPidList))
 
     # Delete any message in the tkinter window about no metadata being found
     # the last time the "Get metadata" button was pressed
@@ -1831,7 +1831,7 @@ def delete_published_datasets(
     installationStatusDict = check_installation_url_status(installationUrl)
     installationUrl = installationStatusDict['installationUrl']
     
-    # Change passed datasetPidString to a list. Make sure the last newline doesn't mess up the list
+    # Change passed datasetPidString to a list
     datasetPidList = [x.strip() for x in datasetPidString.splitlines()]
 
     # Remove any empty items from the list of dataset PIDs
