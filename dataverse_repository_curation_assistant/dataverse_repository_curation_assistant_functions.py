@@ -1731,6 +1731,9 @@ def get_dataset_metadata(
 
     for datasetPid in datasetPidList:
 
+        if rootWindow == None:
+            print(f'{count} of {datasetTotalCount}: {datasetPid}')
+
         datasetPid = get_canonical_pid(datasetPid)
 
         # Get alias of collection that dataset is in
