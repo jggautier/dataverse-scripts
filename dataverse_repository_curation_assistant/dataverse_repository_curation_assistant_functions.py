@@ -26,6 +26,7 @@ from tkinter import Tk, ttk, Frame, Label, IntVar, Checkbutton, filedialog, NORM
 from tkinter import Listbox, MULTIPLE, StringVar, END, INSERT, N, E, S, W
 from tkinter.ttk import Entry, Progressbar, OptionMenu, Combobox
 from tqdm import tqdm
+tqdm_bar_format = "{l_bar}{bar:10}{r_bar}{bar:-10b}"
 from urllib.parse import urlparse
 import xmltodict
 import yaml
@@ -740,20 +741,16 @@ def get_object_dataframe_from_search_api(
     objectInfoDict = []
 
     if None not in [rootWindow, progressText, progressLabel]:
-        Parallel(
-            n_jobs=1, 
-            backend='threading')(delayed(get_object_dictionary_from_search_api_page)(
-                installationUrl, header, params, start, objectInfoDict, metadataFieldsList) for start in startsList)
+        for start in startsList:
+            get_object_dictionary_from_search_api_page(
+                installationUrl, header, params, start, objectInfoDict, metadataFieldsList)
 
     else:
-        with tqdm_joblib(
-            tqdm(
-                bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', 
-                total=startsListCount)) as progress_bar:
-            Parallel(
-                n_jobs=1, 
-                backend='threading')(delayed(get_object_dictionary_from_search_api_page)(
-                    installationUrl, header, params, start, objectInfoDict, metadataFieldsList) for start in startsList)        
+        for start in (pbar := tqdm(startsList, bar_format=tqdm_bar_format)):
+            pbar.set_description(f'Page {start}')
+
+            get_object_dictionary_from_search_api_page(
+                installationUrl, header, params, start, objectInfoDict, metadataFieldsList)
 
     objectInfoDF = pd.DataFrame(objectInfoDict)
 
