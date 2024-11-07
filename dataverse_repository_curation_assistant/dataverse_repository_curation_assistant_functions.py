@@ -1788,6 +1788,7 @@ def get_dataset_metadata(
         text = f'Dataset metadata retrieved: {count} of {datasetTotalCount}'
         if rootWindow is not None:
             progressText.set(text)
+            progressLabel.grid(sticky='w', row=1, columnspan=2)
             rootWindow.update_idletasks()
 
     # Delete any CSV files in the mainDirectory that are empty and 
