@@ -22,6 +22,7 @@ from pathlib import Path
 import re
 import requests
 import time
+from time import sleep
 from tkinter import Tk, ttk, Frame, Label, IntVar, Checkbutton, filedialog, NORMAL, DISABLED
 from tkinter import Listbox, MULTIPLE, StringVar, END, INSERT, N, E, S, W
 from tkinter.ttk import Entry, Progressbar, OptionMenu, Combobox
