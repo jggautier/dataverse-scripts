@@ -674,6 +674,8 @@ def get_object_dictionary_from_search_api_page(installationUrl, header, params, 
         newRow = get_value_row_from_search_api_object(item, installationUrl, metadataFieldsList=metadataFieldsList)
         objectInfoDict.append(dict(newRow))
 
+    sleep(1)
+
 
 # Get variables for the Search API's "start" parameter to paginate through search results
 def get_search_api_start_list(itemCount):
