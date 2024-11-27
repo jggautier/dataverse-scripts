@@ -2887,3 +2887,44 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
 
         print('\n----------------------')
 
+
+def edit_dataset_metadata_field(installationUrl, datasetPid, fieldValue, replace=False, apiKey=''):
+    url = f'{installationUrl}/api/datasets/:persistentId/editMetadata'
+    params = {
+        'persistentId': datasetPid}
+    if replace is True:
+        params['replace'] = 'true'
+    resp = requests.put(
+        url,
+        json=fieldValue,
+        params=params,
+        headers={
+            'X-Dataverse-key': apiKey,
+            'content-type': 'application/json'
+        })
+    resp.raise_for_status()
+
+
+# Find and replace for field values in metadata blocks.
+# Works only for simple fields that accept only one instance, e.g. title and notesText
+def full_replace_metadata_field_value(installationUrl, apiKey, datasetPid, metadataBlockName, replaceField, fieldFromValue, fieldToValue):
+
+    respData = get_dataset_metadata_export(
+        installationUrl, datasetPid, exportFormat='dataverse_json', 
+        timeout=120, verify=False,
+        allVersions=False, header={}, apiKey=apiKey)
+
+    mdbFields = respData['data']['latestVersion']['metadataBlocks'][metadataBlockName]['fields']
+
+    replaced = False
+
+    for field in mdbFields:
+        if field['typeName'] == replaceField and field['value'] == fieldFromValue:
+            # countOfFieldInstancesFound += 1
+            field['value'] = fieldToValue
+            print(field)
+            print(type(field))
+            edit_dataset_metadata_field(installationUrl, datasetPid, field, replace=True)
+            replaced = True
+
+    return replaced
