@@ -144,6 +144,9 @@ def list_to_string(lst, delimiter=','):
 
 
 def string_to_list(string, delimiter=','):
+    # If string has the characters of a list, e.g. enclosed by brackets, remove them first
+    if string.startswith('['):
+        string = string.replace('[', '').replace(']', '').replace('\'', '')
     stringToList = list(string.split(f'{delimiter}'))
     stringToList = [s.strip() for s in stringToList]
     return stringToList
