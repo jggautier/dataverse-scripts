@@ -386,7 +386,7 @@ def get_search_api_url(url):
         # Remove the jsessionidString that sometimes appears in the URL
         try:
             jsessionidString = re.search(r';jsessionid=.*', url).group()
-            url = url.replace(jsessionidString, '?')
+            url = url.replace(jsessionidString, '')
         except AttributeError:
             pass
         # Get the Dataverse Collection name in the search URL
