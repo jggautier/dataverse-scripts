@@ -729,38 +729,50 @@ def get_object_dataframe_from_search_api(
     )
 
     data = response.json()
-    totalDatasetCount = data['data']['total_count']
 
-    if None not in [rootWindow, progressText, progressLabel]:
+    if data['status'] == 'ERROR':
+        text = 'Search API error. Check URL'
+        print(text)
+
+        if None not in [rootWindow, progressText, progressLabel]:
+            progressText.set(text)
+            progressLabel.config(fg='green')
+            progressLabel = progressLabel.grid(sticky='w', row=0)
+            rootWindow.update_idletasks()
+
+    elif data['status'] == 'OK':
+        totalDatasetCount = data['data']['total_count']
         text = 'Looking for datasets...'
-        progressText.set(text)
-        progressLabel.config(fg='green')
-        progressLabel = progressLabel.grid(sticky='w', row=0)
-        rootWindow.update_idletasks()
-    
-    # Create start variables to paginate through Search API results
-    startInfo = get_search_api_start_list(totalDatasetCount)
-    startsListCount = startInfo['startsListCount']
-    startsList = startInfo['startsList']
 
-    # misindexedObjectCount = 0
-    objectInfoDict = []
+        if None not in [rootWindow, progressText, progressLabel]:
+            progressText.set(text)
+            progressLabel.config(fg='green')
+            progressLabel = progressLabel.grid(sticky='w', row=0)
+            rootWindow.update_idletasks()
+        
+        # Create start variables to paginate through Search API results
+        startInfo = get_search_api_start_list(totalDatasetCount)
+        startsListCount = startInfo['startsListCount']
+        startsList = startInfo['startsList']
 
-    if None not in [rootWindow, progressText, progressLabel]:
-        for start in startsList:
-            get_object_dictionary_from_search_api_page(
-                installationUrl, header, params, start, objectInfoDict, metadataFieldsList)
+        # misindexedObjectCount = 0
+        objectInfoDict = []
 
-    else:
-        for start in (pbar := tqdm(startsList, bar_format=tqdm_bar_format)):
-            pbar.set_description(f'Page {start}')
+        if None not in [rootWindow, progressText, progressLabel]:
+            for start in startsList:
+                get_object_dictionary_from_search_api_page(
+                    installationUrl, header, params, start, objectInfoDict, metadataFieldsList)
 
-            get_object_dictionary_from_search_api_page(
-                installationUrl, header, params, start, objectInfoDict, metadataFieldsList)
+        else:
+            for start in (pbar := tqdm(startsList, bar_format=tqdm_bar_format)):
+                pbar.set_description(f'Page {start}')
 
-    objectInfoDF = pd.DataFrame(objectInfoDict)
+                get_object_dictionary_from_search_api_page(
+                    installationUrl, header, params, start, objectInfoDict, metadataFieldsList)
 
-    return objectInfoDF
+        objectInfoDF = pd.DataFrame(objectInfoDict)
+
+        return objectInfoDF
 
 
 # Uses "Get Contents" endpoint to return list of dataverse aliases of all subcollections in a given collection
@@ -937,93 +949,103 @@ def get_datasets_from_collection_or_search_url(
         baseUrl=baseUrl, params=params, objectType='dataset', metadataFieldsList=None,
         printProgress=False, rootWindow=rootWindow, progressText=progressText, 
         progressLabel=progressLabel, apiKey=apiKey)
-    datasetCount = len(datasetInfoDF.index)
 
-    if datasetCount == 0:
-        text = 'Datasets found: 0'
-
+    # If get_object_dataframe_from_search_api doesn't return a dataframe, there was an error 
+    if not isinstance(datasetInfoDF, pd.DataFrame):
+        text = 'Search API error. Check URL'
         if progressText is not None:
             progressText.set(text)
         else:
             print(text)
-    
-    elif datasetCount > 0:
 
-        deaccessionedDatasetCount = 0
+    elif isinstance(datasetInfoDF, pd.DataFrame):
+        datasetCount = len(datasetInfoDF.index)
+
+        if datasetCount == 0:
+            text = 'Datasets found: 0'
+
+            if progressText is not None:
+                progressText.set(text)
+            else:
+                print(text)
         
-        # To ignore deaccessioned datasets, remove from the dataframe all datasets where version_state is DEACCESSIONED 
-        if ignoreDeaccessionedDatasets == True:
-            datasetInfoDF = datasetInfoDF[datasetInfoDF['version_state'].str.contains('DEACCESSIONED') == False]
-            deaccessionedDatasetCount = datasetCount - len(datasetInfoDF.index)
+        elif datasetCount > 0:
 
-        # Remove version_state column so that I can remove the dataframe's duplicate rows and there's only one row per dataset
-        datasetInfoDF = datasetInfoDF.drop('version_state', axis=1)
-
-        # Drop duplicate rows, which happens when Search API results lists a dataset's published and draft versions
-        datasetInfoDF = datasetInfoDF.drop_duplicates()
-
-        # Recount datasets
-        uniqueDatasetCount = len(datasetInfoDF.index)
-
-        # Check if url is collection url. If so:
-        if 'q=' not in url:
-            # If the user wants datasets in all subdataverses and the url
-            # is the root collection, don't filter the dataframe
-            if subdataverses == True and is_root_collection(url) == True:
-                uniqueDatasetCount = len(datasetInfoDF)
-
-            # If the user wants datasets in all subdataverses and the url
-            # is not the root collection...
-            elif subdataverses == True and is_root_collection(url) == False:
-                # Get the aliases of all subdataverses...
-                dataverseAliases = get_all_subcollection_aliases(url, apiKey=apiKey)
-
-                # Remove any datasets that aren't owned by any of the 
-                # subdataverses. This will exclude linked datasets
-                datasetInfoDF = datasetInfoDF[
-                    datasetInfoDF['dataverse_collection_alias'].isin(dataverseAliases)]
-
-                uniqueDatasetCount = len(datasetInfoDF)
-
-            # If the user wants only datasets in the collection,
-            # and not in collections within the collection...
-            elif subdataverses == False:
-                # Get the alias of the collection (including the alias of the root collection)
-                alias = get_alias_from_collection_url(url)
-                # Retain only datasets owned by that collection
-                datasetInfoDF = datasetInfoDF[datasetInfoDF['dataverse_collection_alias'].isin([alias])]
-
-                uniqueDatasetCount = len(datasetInfoDF)
-
-        # If the url is a search URL, get all datasetPids from datasetInfoDF 
-        elif 'q=' in url:
-            uniqueDatasetCount = len(datasetInfoDF)
-
-        if textBoxCollectionDatasetPIDs is not None:
-            # Place textbox with list of dataset PIDs and set state to read/write (normal) 
-            textBoxCollectionDatasetPIDs.grid(sticky='w', row=2, pady=5)
-            textBoxCollectionDatasetPIDs.configure(state ='normal')
+            deaccessionedDatasetCount = 0
             
-            # Clear whatever's in the textBoxCollectionDatasetPIDs textbox
-            textBoxCollectionDatasetPIDs.delete('1.0', END)
+            # To ignore deaccessioned datasets, remove from the dataframe all datasets where version_state is DEACCESSIONED 
+            if ignoreDeaccessionedDatasets == True:
+                datasetInfoDF = datasetInfoDF[datasetInfoDF['version_state'].str.contains('DEACCESSIONED') == False]
+                deaccessionedDatasetCount = datasetCount - len(datasetInfoDF.index)
 
-            # Insert the dataset PIDs into the textBoxCollectionDatasetPIDs scrollbox
-            for dfIndex, dfRow in datasetInfoDF.iterrows():
-                datasetPid = dfRow['dataset_pid'] + '\n'
-                textBoxCollectionDatasetPIDs.insert('end', datasetPid)
+            # Remove version_state column so that I can remove the dataframe's duplicate rows and there's only one row per dataset
+            datasetInfoDF = datasetInfoDF.drop('version_state', axis=1)
 
-        # Create and place result text with uniqueDatasetCount
-        if deaccessionedDatasetCount == 0:
-            text = f'Datasets found: {str(uniqueDatasetCount)}'
-        if deaccessionedDatasetCount > 0:
-            text = f'Datasets found: {str(uniqueDatasetCount)}\rDeaccessioned datasets ignored: {str(deaccessionedDatasetCount)}'
+            # Drop duplicate rows, which happens when Search API results lists a dataset's published and draft versions
+            datasetInfoDF = datasetInfoDF.drop_duplicates()
 
-        if progressText is not None:
-            progressText.set(text)
-        else:
-            print(text)
+            # Recount datasets
+            uniqueDatasetCount = len(datasetInfoDF.index)
 
-        return datasetInfoDF
+            # Check if url is collection url. If so:
+            if 'q=' not in url:
+                # If the user wants datasets in all subdataverses and the url
+                # is the root collection, don't filter the dataframe
+                if subdataverses == True and is_root_collection(url) == True:
+                    uniqueDatasetCount = len(datasetInfoDF)
+
+                # If the user wants datasets in all subdataverses and the url
+                # is not the root collection...
+                elif subdataverses == True and is_root_collection(url) == False:
+                    # Get the aliases of all subdataverses...
+                    dataverseAliases = get_all_subcollection_aliases(url, apiKey=apiKey)
+
+                    # Remove any datasets that aren't owned by any of the 
+                    # subdataverses. This will exclude linked datasets
+                    datasetInfoDF = datasetInfoDF[
+                        datasetInfoDF['dataverse_collection_alias'].isin(dataverseAliases)]
+
+                    uniqueDatasetCount = len(datasetInfoDF)
+
+                # If the user wants only datasets in the collection,
+                # and not in collections within the collection...
+                elif subdataverses == False:
+                    # Get the alias of the collection (including the alias of the root collection)
+                    alias = get_alias_from_collection_url(url)
+                    # Retain only datasets owned by that collection
+                    datasetInfoDF = datasetInfoDF[datasetInfoDF['dataverse_collection_alias'].isin([alias])]
+
+                    uniqueDatasetCount = len(datasetInfoDF)
+
+            # If the url is a search URL, get all datasetPids from datasetInfoDF 
+            elif 'q=' in url:
+                uniqueDatasetCount = len(datasetInfoDF)
+
+            if textBoxCollectionDatasetPIDs is not None:
+                # Place textbox with list of dataset PIDs and set state to read/write (normal) 
+                textBoxCollectionDatasetPIDs.grid(sticky='w', row=2, pady=5)
+                textBoxCollectionDatasetPIDs.configure(state ='normal')
+                
+                # Clear whatever's in the textBoxCollectionDatasetPIDs textbox
+                textBoxCollectionDatasetPIDs.delete('1.0', END)
+
+                # Insert the dataset PIDs into the textBoxCollectionDatasetPIDs scrollbox
+                for dfIndex, dfRow in datasetInfoDF.iterrows():
+                    datasetPid = dfRow['dataset_pid'] + '\n'
+                    textBoxCollectionDatasetPIDs.insert('end', datasetPid)
+
+            # Create and place result text with uniqueDatasetCount
+            if deaccessionedDatasetCount == 0:
+                text = f'Datasets found: {str(uniqueDatasetCount)}'
+            if deaccessionedDatasetCount > 0:
+                text = f'Datasets found: {str(uniqueDatasetCount)}\rDeaccessioned datasets ignored: {str(deaccessionedDatasetCount)}'
+
+            if progressText is not None:
+                progressText.set(text)
+            else:
+                print(text)
+
+            return datasetInfoDF
 
 
 def get_int_from_size_message(sizeEndpointJson):
