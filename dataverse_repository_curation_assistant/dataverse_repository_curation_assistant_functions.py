@@ -386,7 +386,7 @@ def get_search_api_url(url):
         # Remove the jsessionidString that sometimes appears in the URL
         try:
             jsessionidString = re.search(r';jsessionid=.*', url).group()
-            url = url.replace(jsessionidString, '')
+            url = url.replace(jsessionidString, '?')
         except AttributeError:
             pass
         # Get the Dataverse Collection name in the search URL
@@ -394,6 +394,7 @@ def get_search_api_url(url):
         dataverseName = dataversePart.replace('/dataverse/', '')
         # Repalce '/dataverse/' and the dataverse name with '/api/search?q=*' and add subtree parameter with dataverse name
         apiSearchURL = url.replace(dataversePart, '/api/search?q=*') + f'&subtree={dataverseName}'
+        apiSearchURL = apiSearchURL.rstrip('?')
 
     # If URL is not a search URL (doesn't contain 'q=') and doesn't have /dataverse/, assume it's the URL of the installation
     if 'q=' not in url and '/dataverse/' not in url:
