@@ -1,4 +1,3 @@
-# Functions for the curation app
 from bs4 import BeautifulSoup
 import contextlib
 import csv
