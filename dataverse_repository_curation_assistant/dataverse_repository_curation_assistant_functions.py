@@ -459,7 +459,7 @@ def get_search_api_url(url):
 
 
 # Function that converts as many common html codes as I could find into their human-readable strings
-def convert_common_html_encoding(string):
+def convert_str_to_html_encoding(string):
     string = (
         string
             .replace('%20', ' ').replace('%21', '!').replace('%22', '\"').replace('%23', '#')
@@ -557,6 +557,7 @@ def convert_utf8bytes_to_characters(string):
         )
     return string
 
+
 # Function that returns the params of a given Search API URL, to be used in requests calls
 def get_params(apiSearchURL, metadataFieldsList=None):
     params = {
@@ -585,7 +586,7 @@ def get_params(apiSearchURL, metadataFieldsList=None):
         # Add query to params dict
         if paramValue.startswith('q='):
             paramValue = convert_utf8bytes_to_characters(paramValue)
-            paramValue = convert_common_html_encoding(paramValue)
+            paramValue = convert_str_to_html_encoding(paramValue)
             paramValue = paramValue.replace('+', ' ')
             params['params']['q'] = paramValue.replace('q=', '')
 
@@ -605,7 +606,7 @@ def get_params(apiSearchURL, metadataFieldsList=None):
             key = paramValue.replace('=', '').split(':')[0]
             value = paramValue.split(':')[1]
             value = convert_utf8bytes_to_characters(value)
-            value = convert_common_html_encoding(value)
+            value = convert_str_to_html_encoding(value)
             value = value.replace('+', ' ')
             paramString = key + ':' + value
             fq.append(paramString)
