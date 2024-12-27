@@ -2955,3 +2955,25 @@ def full_replace_metadata_field_value(installationUrl, apiKey, datasetPid, metad
             replaced = True
 
     return replaced
+
+
+def get_dataverse_collection_categories(installationUrl, collectionAliasList, apiKey):
+    collectionCategoriesDict = []
+
+    loopObj = tqdm(bar_format=tqdm_bar_format, iterable=collectionAliasList)
+    for collectionAlias in loopObj:
+        loopObj.set_postfix_str(f'collection_alias: {collectionAlias}')
+
+        collectionInfoEndpoint = f'{installationUrl}/api/dataverses/{collectionAlias}'
+        header = {'X-Dataverse-key': apiKey}
+        response = requests.get(collectionInfoEndpoint, headers=header)
+        collectionInfoJson = response.json()
+
+        newRow = {
+            'dataverse_collection_alias': collectionAlias,
+            'dataverse_collection_categories': collectionInfoJson['data']['dataverseType']
+        }
+
+        collectionCategoriesDict.append(dict(newRow))
+        sleep(1)
+    return collectionCategoriesDict
