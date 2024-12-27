@@ -732,7 +732,7 @@ def get_object_dataframe_from_search_api(
     data = response.json()
 
     if data['status'] == 'ERROR':
-        text = 'Search API error. Check URL'
+        text = 'Search API error. Check URL or API key'
         print(text)
 
         if None not in [rootWindow, progressText, progressLabel]:
@@ -953,7 +953,7 @@ def get_datasets_from_collection_or_search_url(
 
     # If get_object_dataframe_from_search_api doesn't return a dataframe, there was an error 
     if not isinstance(datasetInfoDF, pd.DataFrame):
-        text = 'Search API error. Check URL'
+        text = 'Search API error. Check URL or API key'
         if progressText is not None:
             progressText.set(text)
         else:
