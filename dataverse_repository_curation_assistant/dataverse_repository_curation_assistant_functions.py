@@ -2977,3 +2977,21 @@ def get_dataverse_collection_categories(installationUrl, collectionAliasList, ap
         collectionCategoriesDict.append(dict(newRow))
         sleep(1)
     return collectionCategoriesDict
+
+
+def update_dataverse_collection(installation, collectionAlias, metadata, apikey):
+    # e.g. metadata = {"dataverseType": "JOURNALS"}
+    # See dataverse-complete.json at https://guides.dataverse.org/en/6.4/api/native-api.html#create-a-dataverse-collection
+    
+    metadata = json.dumps(metadata)
+    changeCollectionInfoEndpoint = f'{installationUrl}/api/dataverses/{collectionAlias}'
+
+    response = requests.put(
+        changeCollectionInfoEndpoint,
+        headers={
+            'X-Dataverse-key': apiKey,
+            'content-type': 'application/json'},
+        data=metadata)
+    responseDict = response.json()
+    print(responseDict)
+    sleep(1)
