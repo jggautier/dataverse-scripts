@@ -647,7 +647,7 @@ def get_value_row_from_search_api_object(item, installationUrl, metadataFieldsLi
             'dataverse_database_id': item['entity_id'],
             'dataverse_collection_alias': item['identifier'],
             'dataverse_url': item['url'],
-            'dataverse_name': item['name'],
+            'dataverse_name': improved_get(item, 'name'),
             'dataverse_description': item['description']
         }
     if item['type'] == 'file':
