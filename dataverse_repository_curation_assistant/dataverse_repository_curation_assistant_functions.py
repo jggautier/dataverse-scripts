@@ -214,6 +214,12 @@ def td_format(timeDeltaObject):
         return ', '.join(strings)
 
 
+def divide_chunks(l, n):
+    listOfLists = []
+    for i in range(0, len(l), n):
+        listOfLists.append(l[i:i + n])
+    return listOfLists
+
 def get_directory_path():
     directoryPath = filedialog.askdirectory()
     return directoryPath
