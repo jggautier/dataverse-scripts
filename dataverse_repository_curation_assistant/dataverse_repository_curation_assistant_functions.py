@@ -184,9 +184,9 @@ def format_size(byteSize):
        return f'{s} {sizeUnit}'
 
 
-# Converts timedelta object that shows an amount of time as yy:mm:dd:hh:mm:ss,
+# Converts timedelta object that shows a time duration as yy:mm:dd:hh:mm:ss,
 # into more human readable string, e.g. 1 year, 8 months, 4 days...
-def td_format(timeDeltaObject):
+def get_duration(timeDeltaObject):
     seconds = int(timeDeltaObject.total_seconds())
 
     if seconds < 1:
@@ -207,7 +207,7 @@ def td_format(timeDeltaObject):
         strings = []
         for periodName, periodSeconds in periods:
             if seconds > periodSeconds:
-                periodValue , seconds = divmod(seconds, periodSeconds)
+                periodValue, seconds = divmod(seconds, periodSeconds)
                 hasSeconds = 's' if periodValue > 1 else ''
                 strings.append(f'{periodValue} {periodName}{hasSeconds}')
 
@@ -2041,7 +2041,7 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
                     lockedDate = convert_to_local_tz(lock['date'])
 
                      # Get difference between current time and time of lock
-                    timeLocked = td_format(currentTimeDateTime - lockedDate)
+                    timeLocked = get_duration(currentTimeDateTime - lockedDate)
                     
                     userName = lock['user']
 
@@ -2852,7 +2852,7 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
                 timeDifferenceInSeconds = int((endJSONMetadataExportDownloadTime - startJSONMetadataExportDownloadTime).total_seconds())
                 if timeDifferenceInSeconds < 1:
                     timeDifferenceInSeconds = 1
-                timeDifferencePretty = td_format(endJSONMetadataExportDownloadTime - startJSONMetadataExportDownloadTime)
+                timeDifferencePretty = get_duration(endJSONMetadataExportDownloadTime - startJSONMetadataExportDownloadTime)
 
                 retrievedDatasetsDF = downloadProgressDF[downloadProgressDF.dataverse_json_export_saved == True]
                 countOfDatasetsMetadataRetrieved = len(retrievedDatasetsDF)
