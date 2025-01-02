@@ -19,10 +19,10 @@ def listdir_nohidden(path):
 
 
 # Enter path to directory that contains the folders and files created by the get_dataset_metadata_of_all_installations.py script
-mainDirectory = ''
+mainDirectory = '/Users/juliangautier/Documents/all_installation_metadata_2024.08.25_03.34.11/dataverse_json_metadata_from_each_known_dataverse_installation/dataverse_json_metadata_from_each_known_dataverse_installation_unzipped_2024.08'
 
 # Enter path to directory to store CSV file that this script will create
-csvFileFolder = ''
+csvFileFolder = '/Users/juliangautier/Desktop'
 
 csvFile = os.path.join(csvFileFolder, 'metadatablocks_from_most_known_dataverse_installations.csv')
 
@@ -32,7 +32,7 @@ with open(csvFile, mode='w', encoding='utf-8-sig') as data:
     # Create header row
     data.writerow([
         'installation_name_(Dataverse_version)', 'metadatablock_name', 
-        'parentfield_name', 'subfield_name'])
+        'parentfield_name', 'subfield_name', 'display_name'])
 
 count = 0
 total = len(listdir_nohidden(mainDirectory))
@@ -85,18 +85,20 @@ for repositoryFileName in listdir_nohidden(mainDirectory):
 
                 allParentAndChildFields = []
                 for parentfield in compoundfields:
+                    # print(parentfield)
                     if parentfield in metadatablockData['data']['fields']:
-                        properties = metadatablockData['data']['fields'][parentfield]['childFields']
+                        properties = metadatablockData['data']['fields'][parentfield]
                         allParentAndChildFields.append(parentfield)
-                        for subfield in properties:
+                        for subfield in properties['childFields']:
                             allParentAndChildFields.append(subfield)
+                            subFieldDisplayName = properties['childFields'][subfield]['displayName']
 
                             # Add parent and child names to the CSV file
                             with open(csvFile, mode='a', encoding='utf-8-sig') as data:
                                 data = csv.writer(data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                                 # Write new row
-                                data.writerow([repositoryNameVersion, metadatablockName, parentfield, subfield])
+                                data.writerow([repositoryNameVersion, metadatablockName, parentfield, subfield, subFieldDisplayName])
 
                 # Get the names of all fields
                 allFields = []
@@ -112,12 +114,12 @@ for repositoryFileName in listdir_nohidden(mainDirectory):
 
                 # Add the primitive field names to the CSV file
                 for primitiveField in primitiveFields:
-
-                    # Set subfield to an empty string so that Dataverse ingests the CSV file.
-                    # (Dataverse's ingest process doesn't seem to like it when there is nothing entered in the fourth column)
+                    if primitiveField in metadatablockData['data']['fields']:
+                        primitiveFieldDisplayName = metadatablockData['data']['fields'][primitiveField]['displayName']
+                    # Set subfield to an empty string so that Dataverse "ingests" the CSV file.
                     subfield = ''
                     with open(csvFile, mode='a', encoding='utf-8-sig') as data:
                         data = csv.writer(data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                         # Write new row
-                        data.writerow([repositoryNameVersion, metadatablockName, primitiveField, subfield])
+                        data.writerow([repositoryNameVersion, metadatablockName, primitiveField, subfield, primitiveFieldDisplayName])
