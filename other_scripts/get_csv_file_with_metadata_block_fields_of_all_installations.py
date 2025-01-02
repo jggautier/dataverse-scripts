@@ -32,7 +32,7 @@ with open(csvFile, mode='w', encoding='utf-8-sig') as data:
     # Create header row
     data.writerow([
         'installation_name_(Dataverse_version)', 'metadatablock_name', 
-        'parentfield_name', 'subfield_name', 'display_name'])
+        'parentfield_name', 'subfield_name', 'display_name', 'description', 'watermark'])
 
 count = 0
 total = len(listdir_nohidden(mainDirectory))
@@ -92,13 +92,17 @@ for repositoryFileName in listdir_nohidden(mainDirectory):
                         for subfield in properties['childFields']:
                             allParentAndChildFields.append(subfield)
                             subFieldDisplayName = properties['childFields'][subfield]['displayName']
+                            subFieldDescription = properties['childFields'][subfield]['description']
+                            subFieldWatermark = properties['childFields'][subfield]['watermark']
 
                             # Add parent and child names to the CSV file
                             with open(csvFile, mode='a', encoding='utf-8-sig') as data:
                                 data = csv.writer(data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                                 # Write new row
-                                data.writerow([repositoryNameVersion, metadatablockName, parentfield, subfield, subFieldDisplayName])
+                                data.writerow([
+                                    repositoryNameVersion, metadatablockName, parentfield, subfield, 
+                                    subFieldDisplayName, subFieldDescription, subFieldWatermark])
 
                 # Get the names of all fields
                 allFields = []
@@ -116,10 +120,15 @@ for repositoryFileName in listdir_nohidden(mainDirectory):
                 for primitiveField in primitiveFields:
                     if primitiveField in metadatablockData['data']['fields']:
                         primitiveFieldDisplayName = metadatablockData['data']['fields'][primitiveField]['displayName']
+                        primitiveFieldDescription = metadatablockData['data']['fields'][primitiveField]['description']
+                        primitiveFieldWatermark = metadatablockData['data']['fields'][primitiveField]['watermark']
+
                     # Set subfield to an empty string so that Dataverse "ingests" the CSV file.
                     subfield = ''
                     with open(csvFile, mode='a', encoding='utf-8-sig') as data:
                         data = csv.writer(data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                         # Write new row
-                        data.writerow([repositoryNameVersion, metadatablockName, primitiveField, subfield, primitiveFieldDisplayName])
+                        data.writerow([
+                            repositoryNameVersion, metadatablockName, primitiveField, subfield, 
+                            primitiveFieldDisplayName, primitiveFieldDescription, primitiveFieldWatermark])
