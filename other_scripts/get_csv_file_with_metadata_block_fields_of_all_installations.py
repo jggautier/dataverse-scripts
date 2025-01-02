@@ -19,10 +19,10 @@ def listdir_nohidden(path):
 
 
 # Enter path to directory that contains the folders and files created by the get_dataset_metadata_of_all_installations.py script
-mainDirectory = '/Users/juliangautier/Documents/all_installation_metadata_2024.08.25_03.34.11/dataverse_json_metadata_from_each_known_dataverse_installation/dataverse_json_metadata_from_each_known_dataverse_installation_unzipped_2024.08'
+mainDirectory = ''
 
 # Enter path to directory to store CSV file that this script will create
-csvFileFolder = '/Users/juliangautier/Desktop'
+csvFileFolder = ''
 
 csvFile = os.path.join(csvFileFolder, 'metadatablocks_from_most_known_dataverse_installations.csv')
 
