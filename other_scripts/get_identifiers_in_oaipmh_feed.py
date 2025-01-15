@@ -174,7 +174,7 @@ deletedRecordCount = 0
 
 with open(csvFilePath, mode='w', encoding='utf-8', newline='') as f:
     f = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    f.writerow(['record_identifier', 'record_status', 'data_stamp'])
+    f.writerow(['record_identifier', 'record_status', 'date_stamp'])
 
     if verb == 'ListIdentifiers':
 
