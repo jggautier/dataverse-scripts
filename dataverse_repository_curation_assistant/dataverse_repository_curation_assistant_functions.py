@@ -324,19 +324,19 @@ def sanitize_version(version):
     return result.group()
 
 
-def get_root_alias(url):
+def get_root_alias(url, headers={}):
     # Function for getting name of installation's root collection 
     if '/dataverse/' in url:
         parsed = urlparse(url)
         url = f'{parsed.scheme}://{parsed.netloc}/api/dataverses/:root'
         url = url.replace('//api', '/api')
-        response = requests.get(url)
+        response = requests.get(url, headers=headers)
         dataverseData = response.json()
         rootAlias = dataverseData['data']['alias']
     elif '/dataverse/' not in url:
         url = f'{url}/api/dataverses/:root'
         url = url.replace('//api', '/api')
-        response = requests.get(url)
+        response = requests.get(url, headers=headers)
         dataverseData = response.json()
         rootAlias = dataverseData['data']['alias']
 
@@ -345,7 +345,7 @@ def get_root_alias(url):
 
 # Function for getting collection alias name of a given Dataverse Collection URL,
 # including the "Root" collection
-def get_alias_from_collection_url(url):
+def get_alias_from_collection_url(url, headers={}):
 
     # If /dataverse/ is not in the URL, assume it's the installation's server url...
     if '/dataverse/' not in url:
@@ -355,10 +355,10 @@ def get_alias_from_collection_url(url):
 
         # If's it's not the UVA homepage URL, get the alias of the collection whose database is 1
         elif 'dataverse.lib.virginia.edu' not in url:
-            installationStatusDict = check_installation_url_status(url)
+            installationStatusDict = check_installation_url_status(url, headers=headers)
             installationUrl = installationStatusDict['installationUrl']
             url = f'{installationUrl}/api/dataverses/1'
-            response = requests.get(url)
+            response = requests.get(url, headers=headers)
             dataverseData = response.json()
             alias = dataverseData['data']['alias']
 
@@ -376,8 +376,8 @@ def get_alias_from_collection_url(url):
 
 # Returns True if collection alias is the installation's root collection or
 # False if not (doesn't work with UVA)
-def is_root_collection(url):
-    if get_alias_from_collection_url(url) == get_root_alias(url):
+def is_root_collection(url, headers={}):
+    if get_alias_from_collection_url(url, headers=headers) == get_root_alias(url, headers=headers):
         return True
     elif get_alias_from_collection_url(url) != get_root_alias(url):
         return False
@@ -671,14 +671,14 @@ def get_value_row_from_search_api_object(item, installationUrl, metadataFieldsLi
     return newRow
 
 
-def get_object_dictionary_from_search_api_page(installationUrl, header, params, start, objectInfoDict, metadataFieldsList=None):
+def get_object_dictionary_from_search_api_page(installationUrl, headers, params, start, objectInfoDict, metadataFieldsList=None):
     searchApiUrl = f'{installationUrl}/api/search'
     params['start'] = start
     params['per_page'] = 10
     response = requests.get(
         searchApiUrl,
         params=params,
-        headers=header
+        headers=headers
     )
     data = response.json()
 
@@ -710,7 +710,7 @@ def get_search_api_start_list(itemCount):
 # Uses Search API to return dataframe containing info about collectoins, datasets or files in an installation
 # Write results to the tkinter window
 def get_object_dataframe_from_search_api(
-    baseUrl, params, objectType, metadataFieldsList=None,
+    baseUrl, params, objectType, headers={}, metadataFieldsList=None,
     printProgress=False, rootWindow=None, progressText=None,
     progressLabel=None, apiKey=None):
 
@@ -718,9 +718,7 @@ def get_object_dataframe_from_search_api(
     installationUrl = installationStatusDict['installationUrl']
 
     if apiKey:
-        header = {'X-Dataverse-key': apiKey}
-    else:
-        header = {}
+        headers['X-Dataverse-key'] = apiKey
 
     params['type'] = objectType
 
@@ -733,9 +731,8 @@ def get_object_dataframe_from_search_api(
     response = requests.get(
         baseUrl,
         params=params,
-        headers=header
+        headers=headers
     )
-
     data = response.json()
 
     if data['status'] == 'ERROR':
@@ -769,14 +766,14 @@ def get_object_dataframe_from_search_api(
         if None not in [rootWindow, progressText, progressLabel]:
             for start in startsList:
                 get_object_dictionary_from_search_api_page(
-                    installationUrl, header, params, start, objectInfoDict, metadataFieldsList)
+                    installationUrl, headers, params, start, objectInfoDict, metadataFieldsList)
 
         else:
             for start in (pbar := tqdm(startsList, bar_format=tqdm_bar_format)):
                 pbar.set_description(f'Page {start}')
 
                 get_object_dictionary_from_search_api_page(
-                    installationUrl, header, params, start, objectInfoDict, metadataFieldsList)
+                    installationUrl, headers, params, start, objectInfoDict, metadataFieldsList)
 
         objectInfoDF = pd.DataFrame(objectInfoDict)
 
@@ -784,23 +781,21 @@ def get_object_dataframe_from_search_api(
 
 
 # Uses "Get Contents" endpoint to return list of dataverse aliases of all subcollections in a given collection
-def get_all_subcollection_aliases(collectionUrl, apiKey=''):
+def get_all_subcollection_aliases(collectionUrl, headers={}, apiKey=''):
 
     parsed = urlparse(collectionUrl)
     installationUrl = parsed.scheme + '://' + parsed.netloc
     alias = parsed.path.split('/')[2]
 
     if apiKey:
-        header = {'X-Dataverse-key': apiKey}
-    else:
-        header = {}
+        headers['X-Dataverse-key'] = apiKey
 
     # Get ID of given dataverse alias
     dataverseInfoEndpoint = f'{installationUrl}/api/dataverses/{alias}'
 
     response = requests.get(
         dataverseInfoEndpoint,
-        headers=header)
+        headers=headers)
     data = response.json()
     parentDataverseId = data['data']['id']
 
@@ -812,7 +807,7 @@ def get_all_subcollection_aliases(collectionUrl, apiKey=''):
         dataverseGetContentsEndpoint = f'{installationUrl}/api/dataverses/{dataverseId}/contents'
         response = requests.get(
             dataverseGetContentsEndpoint,
-            headers=header)
+            headers=headers)
         data = response.json()
 
         for item in data['data']:
@@ -826,7 +821,7 @@ def get_all_subcollection_aliases(collectionUrl, apiKey=''):
         dataverseInfoEndpoint = f'{installationUrl}/api/dataverses/{dataverseId}'
         response = requests.get(
             dataverseInfoEndpoint,
-            headers=header)
+            headers=headers)
         data = response.json()
         alias = data['data']['alias']
         dataverseAliases.append(alias)
@@ -834,13 +829,13 @@ def get_all_subcollection_aliases(collectionUrl, apiKey=''):
     return dataverseAliases
 
 
-def get_collection_info(installationUrl, alias, dataverseCollectionInfoDict, header={}, apiKey='', verify=False):
+def get_collection_info(installationUrl, alias, dataverseCollectionInfoDict, headers={}, apiKey='', verify=False):
 
     try:
         viewCollectionApiEndpointURL = f'{installationUrl}/api/dataverses/{alias}'
         response = requests.get(
             viewCollectionApiEndpointURL,
-            headers=header,
+            headers=headers,
             verify=verify)
         data = response.json()
 
@@ -882,7 +877,7 @@ def get_collection_info(installationUrl, alias, dataverseCollectionInfoDict, hea
     dataverseCollectionInfoDict.append(dict(newRow))
 
 
-def get_collections_info(installationUrl, aliasList, dataverseCollectionInfoDict, header, apiKey=''):
+def get_collections_info(installationUrl, aliasList, dataverseCollectionInfoDict, headers, apiKey=''):
     aliasCount = len(aliasList)
 
     # Use joblib library to use 4 CPU cores to make SearchAPI calls to get info about datasets
@@ -892,7 +887,7 @@ def get_collections_info(installationUrl, aliasList, dataverseCollectionInfoDict
             installationUrl,
             alias,
             dataverseCollectionInfoDict,
-            header,
+            headers,
             apiKey) for alias in aliasList)
 
 
@@ -939,7 +934,7 @@ def get_url_form_of_pid(canonicalPid, installationUrl):
     return pidUrlForm
 
 def get_datasets_from_collection_or_search_url(
-    url, rootWindow=None, progressLabel=None, progressText=None, textBoxCollectionDatasetPIDs=None, 
+    url, headers={}, rootWindow=None, progressLabel=None, progressText=None, textBoxCollectionDatasetPIDs=None, 
     apiKey='', ignoreDeaccessionedDatasets=False, subdataverses=False):
 
     # Hide the textBoxCollectionDatasetPIDs scrollbox if it exists
@@ -954,7 +949,7 @@ def get_datasets_from_collection_or_search_url(
     params = requestsGetProperties['params']
 
     datasetInfoDF = get_object_dataframe_from_search_api(
-        baseUrl=baseUrl, params=params, objectType='dataset', metadataFieldsList=None,
+        baseUrl=baseUrl, params=params, headers=headers, objectType='dataset', metadataFieldsList=None,
         printProgress=False, rootWindow=rootWindow, progressText=progressText, 
         progressLabel=progressLabel, apiKey=apiKey)
 
@@ -999,12 +994,12 @@ def get_datasets_from_collection_or_search_url(
             if 'q=' not in url:
                 # If the user wants datasets in all subdataverses and the url
                 # is the root collection, don't filter the dataframe
-                if subdataverses == True and is_root_collection(url) == True:
+                if subdataverses == True and is_root_collection(url, headers=headers) == True:
                     uniqueDatasetCount = len(datasetInfoDF)
 
                 # If the user wants datasets in all subdataverses and the url
                 # is not the root collection...
-                elif subdataverses == True and is_root_collection(url) == False:
+                elif subdataverses == True and is_root_collection(url, headers=headers) == False:
                     # Get the aliases of all subdataverses...
                     dataverseAliases = get_all_subcollection_aliases(url, apiKey=apiKey)
 
@@ -1019,7 +1014,7 @@ def get_datasets_from_collection_or_search_url(
                 # and not in collections within the collection...
                 elif subdataverses == False:
                     # Get the alias of the collection (including the alias of the root collection)
-                    alias = get_alias_from_collection_url(url)
+                    alias = get_alias_from_collection_url(url, headers=headers)
                     # Retain only datasets owned by that collection
                     datasetInfoDF = datasetInfoDF[datasetInfoDF['dataverse_collection_alias'].isin([alias])]
 
@@ -1095,7 +1090,7 @@ def get_dataset_size(installationUrl, datasetIdOrPid, onlyPublishedFiles=False, 
         allVersionMetadata = get_dataset_metadata_export(
             installationUrl, datasetPid=datasetIdOrPid, exportFormat='dataverse_json', 
             timeout=60, verify=False, excludeFiles=False, returnOwners=False,
-            allVersions=True, header={}, apiKey='')
+            allVersions=True, headers={}, apiKey='')
 
         # Get sum of sizes of all unique files in all dataset versions
         byteSizeTotalInt = 0
@@ -1169,12 +1164,12 @@ def get_collection_size(installationUrl, apiKey, collectionIdOrAlias, includeSub
 def get_dataset_metadata_export(
     installationUrl, datasetPid, exportFormat, 
     timeout, verify, excludeFiles, returnOwners,
-    allVersions=False, header={}, apiKey=''):
+    allVersions=False, headers={}, apiKey=''):
 
     installationUrl = installationUrl.rstrip('/')
 
     if apiKey:
-        header['X-Dataverse-key'] = apiKey
+        headers['X-Dataverse-key'] = apiKey
 
     params = {
         'excludeFiles': excludeFiles,
@@ -1198,7 +1193,7 @@ def get_dataset_metadata_export(
                 response = requests.get(
                     dataGetLatestVersionUrl,
                     params=params,
-                    headers=header, 
+                    headers=headers, 
                     timeout=timeout, 
                     verify=verify)
                 if response.status_code == 200 and 'metadataBlocks' in response.json()['data']:
@@ -1213,7 +1208,7 @@ def get_dataset_metadata_export(
                 response = requests.get(
                     dataGetAllVersionsUrl,
                     params=params,
-                    headers=header,
+                    headers=headers,
                     timeout=timeout, 
                     verify=verify)
                 if response.status_code == 200 and 'metadataBlocks' in response.json()['data'][0]:
@@ -1236,7 +1231,7 @@ def get_dataset_metadata_export(
                     'persistentId': datasetPid,
                     'exporter': exportFormat
                     },
-                headers=header,
+                headers=headers,
                 timeout=timeout, 
                 verify=verify)
 
@@ -1270,7 +1265,7 @@ def get_dataset_metadata_export(
 def save_dataset_export(
     directoryPath, downloadStatusFilePath, installationUrl, datasetPid, 
     exportFormat, timeout, verify, excludeFiles, allVersions=False, 
-    header={}, apiKey=''):
+    headers={}, apiKey=''):
 
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -1284,7 +1279,7 @@ def save_dataset_export(
                 installationUrl, datasetPid, exportFormat, 
                 timeout, verify=verify, 
                 excludeFiles=excludeFiles, allVersions=False, returnOwners=False,
-                header={}, apiKey=apiKey)
+                headers={}, apiKey=apiKey)
 
             if latestVersionMetadata == 'ERROR':
                 # Add to CSV file that the dataset's metadata was not downloaded
@@ -1317,7 +1312,7 @@ def save_dataset_export(
             allVersionsMetadata = get_dataset_metadata_export(
                 installationUrl, datasetPid, exportFormat, 
                 timeout, verify, excludeFiles, returnOwners=False,
-                allVersions=True, header={}, apiKey=apiKey)
+                allVersions=True, headers={}, apiKey=apiKey)
 
             if allVersionsMetadata == 'ERROR':
                 # Add to CSV file that the dataset's metadata was not downloaded
@@ -1362,7 +1357,7 @@ def save_dataset_export(
         
 
 def save_dataset_exports(directoryPath, downloadStatusFilePath, installationUrl, datasetPidList, 
-    exportFormat, n_jobs, timeout, verify, excludeFiles, allVersions=False, header={}, apiKey=''):
+    exportFormat, n_jobs, timeout, verify, excludeFiles, allVersions=False, headers={}, apiKey=''):
     
     currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
     
@@ -1387,7 +1382,7 @@ def save_dataset_exports(directoryPath, downloadStatusFilePath, installationUrl,
             verify=verify,
             excludeFiles=excludeFiles,
             allVersions=allVersions, 
-            header={}, 
+            headers={}, 
             apiKey=apiKey) for datasetPid in datasetPidList)
     
 
@@ -2084,7 +2079,7 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
                                 installationUrl=installationUrl, datasetPid=createdDatasetPid, 
                                 exportFormat='dataverse_json', timeout=30, verify=True,
                                 excludeFiles=True, allVersions=False, returnOwners=False,
-                                header={}, apiKey=apiKey)
+                                headers={}, apiKey=apiKey)
 
                             # Get title of latest version of the dataset
                             if 'latestVersion' in datasetMetadata['data']:
@@ -2784,7 +2779,7 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
                     verify=False,
                     excludeFiles=False, 
                     allVersions=True, 
-                    header=headers, 
+                    headers=headers, 
                     apiKey='')
 
                 # Create dataframe from downloadStatusFilePath
@@ -2828,7 +2823,7 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
                         verify=False,
                         excludeFiles=False, 
                         allVersions=True, 
-                        header=headers, 
+                        headers=headers, 
                         apiKey='')
 
                     # Create dataframe from downloadStatusSecondAttemptFilePath
@@ -2872,7 +2867,7 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
                 aliasList = list(set(aliasList))
 
                 dataverseCollectionInfoDict = []
-                get_collections_info(installationUrl, aliasList, dataverseCollectionInfoDict, header=headers, apiKey='')
+                get_collections_info(installationUrl, aliasList, dataverseCollectionInfoDict, headers=headers, apiKey='')
 
                 # Create dataframe from dictionary
                 dataverseCollectionInfoDF = pd.DataFrame(dataverseCollectionInfoDict).drop_duplicates()
@@ -2945,7 +2940,7 @@ def full_replace_metadata_field_value(installationUrl, apiKey, datasetPid, metad
     respData = get_dataset_metadata_export(
         installationUrl, datasetPid, exportFormat='dataverse_json', 
         timeout=120, verify=False,
-        allVersions=False, header={}, apiKey=apiKey)
+        allVersions=False, headers={}, apiKey=apiKey)
 
     mdbFields = respData['data']['latestVersion']['metadataBlocks'][metadataBlockName]['fields']
 
@@ -2971,8 +2966,8 @@ def get_dataverse_collection_categories(installationUrl, collectionAliasList, ap
         loopObj.set_postfix_str(f'collection_alias: {collectionAlias}')
 
         collectionInfoEndpoint = f'{installationUrl}/api/dataverses/{collectionAlias}'
-        header = {'X-Dataverse-key': apiKey}
-        response = requests.get(collectionInfoEndpoint, headers=header)
+        headers = {'X-Dataverse-key': apiKey}
+        response = requests.get(collectionInfoEndpoint, headers=headers)
         collectionInfoJson = response.json()
 
         newRow = {
