@@ -634,20 +634,33 @@ def get_params(apiSearchURL, metadataFieldsList=None):
 # Gets info from Search API about a given dataverse, dataset or file
 def get_value_row_from_search_api_object(item, installationUrl, metadataFieldsList=None):
     if item['type'] == 'dataset':
-        newRow = {
-            'dataset_pid': item['global_id'],
-            'version_state': item['versionState'],
-            'dataset_version_create_time': item['createdAt'],
-            'file_count': improved_get(item, 'fileCount'),
-            'dataverse_collection_alias': item['identifier_of_dataverse'],
-            'dataverse_name': item['name_of_dataverse']
-        }
-        # if metadataFieldsList is not None:
-        #     for metadataField in metadataFieldsList:
-        #         metadatablockName = metadataField.split(':')[0]
-        #         parentFieldName = metadataField.split(':')[1]
-        #         newRow[parentFieldName] = 
-        #         if item['metadataBlocks']
+        if metadataFieldsList is not None:
+            pass
+            # for metadataField in metadataFieldsList:
+            #     metadatablockName = metadataField.split(':')[0]
+            #     parentFieldName = metadataField.split(':')[1]
+            #     # newRow[metadataField] = item['metadataBlocks'][metadatablockName]['fields'][0]['value']
+                
+            #     newRow = {
+            #         'dataset_pid': item['global_id'],
+            #         'version_state': item['versionState'],
+            #         'dataset_version_create_time': item['createdAt'],
+            #         'file_count': improved_get(item, 'fileCount'),
+            #         'dataverse_collection_alias': item['identifier_of_dataverse'],
+            #         'dataverse_name': item['name_of_dataverse'],
+            #         metadataField: item['metadataBlocks'][metadatablockName]['fields'][0]['value']
+            #     }
+
+        elif metadataFieldsList is None:
+            newRow = {
+                'dataset_pid': item['global_id'],
+                'version_state': item['versionState'],
+                'dataset_version_create_time': item['createdAt'],
+                'file_count': improved_get(item, 'fileCount'),
+                'dataverse_collection_alias': item['identifier_of_dataverse'],
+                'dataverse_name': item['name_of_dataverse']
+            }
+        
     if item['type'] == 'dataverse':
         newRow = {
             'dataverse_database_id': item['entity_id'],
