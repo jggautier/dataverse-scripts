@@ -1433,10 +1433,12 @@ def get_metadatablock_db_field_name_and_title(metadatablockData):
 
 
 # Get list of parent field names and add to a tkinter listbox for user to choose fields
-def get_parent_field_names(metadatablockData, listbox):
+def get_parent_field_names(metadatablockData, listbox=None):
     
-    # Clear any names already in the listbox
-    listbox.delete(0, END)
+
+    if listbox is not None:
+        # Clear any names already in the listbox
+        listbox.delete(0, END)
 
     allFieldsDBNamesDict = {}
     childFieldsDBNamesList = []
@@ -1472,9 +1474,11 @@ def get_parent_field_names(metadatablockData, listbox):
             fieldWithChildFieldList.append(fieldWithChildField)
             options.append(' ' + fieldWithChildField)
 
-    for option in options:
-        listbox.insert('end', option)
+    if listbox is not None:
+        for option in options:
+            listbox.insert('end', option)
 
+    return(allFieldsDBNamesDict)
 
 def get_listbox_values(listbox):
     selectedFields = []
