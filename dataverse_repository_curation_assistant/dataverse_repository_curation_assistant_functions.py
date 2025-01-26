@@ -652,10 +652,21 @@ def get_value_row_from_search_api_object(item, installationUrl, metadataFieldsLi
             #     }
 
         elif metadataFieldsList is None:
+            versionState = item['versionState']
+            if versionState == 'DRAFT':
+                latestVersionNumber = 'DRAFT'
+
+            elif versionState == 'RELEASED':
+                majorVersionNumber = item['majorVersion']
+                minorVersionNumber = item['minorVersion']
+                latestVersionNumber = f'{majorVersionNumber}.{minorVersionNumber}'
+
             newRow = {
                 'dataset_pid': item['global_id'],
                 'version_state': item['versionState'],
+                'latest_version': latestVersionNumber,
                 'dataset_version_create_time': item['createdAt'],
+                'publication_date': improved_get(item, 'published_at'),
                 'file_count': improved_get(item, 'fileCount'),
                 'dataverse_collection_alias': item['identifier_of_dataverse'],
                 'dataverse_name': item['name_of_dataverse']
@@ -671,10 +682,7 @@ def get_value_row_from_search_api_object(item, installationUrl, metadataFieldsLi
         }
     if item['type'] == 'file':
         filePersistentId = improved_get(item, 'file_persistent_id', default='')
-        # if item.get('file_persistent_id'):
-        #     filePersistentId = item['file_persistent_id']
-        # else:
-        #     filePersistentId = ''
+        
         newRow = {
             'file_database_id': item['file_id'],
             'file persistent_id': filePersistentId,
@@ -957,6 +965,7 @@ def get_datasets_from_collection_or_search_url(
     # Use the Search API to get dataset info from the given search url or Dataverse collection URL
     url = url.rstrip('/')
     searchApiUrl = get_search_api_url(url)
+
     requestsGetProperties = get_params(searchApiUrl)
     baseUrl = requestsGetProperties['baseUrl']
     params = requestsGetProperties['params']
@@ -1198,7 +1207,7 @@ def get_dataset_metadata_export(
         dataGetLatestVersionUrl = f'{installationUrl}/api/datasets/:persistentId/versions/:latest'
         dataGetAllVersionsUrl = f'{installationUrl}/api/datasets/:persistentId/versions'
         
-        params['persistentId'] = datasetPid 
+        params['persistentId'] = datasetPid
 
     if exportFormat == 'dataverse_json':
         if allVersions is False:
@@ -1224,6 +1233,7 @@ def get_dataset_metadata_export(
                     headers=headers,
                     timeout=timeout, 
                     verify=verify)
+
                 if response.status_code == 200 and 'metadataBlocks' in response.json()['data'][0]:
                     data = response.json()
                 else:
