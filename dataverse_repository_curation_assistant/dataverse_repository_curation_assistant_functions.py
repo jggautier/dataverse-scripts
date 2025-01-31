@@ -336,7 +336,7 @@ def get_root_alias(url, headers={}):
     elif '/dataverse/' not in url:
         url = f'{url}/api/dataverses/:root'
         url = url.replace('//api', '/api')
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, verify=False)
         dataverseData = response.json()
         rootAlias = dataverseData['data']['alias']
 
@@ -358,7 +358,7 @@ def get_alias_from_collection_url(url, headers={}):
             installationStatusDict = check_installation_url_status(url, headers=headers)
             installationUrl = installationStatusDict['installationUrl']
             url = f'{installationUrl}/api/dataverses/1'
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=headers, verify=False)
             dataverseData = response.json()
             alias = dataverseData['data']['alias']
 
@@ -818,7 +818,8 @@ def get_all_subcollection_aliases(collectionUrl, headers={}, apiKey=''):
 
     response = requests.get(
         dataverseInfoEndpoint,
-        headers=headers)
+        headers=headers,
+        verify=False)
     data = response.json()
     parentDataverseId = data['data']['id']
 
