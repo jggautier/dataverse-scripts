@@ -699,7 +699,8 @@ def get_object_dictionary_from_search_api_page(installationUrl, headers, params,
     response = requests.get(
         searchApiUrl,
         params=params,
-        headers=headers
+        headers=headers,
+        verify=False
     )
     data = response.json()
 
@@ -752,7 +753,8 @@ def get_object_dataframe_from_search_api(
     response = requests.get(
         baseUrl,
         params=params,
-        headers=headers
+        headers=headers,
+        verify=False
     )
     data = response.json()
 
