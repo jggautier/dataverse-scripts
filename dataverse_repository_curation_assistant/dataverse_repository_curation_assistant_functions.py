@@ -653,8 +653,12 @@ def get_value_row_from_search_api_object(item, installationUrl, metadataFieldsLi
 
         elif metadataFieldsList is None:
             versionState = item['versionState']
+            # print(versionState)
             if versionState == 'DRAFT':
                 latestVersionNumber = 'DRAFT'
+
+            elif versionState == 'DEACCESSIONED':
+                latestVersionNumber = 'DEACCESSIONED'
 
             elif versionState == 'RELEASED':
                 majorVersionNumber = item['majorVersion']
@@ -1064,9 +1068,9 @@ def get_datasets_from_collection_or_search_url(
 
             # Create and place result text with uniqueDatasetCount
             if deaccessionedDatasetCount == 0:
-                text = f'Datasets found: {str(uniqueDatasetCount)}'
+                text = f'Dataset versions found: {str(uniqueDatasetCount)}'
             if deaccessionedDatasetCount > 0:
-                text = f'Datasets found: {str(uniqueDatasetCount)}\rDeaccessioned datasets ignored: {str(deaccessionedDatasetCount)}'
+                text = f'Dataset versions found: {str(uniqueDatasetCount)}\rDeaccessioned datasets ignored: {str(deaccessionedDatasetCount)}'
 
             if progressText is not None:
                 progressText.set(text)
