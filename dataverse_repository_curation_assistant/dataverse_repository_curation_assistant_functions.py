@@ -324,6 +324,35 @@ def sanitize_version(version):
     return result.group()
 
 
+# Write function that checks version of Dataverse installation
+def get_dataverse_installation_version(installationUrl, headers={}):
+    installationVersionDict = {}
+    statusDict = check_installation_url_status(string=installationUrl, requestTimeout=20, headers=headers)
+    statusCode = statusDict['statusCode']
+
+    if statusCode != 200:
+        installationVersionDict['dataverseVersion'] = statusCode
+        installationVersionDict['dataverseVersionSanitized'] = statusCode
+
+    elif statusCode == 200:
+        installationUrl = statusDict['installationUrl']
+
+        getInstallationVersionApiUrl = f'{installationUrl}/api/v1/info/version'
+        getInstallationVersionApiUrl = getInstallationVersionApiUrl.replace('//api', '/api')
+        response = requests.get(getInstallationVersionApiUrl, headers=headers, timeout=20, verify=False)
+        data = response.json()
+        dataverseVersion = data['data']['version']
+
+        dataverseVersionSanitized = sanitize_version(dataverseVersion)
+
+        installationVersionDict = {
+            'dataverseVersion': dataverseVersion,
+            'dataverseVersionSanitized': dataverseVersionSanitized
+        }
+
+    return installationVersionDict
+
+
 def get_root_alias(url, headers={}):
     # Function for getting name of installation's root collection 
     if '/dataverse/' in url:
@@ -562,6 +591,26 @@ def convert_utf8bytes_to_characters(string):
             .replace('%C3%BC', 'ü').replace('%C3%BE', 'þ').replace('%C3%BF', 'ÿ')
         )
     return string
+
+
+def search_api_includes_metadata_fields(installationUrl, headers={}):
+    statusDict = check_installation_url_status(installationUrl, requestTimeout=20, headers=headers)
+    installationUrl = statusDict['installationUrl']
+    searchApiUrl = f'{installationUrl}/api/search?q=*&type=dataset&metadata_fields=citation:title&per_page=1'
+    response = requests.get(searchApiUrl, headers=headers, timeout=60, verify=False)
+    data = response.json()
+
+    if data['status'] != 'OK':
+        return data['status']
+
+    elif data['status'] == 'OK':
+        if data['data']['total_count'] == 0:
+            return 'No published datasets found '
+        elif data['data']['total_count'] > 0:
+            if 'metadataBlocks' in data['data']['items'][0]:
+                return True
+            else:
+                return False
 
 
 # Function that returns the params of a given Search API URL, to be used in requests calls
