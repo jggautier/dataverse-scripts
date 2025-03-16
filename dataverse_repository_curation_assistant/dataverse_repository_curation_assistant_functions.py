@@ -676,7 +676,7 @@ def get_params(apiSearchURL, metadataFieldsList=None):
 
     if metadataFieldsList is not None:
         if len(metadataFieldsList) > 5:
-            print('Function supports only five parent metadata fields. Remove fields.')
+            print('Function supports only five parent metadata fields. Remove fields from metadataFieldsList.')
             exit()
         elif len(metadataFieldsList) < 6:
             params['params']['metadata_fields'] = metadataFieldsList
@@ -687,7 +687,10 @@ def get_params(apiSearchURL, metadataFieldsList=None):
 # Gets info from Search API about a given dataverse, dataset or file
 def get_value_row_from_search_api_object(item, installationUrl, metadataFieldsList=None):
     
-    if metadataFieldsList is not None and item['type'] == 'dataset':
+    if metadataFieldsList is not None and len(metadataFieldsList) > 5:
+        print('Function supports only five parent metadata fields. Remove fields from metadataFieldsList.')
+
+    elif metadataFieldsList is not None and item['type'] == 'dataset':
 
         newRow = {
             'dataset_pid': item['global_id'],
