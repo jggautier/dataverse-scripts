@@ -710,7 +710,7 @@ def get_value_row_from_search_api_object(item, installationUrl, metadataFieldsLi
                 metadataBlockFieldsDict = item['metadataBlocks'][metadatablockName]['fields']
                 for field in metadataBlockFieldsDict:
                     if field['typeName'] == parentFieldName:
-                        newRow[parentFieldName] = field['value']
+                        newRow[metadataField] = field['value']
 
         return newRow
 
