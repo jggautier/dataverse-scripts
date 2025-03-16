@@ -603,14 +603,14 @@ def search_api_includes_metadata_fields(installationUrl, headers={}):
     if data['status'] != 'OK':
         return data['status']
 
-    elif data['status'] == 'OK':
-        if data['data']['total_count'] == 0:
-            return 'No published datasets found '
-        elif data['data']['total_count'] > 0:
-            if 'metadataBlocks' in data['data']['items'][0]:
-                return True
-            else:
-                return False
+    elif data['status'] == 'OK' and data['data']['total_count'] == 0:
+        return 'No published datasets found'
+
+    elif data['status'] == 'OK' and data['data']['total_count'] > 0:
+        if 'metadataBlocks' in data['data']['items'][0]:
+            return True
+        else:
+            return False
 
 
 # Function that returns the params of a given Search API URL, to be used in requests calls
@@ -675,40 +675,54 @@ def get_params(apiSearchURL, metadataFieldsList=None):
         params['params']['fq'] = fq
 
     if metadataFieldsList is not None:
-        params['params']['metadata_fields'] = metadataFieldsList
+        if len(metadataFieldsList) > 5:
+            print('Function supports only five parent metadata fields. Remove fields.')
+            exit()
+        elif len(metadataFieldsList) < 6:
+            params['params']['metadata_fields'] = metadataFieldsList
 
     return params
 
 
 # Gets info from Search API about a given dataverse, dataset or file
 def get_value_row_from_search_api_object(item, installationUrl, metadataFieldsList=None):
-    if item['type'] == 'dataset':
-        if metadataFieldsList is not None:
-            pass
-            # for metadataField in metadataFieldsList:
-            #     metadatablockName = metadataField.split(':')[0]
-            #     parentFieldName = metadataField.split(':')[1]
-            #     # newRow[metadataField] = item['metadataBlocks'][metadatablockName]['fields'][0]['value']
-                
-            #     newRow = {
-            #         'dataset_pid': item['global_id'],
-            #         'version_state': item['versionState'],
-            #         'dataset_version_create_time': item['createdAt'],
-            #         'file_count': improved_get(item, 'fileCount'),
-            #         'dataverse_collection_alias': item['identifier_of_dataverse'],
-            #         'dataverse_name': item['name_of_dataverse'],
-            #         metadataField: item['metadataBlocks'][metadatablockName]['fields'][0]['value']
-            #     }
+    
+    if metadataFieldsList is not None and item['type'] == 'dataset':
 
-        elif metadataFieldsList is None:
+        newRow = {
+            'dataset_pid': item['global_id'],
+            'version_state': item['versionState'],
+            'dataset_version_create_time': item['createdAt'],
+            'file_count': improved_get(item, 'fileCount'),
+            'dataverse_collection_alias': item['identifier_of_dataverse'],
+            'dataverse_name': item['name_of_dataverse']
+        }
+
+        # Get value of metadata field and add to newRow dict.
+        # Value may be a string, list or dict, depending on type of metadata field
+        for metadataField in metadataFieldsList:
+
+            metadatablockName = metadataField.split(':')[0]
+            parentFieldName = metadataField.split(':')[1]
+            
+            # If the metadata block is in the item and there are fields, add the field values to the newRow Dict
+            if metadatablockName in item['metadataBlocks'] and len(item['metadataBlocks'][metadatablockName]['fields']) > 0:
+                metadataBlockFieldsDict = item['metadataBlocks'][metadatablockName]['fields']
+                for field in metadataBlockFieldsDict:
+                    if field['typeName'] == parentFieldName:
+                        newRow[parentFieldName] = field['value']
+
+        return newRow
+
+    elif metadataFieldsList is None:
+
+        if item['type'] == 'dataset':
+
             versionState = item['versionState']
-            # print(versionState)
             if versionState == 'DRAFT':
                 latestVersionNumber = 'DRAFT'
-
             elif versionState == 'DEACCESSIONED':
                 latestVersionNumber = 'DEACCESSIONED'
-
             elif versionState == 'RELEASED':
                 majorVersionNumber = item['majorVersion']
                 minorVersionNumber = item['minorVersion']
@@ -725,27 +739,30 @@ def get_value_row_from_search_api_object(item, installationUrl, metadataFieldsLi
                 'dataverse_name': item['name_of_dataverse']
             }
         
-    if item['type'] == 'dataverse':
-        newRow = {
-            'dataverse_database_id': item['entity_id'],
-            'dataverse_collection_alias': item['identifier'],
-            'dataverse_url': item['url'],
-            'dataverse_name': item['name'],
-            'dataverse_description': improved_get(item, 'description')
-        }
-    if item['type'] == 'file':
-        filePersistentId = improved_get(item, 'file_persistent_id', default='')
-        
-        newRow = {
-            'file_database_id': item['file_id'],
-            'file persistent_id': filePersistentId,
-            'file_name': item['name'],
-            'dataset_pid': item['dataset_persistent_id']
-        }
-    return newRow
+        if item['type'] == 'dataverse':
+            newRow = {
+                'dataverse_database_id': item['entity_id'],
+                'dataverse_collection_alias': item['identifier'],
+                'dataverse_url': item['url'],
+                'dataverse_name': item['name'],
+                'dataverse_description': improved_get(item, 'description')
+            }
+        if item['type'] == 'file':
+            filePersistentId = improved_get(item, 'file_persistent_id', default='')
+            
+            newRow = {
+                'file_database_id': item['file_id'],
+                'file persistent_id': filePersistentId,
+                'file_name': item['name'],
+                'dataset_pid': item['dataset_persistent_id']
+            }
+    
+        return newRow
 
 
-def get_object_dictionary_from_search_api_page(installationUrl, headers, params, start, objectInfoDict, metadataFieldsList=None):
+def get_object_dictionary_from_search_api_page(
+    installationUrl, headers, params, start, 
+    objectInfoDict, metadataFieldsList=None):
     searchApiUrl = f'{installationUrl}/api/search'
     params['start'] = start
     params['per_page'] = 10
@@ -757,9 +774,16 @@ def get_object_dictionary_from_search_api_page(installationUrl, headers, params,
     )
     data = response.json()
 
-    for item in data['data']['items']:
-        newRow = get_value_row_from_search_api_object(item, installationUrl, metadataFieldsList=metadataFieldsList)
-        objectInfoDict.append(dict(newRow))
+    if metadataFieldsList is not None:
+        for item in data['data']['items']:
+            if item['type'] == 'dataset':
+                newRow = get_value_row_from_search_api_object(item, installationUrl, metadataFieldsList=metadataFieldsList)
+                objectInfoDict.append(dict(newRow))
+
+    elif metadataFieldsList is None:
+        for item in data['data']['items']:
+            newRow = get_value_row_from_search_api_object(item, installationUrl, metadataFieldsList=metadataFieldsList)
+            objectInfoDict.append(dict(newRow))
 
     sleep(1)
 
