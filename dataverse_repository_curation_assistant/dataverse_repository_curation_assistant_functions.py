@@ -769,6 +769,7 @@ def get_object_dictionary_from_search_api_page(
     searchApiUrl = f'{installationUrl}/api/search'
     params['start'] = start
     params['per_page'] = 10
+    params['show_entity_ids'] = True
     response = requests.get(
         searchApiUrl,
         params=params,
