@@ -684,6 +684,31 @@ def get_params(apiSearchURL, metadataFieldsList=None):
     return params
 
 
+def simplifyMetadataStructure(metadataFromDataverseJSON):
+    
+    # If the metadata is a string, like dataset Title, save the string
+    if isinstance(metadataFromDataverseJSON, str):
+        simplifiedMetadataList = metadataFromDataverseJSON
+
+    # If the metadata is a list of strings, like dataset Subject, save the list
+
+    if isinstance(metadataFromDataverseJSON, list) and isinstance(metadataFromDataverseJSON[0], str):
+        simplifiedMetadataList = metadataFromDataverseJSON
+
+    # If the metadata is a list of dictionaries, like dataset Author, simplify the metadata
+    if isinstance(metadataFromDataverseJSON, list) and isinstance(metadataFromDataverseJSON[0], dict):
+        simplifiedMetadataList = []
+        for field in metadataFromDataverseJSON:
+            simplifiedMetadata = {}
+            childFieldNameList = list(field.keys())
+            for childFieldName in childFieldNameList:
+                childFieldValue = field[childFieldName]['value']
+                childFieldValueTruncated = childFieldValue[:10000].replace('\r', ' - ')
+                simplifiedMetadata[childFieldName] = childFieldValueTruncated
+            simplifiedMetadataList.append(simplifiedMetadata)
+
+    return simplifiedMetadataList
+
 # Gets info from Search API about a given dataverse, dataset or file
 def get_value_row_from_search_api_object(item, installationUrl, metadataFieldsList=None):
     
@@ -713,7 +738,8 @@ def get_value_row_from_search_api_object(item, installationUrl, metadataFieldsLi
                 metadataBlockFieldsDict = item['metadataBlocks'][metadatablockName]['fields']
                 for field in metadataBlockFieldsDict:
                     if field['typeName'] == parentFieldName:
-                        newRow[metadataField] = field['value']
+                        simplifiedMetadata = simplifyMetadataStructure(field['value'])
+                        newRow[metadataField] = simplifiedMetadata
 
         return newRow
 
