@@ -1065,7 +1065,7 @@ def get_url_form_of_pid(canonicalPid, installationUrl):
 
 def get_datasets_from_collection_or_search_url(
     url, headers={}, rootWindow=None, progressLabel=None, progressText=None, textBoxCollectionDatasetPIDs=None, 
-    apiKey='', ignoreDeaccessionedDatasets=False, subdataverses=False):
+    apiKey='', ignoreDeaccessionedDatasets=False, subdataverses=False, metadataFieldsList=None):
 
     # Hide the textBoxCollectionDatasetPIDs scrollbox if it exists
     if textBoxCollectionDatasetPIDs is not None:
@@ -1075,12 +1075,12 @@ def get_datasets_from_collection_or_search_url(
     url = url.rstrip('/')
     searchApiUrl = get_search_api_url(url)
 
-    requestsGetProperties = get_params(searchApiUrl)
+    requestsGetProperties = get_params(searchApiUrl, metadataFieldsList=metadataFieldsList)
     baseUrl = requestsGetProperties['baseUrl']
     params = requestsGetProperties['params']
 
     datasetInfoDF = get_object_dataframe_from_search_api(
-        baseUrl=baseUrl, params=params, headers=headers, objectType='dataset', metadataFieldsList=None,
+        baseUrl=baseUrl, params=params, headers=headers, objectType='dataset', metadataFieldsList=metadataFieldsList,
         printProgress=False, rootWindow=rootWindow, progressText=progressText, 
         progressLabel=progressLabel, apiKey=apiKey)
 
@@ -1104,6 +1104,17 @@ def get_datasets_from_collection_or_search_url(
                 print(text)
         
         elif datasetCount > 0:
+
+            # If metadataFieldsList is not None, I'll need to cast those columns as strings 
+            # so that I can drop duplicate rows later
+            columnNames = datasetInfoDF.columns.tolist()
+            metadataColumnNames = []
+            for columnName in columnNames:
+                if ':' in columnName:
+                    metadataColumnNames.append(columnName)
+
+            if len(metadataColumnNames) > 0:
+                datasetInfoDF[metadataColumnNames] = datasetInfoDF[metadataColumnNames].astype(str)
 
             deaccessionedDatasetCount = 0
             
