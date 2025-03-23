@@ -716,10 +716,21 @@ def get_value_row_from_search_api_object(item, installationUrl, metadataFieldsLi
 
     elif metadataFieldsList is not None and item['type'] == 'dataset':
 
+        versionState = item['versionState']
+        if versionState == 'DRAFT':
+            latestVersionNumber = 'DRAFT'
+        elif versionState == 'DEACCESSIONED':
+            latestVersionNumber = 'DEACCESSIONED'
+        elif versionState == 'RELEASED':
+            majorVersionNumber = item['majorVersion']
+            minorVersionNumber = item['minorVersion']
+            latestVersionNumber = f'{majorVersionNumber}.{minorVersionNumber}'
+
         newRow = {
             'dataset_pid': item['global_id'],
-            'version_state': item['versionState'],
-            'dataset_version_create_time': item['createdAt'],
+            'version_state': versionState,
+            'latest_version': latestVersionNumber,
+            'publication_date': improved_get(item, 'published_at'),
             'file_count': improved_get(item, 'fileCount'),
             'dataverse_collection_alias': item['identifier_of_dataverse'],
             'dataverse_name': item['name_of_dataverse']
@@ -811,7 +822,7 @@ def get_object_dictionary_from_search_api_page(
 
     elif metadataFieldsList is None:
         for item in data['data']['items']:
-            newRow = get_value_row_from_search_api_object(item, installationUrl, metadataFieldsList=metadataFieldsList)
+            newRow = get_value_row_from_search_api_object(item, installationUrl)
             objectInfoDict.append(dict(newRow))
 
     sleep(1)
@@ -1947,7 +1958,7 @@ def get_dataset_metadata(
                     metadatablockName=metadatablockName,
                     chosenTitleDBName=dbName, 
                     chosenFields=get_column_names(
-                        metadatablockData, parentFieldTitle, allFieldsDBNamesDict))                
+                        metadatablockData, parentFieldTitle, allFieldsDBNamesDict))
                 citationMetadataCsvFileName =  parentFieldTitle.lower().strip().replace(' ', '_')
                 citationMetadataCsvFileName = citationMetadataCsvFileName + f'({metadatablockName})'
                 citationMetadataCsvFilePath = os.path.join(mainDirectoryPath, citationMetadataCsvFileName) + '.csv'
