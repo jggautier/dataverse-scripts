@@ -703,10 +703,19 @@ def simplifyMetadataStructure(metadataFromDataverseJSON):
             for childFieldName in childFieldNameList:
                 childFieldValue = field[childFieldName]['value']
                 childFieldValueTruncated = childFieldValue[:10000].replace('\r', ' - ')
-                childNameAndValueDict[childFieldName] = childFieldValueTruncated
+                childFieldValueEncodedQuotes = childFieldValueTruncated.replace('\'', '&#39;').replace('"', '&#34;')
+                childNameAndValueDict[childFieldName] = childFieldValueEncodedQuotes
             simplifiedMetadata.append(childNameAndValueDict)
 
     return simplifiedMetadata
+
+
+# Function to help explore metadata of compound fields returned by get_datasets_from_collection_or_search_url
+def convert_metadata_string_to_dict(string):
+    stringDoubleQuotes = string.replace('\'', '"')
+    dictionary = json.loads(stringDoubleQuotes)
+    return dictionary
+
 
 # Gets info from Search API about a given dataverse, dataset or file
 def get_value_row_from_search_api_object(item, installationUrl, metadataFieldsList=None):
