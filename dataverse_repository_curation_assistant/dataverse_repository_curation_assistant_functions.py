@@ -815,6 +815,10 @@ def get_object_dictionary_from_search_api_page(
     params['start'] = start
     params['per_page'] = 10
     params['show_entity_ids'] = True
+
+    if metadataFieldsList is not None:
+        params['metadata_fields'] = metadataFieldsList
+
     response = requests.get(
         searchApiUrl,
         params=params,
