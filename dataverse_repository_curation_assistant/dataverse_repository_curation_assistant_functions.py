@@ -1448,7 +1448,7 @@ def save_dataset_export(
                 excludeFiles=excludeFiles, allVersions=False, returnOwners=False,
                 headers={}, apiKey=apiKey)
 
-            if latestVersionMetadata == 'ERROR':
+            if latestVersionMetadata == 'ERROR' or latestVersionMetadata['data']['versionState'] == 'DEACCESSIONED':
                 # Add to CSV file that the dataset's metadata was not downloaded
                 writer.writerow([datasetPid, False]) 
 
@@ -1471,7 +1471,7 @@ def save_dataset_export(
                 with open(os.path.join(directoryPath, metadataFile), mode='w') as f:
                     f.write(json.dumps(latestVersionMetadata, indent=4))
 
-                # Add to CSV file that the dataset's metadata was not downloaded
+                # Add to CSV file that the dataset's metadata was downloaded
                 writer.writerow([datasetPidInJson, True])
 
         elif allVersions == True:
@@ -1520,11 +1520,12 @@ def save_dataset_export(
                         f.write(json.dumps(datasetVersion, indent=4))
 
                 # Add to CSV file that the dataset's metadata was not downloaded
-                writer.writerow([datasetPidInJson, True])  
+                writer.writerow([datasetPidInJson, True])
+        sleep(1)
         
 
 def save_dataset_exports(directoryPath, downloadStatusFilePath, installationUrl, datasetPidList, 
-    exportFormat, n_jobs, timeout, verify, excludeFiles, allVersions=False, headers={}, apiKey=''):
+    exportFormat, timeout, verify, excludeFiles, allVersions=False, headers={}, apiKey=''):
     
     currentTime = time.strftime('%Y.%m.%d_%H.%M.%S')
     
@@ -1536,21 +1537,14 @@ def save_dataset_exports(directoryPath, downloadStatusFilePath, installationUrl,
 
     datasetCount = len(datasetPidList)
 
-    # Use joblib library to use 4 CPU cores to make SearchAPI calls to get info about datasets
-    # and report progress using tqdm progress bars
-    with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=datasetCount)) as progress_bar:
-        Parallel(n_jobs=n_jobs, backend='threading')(delayed(save_dataset_export)(
-            directoryPath=directoryPath,
-            downloadStatusFilePath=downloadStatusFilePath,
-            installationUrl=installationUrl,
-            datasetPid=datasetPid, 
-            exportFormat=exportFormat,
-            timeout=timeout,
-            verify=verify,
-            excludeFiles=excludeFiles,
-            allVersions=allVersions, 
-            headers={}, 
-            apiKey=apiKey) for datasetPid in datasetPidList)
+    loopObj = tqdm(bar_format=tqdm_bar_format, iterable=datasetPidList)
+    for datasetPid in loopObj:
+        loopObj.set_postfix_str(f'dataset_pid: {datasetPid}')
+        save_dataset_export(
+            directoryPath, downloadStatusFilePath, installationUrl, datasetPid, 
+            exportFormat, timeout, verify, excludeFiles, allVersions=False, 
+            headers={}, apiKey='')
+        sleep(1)
     
 
 def get_metadatablock_data(installationUrl, metadatablockName):
