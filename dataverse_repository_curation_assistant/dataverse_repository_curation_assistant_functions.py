@@ -1535,8 +1535,6 @@ def save_dataset_exports(directoryPath, downloadStatusFilePath, installationUrl,
         writer = csv.writer(downloadStatusFile)
         writer.writerow(headerRow)
 
-    datasetCount = len(datasetPidList)
-
     loopObj = tqdm(bar_format=tqdm_bar_format, iterable=datasetPidList)
     for datasetPid in loopObj:
         loopObj.set_postfix_str(f'dataset_pid: {datasetPid}')
