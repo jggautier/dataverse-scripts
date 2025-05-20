@@ -1247,18 +1247,25 @@ def get_dataset_size(installationUrl, datasetIdOrPid, onlyPublishedFiles=False, 
             datasetSizeEndpointUrl, headers={'X-Dataverse-key': apiKey})
         byteSizeTotalInt = get_int_from_size_message(sizeEndpointJson=response.json())
 
+
+    # 
     elif onlyPublishedFiles == True:
+        if installationUrl == 'https://dataverse.harvard.edu':
+            print('Can\'t get sizes of only published datasets in Harvard Dataverse.')
+            print('See https://github.com/IQSS/dataverse.harvard.edu/issues/373')
+            exit()
+
         if isinstance(datasetIdOrPid, int):
             print('datasetIdOrPid must be a PID')
             exit()
 
-        # Get metadata of all published versions
+        # Get metadata of all published versions (since apiKey is not used here)
         allVersionMetadata = get_dataset_metadata_export(
             installationUrl, datasetPid=datasetIdOrPid, exportFormat='dataverse_json', 
             timeout=60, verify=False, excludeFiles=False, returnOwners=False,
             allVersions=True, headers={}, apiKey='')
 
-        # Get sum of sizes of all unique files in all dataset versions
+        # Get sum of sizes of all unique files in all published dataset versions
         byteSizeTotalInt = 0
         fileIdList = []
 
