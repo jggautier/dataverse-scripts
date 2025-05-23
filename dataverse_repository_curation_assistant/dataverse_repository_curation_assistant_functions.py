@@ -297,6 +297,12 @@ def check_api_endpoint(url, headers, verify=False, json_response_expected=True):
         response = requests.get(url, headers=headers, timeout=20, verify=verify)
         if response.status_code == 200:
             status = 'OK'
+            if json_response_expected is True:
+                try:
+                    data = response.json()
+                except Exception as e:
+                    status = f'API endpoint is not returning JSON: {e}' 
+
         elif response.status_code != 200:
             if json_response_expected is True:
                 try:
@@ -305,7 +311,7 @@ def check_api_endpoint(url, headers, verify=False, json_response_expected=True):
                     statusMessage = data['message']
                     status = f'{statusCode}: {statusMessage}'
                 except Exception as e:
-                    status = e
+                    status = f'API endpoint is not returning JSON: {e}'
             elif json_response_expected is False:
                 status = response.status_code
     except Exception as e:
