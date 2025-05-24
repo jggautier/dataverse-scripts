@@ -1437,7 +1437,7 @@ def get_dataset_metadata_export(
 
         if fileMetadata is not False:
             print(
-                'Warning: Installation may not support "excludeFiles" paramter.'\
+                'Warning: Installation may not support "excludeFiles" paramter. '\
                 'File metadata may be included.')
 
     return data
