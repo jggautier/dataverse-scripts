@@ -27,6 +27,7 @@ from tkinter import Listbox, MULTIPLE, StringVar, END, INSERT, N, E, S, W
 from tkinter.ttk import Entry, Progressbar, OptionMenu, Combobox
 from tqdm import tqdm
 tqdm_bar_format = "{l_bar}{bar:10}{r_bar}{bar:-10b}"
+import urllib.parse
 from urllib.parse import urlparse
 import xmltodict
 import yaml
@@ -466,14 +467,8 @@ def get_search_api_url(url):
         apiSearchURL = (
             url
                 .replace(dataverseName, '/api/search?q')
-                .replace('?q=&', '?q=*&')
-                .replace('%3A', ':')
-                .replace('%22', '"')
-                .replace('%28', '(')
-                .replace('%29', ')')
-                + '&show_entity_ids=true'
-                + subtree
-                )
+                .replace('?q=&', '?q=*&'))
+        apiSearchURL = urllib.parse.unquote(apiSearchURL) + '&show_entity_ids=true' + subtree
 
         # Remove any digits after any fq parameters
         apiSearchURL = re.sub('fq\d', 'fq', apiSearchURL)
@@ -646,9 +641,12 @@ def get_params(apiSearchURL, metadataFieldsList=None):
 
         # Add query to params dict
         if paramValue.startswith('q='):
-            paramValue = convert_utf8bytes_to_characters(paramValue)
-            paramValue = convert_str_to_html_encoding(paramValue)
-            paramValue = paramValue.replace('+', ' ')
+            # paramValue = convert_utf8bytes_to_characters(paramValue)
+            # paramValue = convert_str_to_html_encoding(paramValue)
+            # paramValue = paramValue.replace('+', ' ')
+
+            paramValue = urllib.parse.unquote(paramValue)
+
             params['params']['q'] = paramValue.replace('q=', '')
 
         # Add non-fq queries to params dict
@@ -666,9 +664,13 @@ def get_params(apiSearchURL, metadataFieldsList=None):
         if paramValue.startswith('='):
             key = paramValue.replace('=', '').split(':')[0]
             value = paramValue.split(':')[1]
-            value = convert_utf8bytes_to_characters(value)
-            value = convert_str_to_html_encoding(value)
-            value = value.replace('+', ' ')
+
+            # value = convert_utf8bytes_to_characters(value)
+            # value = convert_str_to_html_encoding(value)
+            # value = value.replace('+', ' ')
+
+            value = urllib.parse.unquote(value)
+            
             paramString = key + ':' + value
             fq.append(paramString)
 
