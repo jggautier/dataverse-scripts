@@ -2387,6 +2387,37 @@ def get_citation_count(datasetPid):
     return citationCount
 
 
+def get_mdc_metrics(datasetPid):
+    meticsDict = {
+        'status': 'OK',
+        'dataset_pid': datasetPid,
+        }
+    
+    pidForDatacite = datasetPid.replace('doi:', '')
+    dataciteEventsAPI = f'https://api.datacite.org/dois/{pidForDatacite}'
+    try:
+        response = requests.get(dataciteEventsAPI)
+        attributes = response.json()['data']['attributes']
+
+        meticsDict['mdc_citation_count'] = improved_get(attributes, 'citationCount')
+        meticsDict['mdc_view_count'] = improved_get(attributes, 'viewCount')
+        meticsDict['mdc_download_count'] = improved_get(attributes, 'downloadCount')
+
+    except Exception:
+        try:
+            status = response.json()['errors'][0]['title']
+            meticsDict['mdc_citation_count'] = status
+            meticsDict['mdc_view_count'] = status
+            meticsDict['mdc_download_count'] = status
+        except Exception as e:
+            status = e
+            meticsDict['mdc_citation_count'] = status
+            meticsDict['mdc_view_count'] = status
+            meticsDict['mdc_download_count'] = status
+    
+    return meticsDict
+
+
 def get_all_guestbooks(installationUrl, collectionAlias, apiKey):
     dataverseAliasList = get_all_subcollection_aliases(
         collectionUrl = f'{installationUrl}/dataverse/{collectionAlias}', 
