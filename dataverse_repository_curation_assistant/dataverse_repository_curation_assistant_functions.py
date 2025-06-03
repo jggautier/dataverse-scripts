@@ -2418,6 +2418,32 @@ def get_mdc_metrics(datasetPid):
     return meticsDict
 
 
+def get_mdc_metrics_dataframe(datasetPidsList):
+    allMDCMetricsDict = []
+
+    loopObj = tqdm(bar_format=tqdm_bar_format, iterable=datasetPidsList)
+    for datasetPid in loopObj:
+        loopObj.set_postfix_str(f'Dataset: {datasetPid}')
+
+        mdcMetricsDict = get_mdc_metrics(datasetPid)
+        newRow = {
+            'dataset_pid': datasetPid,
+            'mdc_citation_count': mdcMetricsDict['mdc_citation_count'],
+            'mdc_view_count': mdcMetricsDict['mdc_view_count'],
+            'mdc_download_count': mdcMetricsDict['mdc_download_count']
+        }
+        allMDCMetricsDict.append(newRow)
+
+        sleep(1)
+
+    allMDCMetricsDf = pd.DataFrame(allMDCMetricsDict)
+
+    if len(allMDCMetricsDf) == 0:
+        print('No MDC metrics found. Returning empty dataframe.')
+
+    return allMDCMetricsDf
+
+
 def get_all_guestbooks(installationUrl, collectionAlias, apiKey):
     dataverseAliasList = get_all_subcollection_aliases(
         collectionUrl = f'{installationUrl}/dataverse/{collectionAlias}', 
