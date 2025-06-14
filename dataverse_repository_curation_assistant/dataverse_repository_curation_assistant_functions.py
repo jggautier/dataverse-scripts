@@ -1345,7 +1345,7 @@ def get_collection_size(installationUrl, apiKey, collectionIdOrAlias, includeSub
 def get_dataset_metadata_export(
     installationUrl, datasetPid, exportFormat, 
     timeout, verify, excludeFiles, returnOwners,
-    allVersions=False, headers={}, apiKey=''):
+    version=':latest', headers={}, apiKey=''):
 
     installationUrl = installationUrl.rstrip('/')
 
@@ -1359,32 +1359,38 @@ def get_dataset_metadata_export(
     }
 
     if isinstance(datasetPid, int):
-        dataGetLatestVersionUrl = f'{installationUrl}/api/datasets/{datasetPid}/versions/:latest'
-        dataGetAllVersionsUrl = f'{installationUrl}/api/datasets/{datasetPid}/versions'
+        dataDatasetVersionUrl = f'{installationUrl}/api/datasets/{datasetPid}/versions/{version}'
+        if version == 'all':
+            dataGetAllVersionsUrl = f'{installationUrl}/api/datasets/{datasetPid}/versions'
 
     elif isinstance(datasetPid, str):
-        dataGetLatestVersionUrl = f'{installationUrl}/api/datasets/:persistentId/versions/:latest'
-        dataGetAllVersionsUrl = f'{installationUrl}/api/datasets/:persistentId/versions'
+        dataDatasetVersionUrl = f'{installationUrl}/api/datasets/:persistentId/versions/{version}'
+        # dataGetLatestVersionUrl = f'{installationUrl}/api/datasets/export?exporter={exportFormat}'
+        if version == 'all':
+            dataGetAllVersionsUrl = f'{installationUrl}/api/datasets/:persistentId/versions'
         
         params['persistentId'] = datasetPid
 
     if exportFormat == 'dataverse_json':
-        if allVersions is False:
+        if version != 'all':
             try:
                 response = requests.get(
-                    dataGetLatestVersionUrl,
+                    dataDatasetVersionUrl,
                     params=params,
                     headers=headers, 
                     timeout=timeout, 
                     verify=verify)
+                print(response.url)
+
                 if response.status_code == 200 and 'metadataBlocks' in response.json()['data']:
                     data = response.json()
-                else:
-                    data = 'ERROR'
-            except Exception:
-                data = 'ERROR'
+                elif response.status_code != 200:
+                    errorMessage = response.json()['message']
+                    data = f'ERROR {str(response.status_code)}: {errorMessage}'
+            except Exception as e:
+                data = f'ERROR: {e}'
 
-        elif allVersions is True:
+        elif version == 'all':
             try:
                 response = requests.get(
                     dataGetAllVersionsUrl,
@@ -1397,13 +1403,12 @@ def get_dataset_metadata_export(
                     data = response.json()
                 else:
                     data = 'ERROR'
-            except Exception:
-                data = 'ERROR'
+            except Exception as e:
+                data = f'ERROR: {e}'
 
     # For getting metadata from other exports, which are available only for each dataset's latest published
     # versions (whereas Dataverse JSON export is available for all draft and published versions)
     if exportFormat != 'dataverse_json':
-        allVersions = False
         datasetMetadataExportEndpoint = f'{installationUrl}/api/datasets/export'
         datasetMetadataExportEndpoint = datasetMetadataExportEndpoint.replace('//api', '/api')
         try:
@@ -1430,19 +1435,21 @@ def get_dataset_metadata_export(
         except Exception as e:
             data = f'ERROR: {e}'
 
-    if data != 'ERROR' and exportFormat == 'dataverse_json' and excludeFiles is True:
-        if allVersions is False:
+    # Check if installation can generate dataset metadata without file-level metadata
+    if 'ERROR' not in data and exportFormat == 'dataverse_json' and excludeFiles is True:
+        if version != 'all':
             fileMetadata = improved_get(data, 'data.files', False)
-        elif allVersions is True:
+        elif version != 'all':
             latestVersionMetadata = data['data'][0]
             fileMetadata = improved_get(latestVersionMetadata, 'files', False)
 
         if fileMetadata is not False:
             print(
-                'Warning: Installation may not support "excludeFiles" paramter. '\
+                'Warning: Installation may not support "excludeFiles" paramter.'\
                 'File metadata may be included.')
 
     return data
+
 
 def save_dataset_export(
     directoryPath, downloadStatusFilePath, installationUrl, datasetPid, 
