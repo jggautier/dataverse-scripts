@@ -1436,17 +1436,17 @@ def get_dataset_metadata_export(
             data = f'ERROR: {e}'
 
     # Check if installation can generate dataset metadata without file-level metadata
-    if 'ERROR' not in data and exportFormat == 'dataverse_json' and excludeFiles is True:
-        if version != 'all':
-            fileMetadata = improved_get(data, 'data.files', False)
-        elif version != 'all':
-            latestVersionMetadata = data['data'][0]
-            fileMetadata = improved_get(latestVersionMetadata, 'files', False)
+    # if 'ERROR' not in data and exportFormat == 'dataverse_json' and excludeFiles is True:
+    #     if version != 'all':
+    #         fileMetadata = improved_get(data, 'data.files', False)
+    #     elif version != 'all':
+    #         latestVersionMetadata = data['data'][0]
+    #         fileMetadata = improved_get(latestVersionMetadata, 'files', False)
 
-        if fileMetadata is not False:
-            print(
-                'Warning: Installation may not support "excludeFiles" paramter.'\
-                'File metadata may be included.')
+    #     if fileMetadata is not False:
+    #         print(
+    #             'Warning: Installation may not support "excludeFiles" paramter.'\
+    #             'File metadata may be included.')
 
     return data
 
