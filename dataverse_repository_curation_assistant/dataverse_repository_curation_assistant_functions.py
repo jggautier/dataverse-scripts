@@ -991,7 +991,7 @@ def get_all_subcollection_aliases(collectionUrl, headers={}, apiKey=''):
     return dataverseAliases
 
 
-def get_collection_info(installationUrl, alias, dataverseCollectionInfoDict, headers={}, apiKey='', verify=False):
+def get_collection_info(installationUrl, alias, headers={}, apiKey='', verify=False):
 
     try:
         viewCollectionApiEndpointURL = f'{installationUrl}/api/dataverses/{alias}'
@@ -1020,37 +1020,36 @@ def get_collection_info(installationUrl, alias, dataverseCollectionInfoDict, hea
                 contactEmailsString = list_to_string(contactEmailsList)
             dataverseType = data['data']['dataverseType']
 
-        newRow = {
+        dataverseCollectionInfoDict = {
             'dataverse_collection_alias': alias,
             'dataverse_collection_create_date': creationDate,
             'dataverse_collection_contact_emails': contactEmailsString,
             'dataverse_collection_type': dataverseType
             }
-        # dataverseCollectionInfoDict.append(dict(newRow))
 
     except Exception as e:
         print(f'\t{e}')
-        newRow = {
+        dataverseCollectionInfoDict = {
             'dataverse_collection_alias': alias,
             'dataverse_collection_create_date': 'NA',
             'dataverse_collection_contact_emails': 'NA',
             'dataverse_collection_type': 'NA'
             }
-    dataverseCollectionInfoDict.append(dict(newRow))
+    return dataverseCollectionInfoDict
 
 
-def get_collections_info(installationUrl, aliasList, dataverseCollectionInfoDict, headers, apiKey=''):
-    aliasCount = len(aliasList)
+def get_collections_info(installationUrl, aliasList, headers, apiKey=''):
+    dataverseCollectionInfoDict = []
+    
+    loopObj = tqdm(bar_format=tqdm_bar_format, iterable=aliasList)
+    for alias in loopObj:
+        loopObj.set_postfix_str(f'Collection alias: {alias}')
 
-    # Use joblib library to use 4 CPU cores to make SearchAPI calls to get info about datasets
-    # and report progress using tqdm progress bars
-    with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=aliasCount)) as progress_bar:
-        Parallel(n_jobs=4, backend='threading')(delayed(get_collection_info)(
-            installationUrl,
-            alias,
-            dataverseCollectionInfoDict,
-            headers,
-            apiKey) for alias in aliasList)
+        newRow = get_collection_info(installationUrl, alias, headers=headers, apiKey=apiKey, verify=False)
+        dataverseCollectionInfoDict.append(dict(newRow))
+        sleep(1)
+
+    return dataverseCollectionInfoDict
 
 
 def get_canonical_pid(pidOrUrl):
