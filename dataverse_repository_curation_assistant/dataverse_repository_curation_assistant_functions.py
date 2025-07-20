@@ -1364,7 +1364,6 @@ def get_dataset_metadata_export(
 
     elif isinstance(datasetPid, str):
         dataDatasetVersionUrl = f'{installationUrl}/api/datasets/:persistentId/versions/{version}'
-        # dataGetLatestVersionUrl = f'{installationUrl}/api/datasets/export?exporter={exportFormat}'
         if version == 'all':
             dataGetAllVersionsUrl = f'{installationUrl}/api/datasets/:persistentId/versions'
         
@@ -1410,16 +1409,19 @@ def get_dataset_metadata_export(
     if exportFormat != 'dataverse_json':
         datasetMetadataExportEndpoint = f'{installationUrl}/api/datasets/export'
         datasetMetadataExportEndpoint = datasetMetadataExportEndpoint.replace('//api', '/api')
+
         try:
             response = requests.get(
                 datasetMetadataExportEndpoint,
                 params={
+                    'exporter': exportFormat,
                     'persistentId': datasetPid,
-                    'exporter': exportFormat
+                    'version': version
                     },
                 headers=headers,
                 timeout=timeout, 
                 verify=verify)
+            print(response.url)
 
             if response.status_code == 200:
                 
