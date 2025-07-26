@@ -293,28 +293,40 @@ def get_installation_list():
     return installationsList
 
 
-def check_api_endpoint(url, headers, verify=False, json_response_expected=True):
+def check_api_endpoint(url, headers, verify=False, jsonResponseExpected=True):
+    anubisWarning = 'Installation may require javascript. Check if it\'s using Anaubis'
     try:
         response = requests.get(url, headers=headers, timeout=20, verify=verify)
-        if response.status_code == 200:
+        responseStatusCode = response.status_code
+        if responseStatusCode == 200:
             status = 'OK'
-            if json_response_expected is True:
+            if jsonResponseExpected is True:
                 try:
                     data = response.json()
                 except Exception as e:
-                    status = f'API endpoint is not returning JSON: {e}' 
+                    responseText = response.text
+                    if 'Enable JavaScript and cookies to continue' in responseText:
+                        status = f'API endpoint is not returning JSON: {e}. {anubisWarning}'
+                    else:
+                        status = f'API endpoint is not returning JSON: {e}.'
+            elif jsonResponseExpected is False:
+                status = responseStatusCode
 
-        elif response.status_code != 200:
-            if json_response_expected is True:
+        elif responseStatusCode != 200:
+            if jsonResponseExpected is True:
                 try:
                     data = response.json()
                     statusCode = data['status']
                     statusMessage = data['message']
                     status = f'{statusCode}: {statusMessage}'
                 except Exception as e:
-                    status = f'API endpoint is not returning JSON: {e}'
-            elif json_response_expected is False:
-                status = response.status_code
+                    responseText = response.text
+                    if 'Enable JavaScript and cookies to continue' in responseText:
+                        status = f'API endpoint is not returning JSON: {e}. {anubisWarning}'
+                    else:
+                        status = f'API endpoint is not returning JSON: {e}.'
+            elif jsonResponseExpected is False:
+                status = responseStatusCode
     except Exception as e:
         status = e
 
