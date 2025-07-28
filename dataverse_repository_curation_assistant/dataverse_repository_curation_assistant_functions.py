@@ -247,12 +247,17 @@ def check_installation_url_status(string, requestTimeout=20, headers={}):
     if string.startswith('http'):
         parsed = urlparse(string)
         installationUrl = parsed.scheme + '://' + parsed.netloc
-
+        
         try:
             response = requests.get(installationUrl, headers=headers, timeout=requestTimeout, verify=False)
             parsed = urlparse(response.url)
+
             statusDict['statusCode'] = response.status_code
-            statusDict['installationUrl'] = parsed.scheme + '://' + parsed.netloc
+
+            if installationUrl in ['https://rodbuk.pl']:
+                statusDict['installationUrl'] = installationUrl
+            else:
+                statusDict['installationUrl'] = parsed.scheme + '://' + parsed.netloc
         except Exception as e:
             statusDict['statusCode'] = f'ERROR: {e}'
             statusDict['installationUrl'] = parsed.scheme + '://' + parsed.netloc
