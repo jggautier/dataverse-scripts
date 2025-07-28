@@ -297,6 +297,7 @@ def check_api_endpoint(url, headers, verify=False, jsonResponseExpected=True):
     anubisWarning = 'Installation may require javascript. Check if it\'s using Anaubis'
     try:
         response = requests.get(url, headers=headers, timeout=20, verify=verify)
+        print(response.text)
         responseStatusCode = response.status_code
         if responseStatusCode == 200:
             status = 'OK'
@@ -305,7 +306,7 @@ def check_api_endpoint(url, headers, verify=False, jsonResponseExpected=True):
                     data = response.json()
                 except Exception as e:
                     responseText = response.text
-                    if 'Enable JavaScript and cookies to continue' in responseText:
+                    if 'Enable JavaScript and cookies to continue' or 'Anubis' in responseText:
                         status = f'API endpoint is not returning JSON: {e}. {anubisWarning}'
                     else:
                         status = f'API endpoint is not returning JSON: {e}.'
