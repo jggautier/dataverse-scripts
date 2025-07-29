@@ -299,11 +299,17 @@ def get_installation_list():
 
 
 def check_api_endpoint(url, headers, verify=False, jsonResponseExpected=True):
-    humanDetectionWarning = 'Installation may require javascript. Check if it\'s using Anaubis or something else that blocks API use'
+    humanDetectionWarning = 'Installation may require javascript. Check if it\'s using Anubis or something else that blocks API use'
     try:
         response = requests.get(url, headers=headers, timeout=20, verify=verify)
-        responseText = response.text
+
+        retryAfter = response.headers.get("Retry-After")
         responseStatusCode = response.status_code
+        responseText = response.text
+        # print(f'retryAfter: {retryAfter}')
+        # print(responseStatusCode)
+        # print(responseText)
+        
         if responseStatusCode == 200:
             status = 'OK'
             if jsonResponseExpected is True:
