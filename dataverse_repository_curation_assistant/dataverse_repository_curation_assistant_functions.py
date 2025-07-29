@@ -299,10 +299,10 @@ def get_installation_list():
 
 
 def check_api_endpoint(url, headers, verify=False, jsonResponseExpected=True):
-    anubisWarning = 'Installation may require javascript. Check if it\'s using Anaubis'
+    humanDetectionWarning = 'Installation may require javascript. Check if it\'s using Anaubis or something else that blocks API use'
     try:
         response = requests.get(url, headers=headers, timeout=20, verify=verify)
-        print(response.text)
+        responseText = response.text
         responseStatusCode = response.status_code
         if responseStatusCode == 200:
             status = 'OK'
@@ -310,9 +310,8 @@ def check_api_endpoint(url, headers, verify=False, jsonResponseExpected=True):
                 try:
                     data = response.json()
                 except Exception as e:
-                    responseText = response.text
                     if 'Enable JavaScript and cookies to continue' or 'Anubis' in responseText:
-                        status = f'API endpoint is not returning JSON: {e}. {anubisWarning}'
+                        status = humanDetectionWarning
                     else:
                         status = f'API endpoint is not returning JSON: {e}.'
             elif jsonResponseExpected is False:
@@ -326,9 +325,8 @@ def check_api_endpoint(url, headers, verify=False, jsonResponseExpected=True):
                     statusMessage = data['message']
                     status = f'{statusCode}: {statusMessage}'
                 except Exception as e:
-                    responseText = response.text
                     if 'Enable JavaScript and cookies to continue' in responseText:
-                        status = f'API endpoint is not returning JSON: {e}. {anubisWarning}'
+                        status = humanDetectionWarning
                     else:
                         status = f'API endpoint is not returning JSON: {e}.'
             elif jsonResponseExpected is False:
