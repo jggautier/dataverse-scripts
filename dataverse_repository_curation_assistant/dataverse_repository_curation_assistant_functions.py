@@ -307,7 +307,7 @@ def check_api_endpoint(url, headers, verify=False, jsonResponseExpected=True):
         responseStatusCode = response.status_code
         responseText = response.text
         # print(f'retryAfter: {retryAfter}')
-        # print(responseStatusCode)
+        # print(f'responseStatusCode: {responseStatusCode}')
         # print(responseText)
         
         if responseStatusCode == 200:
