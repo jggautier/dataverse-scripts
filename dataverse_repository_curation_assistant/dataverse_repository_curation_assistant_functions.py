@@ -2896,7 +2896,7 @@ def get_dataverse_installations_metadata(
                 if 'identifier_of_dataverse' in firstItem:
                     searchAPIIncludesCollectionInfo = True
                 else:
-                    searchAPIIncludesCollectionInfo = False                
+                    searchAPIIncludesCollectionInfo = False
             else:
                 testDatasetPid = 'NA'
 
