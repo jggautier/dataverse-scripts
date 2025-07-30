@@ -61,7 +61,7 @@ get_dataverse_installations_metadata(
     installationHostnamesList=installationHostnamesList, 
     nJobsForApiCalls=3,
     requestTimeout=60,
-    headers=headers)
+    allHeaders=headers)
 
 
 shutil.rmtree(functionsDirectoryPath)
