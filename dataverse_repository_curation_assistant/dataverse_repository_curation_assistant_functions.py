@@ -2597,10 +2597,12 @@ def get_oai_pmh_record_count(harvestUrl, verb, metadataFormat, harvestingSet):
     return countOfRecordsInOAIFeed
 
 
-def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeysFilePath, installationHostnamesList, nJobsForApiCalls, requestTimeout, headers):
+def get_dataverse_installations_metadata(
+    mainInstallationsDirectoryPath, apiKeysFilePath, installationHostnamesList, 
+    nJobsForApiCalls, requestTimeout, allHeaders):
 
     # Function for getting metadata and other information from known Dataverse installations.
-    # Used for publishing the datasets in the collection at https://dataverse.harvard.edu/dataverse/dataverse-ux-research-dataverse
+    # Used for publishing a series of datasets in the collection at https://dataverse.harvard.edu/dataverse/dataverse-ux-research-dataverse
 
     def get_dataset_info_dict(start, headers, installationName, misindexedDatasetsCount, getCollectionInfo=True):
         searchApiUrl = f'{installationUrl}/api/search'
@@ -2752,7 +2754,7 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
     # Get JSON data that the Dataverse installations map uses
     print('Getting Dataverse installation data...')
     mapDataUrl = 'https://raw.githubusercontent.com/IQSS/dataverse-installations/main/data/data.json'
-    response = requests.get(mapDataUrl, headers=headers)
+    response = requests.get(mapDataUrl, headers=allHeaders)
     mapdata = response.json()
     installations = [x for x in mapdata['installations'] if x['hostname'] in installationHostnamesList]
     mapadata = []
@@ -2787,6 +2789,7 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
     installationProgressCount = 0
 
     for installation in mapdata['installations']:
+        headers = allHeaders
 
         installationProgressCount += 1
 
@@ -2844,6 +2847,15 @@ def get_dataverse_installations_metadata(mainInstallationsDirectoryPath, apiKeys
             getInstallationVersionApiUrl = f'{installationUrl}/api/v1/info/version'
             getInstallationVersionApiUrl = getInstallationVersionApiUrl.replace('//api', '/api')
             getInstallationVersionApiStatus = check_api_endpoint(getInstallationVersionApiUrl, headers, verify=False, json_response_expected=True)
+            sleep(1)
+
+            if getInstallationVersionApiStatus != 'OK':
+                # Remove 'User-Agent' from headers to see if that lets me use Dataverse API
+                print(f'\tGet installation version API failed. Removing User-Agent from headers and trying again.')
+                headers.pop('User-Agent', None)
+
+                getInstallationVersionApiStatus = check_api_endpoint(getInstallationVersionApiUrl, headers=headers, verify=False, jsonResponseExpected=True)
+                sleep(1)
 
             if getInstallationVersionApiStatus == 'OK':
                 response = requests.get(getInstallationVersionApiUrl, headers=headers, timeout=requestTimeout, verify=False)
