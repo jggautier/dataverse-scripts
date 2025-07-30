@@ -3245,7 +3245,7 @@ def get_dataverse_collection_categories(installationUrl, collectionAliasList, ap
     return collectionCategoriesDict
 
 
-def update_dataverse_collection(installation, collectionAlias, metadata, apikey):
+def update_dataverse_collection(installation, collectionAlias, metadata, apiKey):
     # e.g. metadata = {"dataverseType": "JOURNALS"}
     # See dataverse-complete.json at https://guides.dataverse.org/en/6.4/api/native-api.html#create-a-dataverse-collection
     
