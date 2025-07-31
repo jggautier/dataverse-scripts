@@ -1584,7 +1584,7 @@ def save_dataset_exports(directoryPath, downloadStatusFilePath, installationUrl,
         loopObj.set_postfix_str(f'dataset_pid: {datasetPid}')
         save_dataset_export(
             directoryPath, downloadStatusFilePath, installationUrl, datasetPid, 
-            exportFormat, timeout, verify, excludeFiles, allVersions=False, 
+            exportFormat, timeout, verify, excludeFiles, allVersions, 
             headers={}, apiKey='')
         sleep(1)
     
