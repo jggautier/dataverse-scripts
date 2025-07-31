@@ -2991,9 +2991,15 @@ def get_dataverse_installations_metadata(
                 else:
                     getCollectionInfo = True
 
-                with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=startsListCount)) as progress_bar:
-                    Parallel(n_jobs=1, backend='threading')(delayed(get_dataset_info_dict)(
-                        start, headers, installationName, misindexedDatasetsCount, getCollectionInfo) for start in startsList)   
+                # with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=startsListCount)) as progress_bar:
+                #     Parallel(n_jobs=1, backend='threading')(delayed(get_dataset_info_dict)(
+                #         start, headers, installationName, misindexedDatasetsCount, getCollectionInfo) for start in startsList)   
+
+
+                loopObj = tqdm(bar_format=tqdm_bar_format, iterable=startsList)
+                for start in loopObj:
+                    get_dataset_info_dict(
+                        start, headers, installationName, misindexedDatasetsCount, getCollectionInfo)
 
                 # Get new dataset count based on number of PIDs saved from Search API
                 datasetCount = len(datasetPids)
@@ -3018,12 +3024,22 @@ def get_dataverse_installations_metadata(
                     print(f'\rCollection info not included in installation\'s Search API results. Scraping webpages to get collection aliases')
                     
                     datasetPidCollectionAliasDict = []
-                    with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=datasetCount)) as progress_bar:
-                        Parallel(n_jobs=nJobsForApiCalls, backend='threading')(delayed(get_dataverse_collection_info_web_scraping)(
+
+                    # with tqdm_joblib(tqdm(bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}', total=datasetCount)) as progress_bar:
+                    #     Parallel(n_jobs=nJobsForApiCalls, backend='threading')(delayed(get_dataverse_collection_info_web_scraping)(
+                    #         installationUrl,
+                    #         datasetPid,
+                    #         datasetPidCollectionAliasDict
+                    #         ) for datasetPid in datasetPids)
+
+                    loopObj = tqdm(bar_format=tqdm_bar_format, iterable=datasetPids)
+                    for datasetPid in loopObj:
+
+                        loopObj.set_postfix_str(f'Dataset PID: {datasetPid}')
+                        get_dataverse_collection_info_web_scraping(
                             installationUrl,
                             datasetPid,
-                            datasetPidCollectionAliasDict
-                            ) for datasetPid in datasetPids)
+                            datasetPidCollectionAliasDict)
 
                     datasetPidCollectionAliasDF = pd.DataFrame(datasetPidCollectionAliasDict)
                     datasetPidsFileDF = pd.merge(datasetPidsFileDF, datasetPidCollectionAliasDF, how='left', on='dataset_pid')
