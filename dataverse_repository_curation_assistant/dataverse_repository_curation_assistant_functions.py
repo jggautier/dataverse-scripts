@@ -1400,7 +1400,6 @@ def get_dataset_metadata_export(
                     headers=headers, 
                     timeout=timeout, 
                     verify=verify)
-                print(response.url)
 
                 if response.status_code == 200 and 'metadataBlocks' in response.json()['data']:
                     data = response.json()
@@ -1443,7 +1442,6 @@ def get_dataset_metadata_export(
                 headers=headers,
                 timeout=timeout, 
                 verify=verify)
-            print(response.url)
 
             if response.status_code == 200:
                 
@@ -2847,7 +2845,8 @@ def get_dataverse_installations_metadata(
             # Use the "Get Version" endpoint to get installation's Dataverse version (or set version as 'NA')
             getInstallationVersionApiUrl = f'{installationUrl}/api/v1/info/version'
             getInstallationVersionApiUrl = getInstallationVersionApiUrl.replace('//api', '/api')
-            getInstallationVersionApiStatus = check_api_endpoint(getInstallationVersionApiUrl, headers, verify=False, jsonResponseExpected=True)
+            getInstallationVersionApiStatus = check_api_endpoint(
+                getInstallationVersionApiUrl, headers, verify=False, jsonResponseExpected=True)
             sleep(1)
 
             if getInstallationVersionApiStatus != 'OK':
@@ -2855,7 +2854,8 @@ def get_dataverse_installations_metadata(
                 print(f'\tGet installation version API failed. Removing User-Agent from headers and trying again.')
                 headers.pop('User-Agent', None)
 
-                getInstallationVersionApiStatus = check_api_endpoint(getInstallationVersionApiUrl, headers=headers, verify=False, jsonResponseExpected=True)
+                getInstallationVersionApiStatus = check_api_endpoint(
+                    getInstallationVersionApiUrl, headers=headers, verify=False, jsonResponseExpected=True)
                 sleep(1)
 
             if getInstallationVersionApiStatus == 'OK':
@@ -2905,7 +2905,8 @@ def get_dataverse_installations_metadata(
             # in a directory
             metadatablocksApiEndpointUrl = f'{installationUrl}/api/v1/metadatablocks'
             metadatablocksApiEndpointUrl = metadatablocksApiEndpointUrl.replace('//api', '/api')
-            getMetadatablocksApiStatus = check_api_endpoint(metadatablocksApiEndpointUrl, headers, verify=False, jsonResponseExpected=True)
+            getMetadatablocksApiStatus = check_api_endpoint(
+                metadatablocksApiEndpointUrl, headers, verify=False, jsonResponseExpected=True)
 
             if getMetadatablocksApiStatus != 'OK':        
                 metadatablockNames = 'Metadata block API endpoint failed'
@@ -2918,7 +2919,8 @@ def get_dataverse_installations_metadata(
                 os.mkdir(metadatablockFileDirectoryPath)
 
                 # Download metadata block JSON files
-                response = requests.get(metadatablocksApiEndpointUrl, headers=headers, timeout=requestTimeout, verify=False)
+                response = requests.get(
+                    metadatablocksApiEndpointUrl, headers=headers, timeout=requestTimeout, verify=False)
                 metadatablockData = response.json()
 
                 # Get list of the installation's metadata block names
@@ -3142,8 +3144,8 @@ def get_dataverse_installations_metadata(
                 aliasList = datasetPidsFileDF['dataverse_collection_alias'].values.tolist()
                 aliasList = list(set(aliasList))
 
-                dataverseCollectionInfoDict = []
-                get_collections_info(installationUrl, aliasList, dataverseCollectionInfoDict, headers=headers, apiKey='')
+                dataverseCollectionInfoDict = get_collections_info(
+                    installationUrl, aliasList, headers=headers, apiKey='')
 
                 # Create dataframe from dictionary
                 dataverseCollectionInfoDF = pd.DataFrame(dataverseCollectionInfoDict).drop_duplicates()
