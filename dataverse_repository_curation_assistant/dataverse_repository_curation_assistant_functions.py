@@ -1292,7 +1292,7 @@ def get_dataset_size(installationUrl, datasetIdOrPid, onlyPublishedFiles=False, 
         allVersionMetadata = get_dataset_metadata_export(
             installationUrl, datasetPid=datasetIdOrPid, exportFormat='dataverse_json', 
             timeout=60, verify=False, excludeFiles=False, returnOwners=False,
-            allVersions=True, headers={}, apiKey='')
+            version='all', headers={}, apiKey='')
 
         # Get sum of sizes of all unique files in all published dataset versions
         byteSizeTotalInt = 0
@@ -1489,8 +1489,8 @@ def save_dataset_export(
         if allVersions == False:
             latestVersionMetadata = get_dataset_metadata_export(
                 installationUrl, datasetPid, exportFormat, 
-                timeout, verify=verify, 
-                excludeFiles=excludeFiles, allVersions=False, returnOwners=False,
+                timeout, verify=verify, excludeFiles=excludeFiles, 
+                returnOwners=False, version=':latest',
                 headers={}, apiKey=apiKey)
 
             if latestVersionMetadata == 'ERROR' or latestVersionMetadata['data']['versionState'] == 'DEACCESSIONED':
@@ -1523,8 +1523,9 @@ def save_dataset_export(
 
             allVersionsMetadata = get_dataset_metadata_export(
                 installationUrl, datasetPid, exportFormat, 
-                timeout, verify, excludeFiles, returnOwners=False,
-                allVersions=True, headers={}, apiKey=apiKey)
+                timeout, verify, excludeFiles, 
+                returnOwners=False, version='all',
+                headers={}, apiKey=apiKey)
 
             if allVersionsMetadata == 'ERROR':
                 # Add to CSV file that the dataset's metadata was not downloaded
@@ -1993,7 +1994,7 @@ def get_dataset_metadata(
             verify=False,
             excludeFiles=True,
             returnOwners=False,
-            allVersions=False,
+            version=':latest',
             apiKey=apiKey)
 
         if datasetMetadata['status'] == 'OK':
@@ -2178,7 +2179,7 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
                     installationUrl=installationUrl, datasetPid=lockedDatasetPid, 
                     exportFormat='dataverse_json', timeout=30,
                     verify=True, excludeFiles=True, returnOwners=False,
-                    allVersions=False, apiKey=apiKey)
+                    version=':latest', apiKey=apiKey)
 
                 # Get title of latest version of the dataset
                 for field in datasetMetadata['data']['latestVersion']['metadataBlocks']['citation']['fields']:
@@ -2286,7 +2287,7 @@ def save_locked_dataset_report(installationUrl='', directoryPath='', apiKey=''):
                             datasetMetadata = get_dataset_metadata_export(
                                 installationUrl=installationUrl, datasetPid=createdDatasetPid, 
                                 exportFormat='dataverse_json', timeout=30, verify=True,
-                                excludeFiles=True, allVersions=False, returnOwners=False,
+                                excludeFiles=True, returnOwners=False, version=':latest',
                                 headers={}, apiKey=apiKey)
 
                             # Get title of latest version of the dataset
@@ -2846,7 +2847,7 @@ def get_dataverse_installations_metadata(
             # Use the "Get Version" endpoint to get installation's Dataverse version (or set version as 'NA')
             getInstallationVersionApiUrl = f'{installationUrl}/api/v1/info/version'
             getInstallationVersionApiUrl = getInstallationVersionApiUrl.replace('//api', '/api')
-            getInstallationVersionApiStatus = check_api_endpoint(getInstallationVersionApiUrl, headers, verify=False, json_response_expected=True)
+            getInstallationVersionApiStatus = check_api_endpoint(getInstallationVersionApiUrl, headers, verify=False, jsonResponseExpected=True)
             sleep(1)
 
             if getInstallationVersionApiStatus != 'OK':
@@ -2872,7 +2873,7 @@ def get_dataverse_installations_metadata(
             # Check if Search API works for the installation
             searchApiCheckUrl = f'{installationUrl}/api/v1/search?q=*&fq=-metadataSource:"Harvested"&type=dataset&per_page=1&sort=date&order=desc'
             searchApiCheckUrl = searchApiCheckUrl.replace('//api', '/api')
-            searchApiStatus = check_api_endpoint(searchApiCheckUrl, headers, verify=False, json_response_expected=True)
+            searchApiStatus = check_api_endpoint(searchApiCheckUrl, headers, verify=False, jsonResponseExpected=True)
 
             # If Search API works, from Search API query results, get count of local (non-harvested) datasets
             if searchApiStatus == 'OK':
@@ -2904,7 +2905,7 @@ def get_dataverse_installations_metadata(
             # in a directory
             metadatablocksApiEndpointUrl = f'{installationUrl}/api/v1/metadatablocks'
             metadatablocksApiEndpointUrl = metadatablocksApiEndpointUrl.replace('//api', '/api')
-            getMetadatablocksApiStatus = check_api_endpoint(metadatablocksApiEndpointUrl, headers, verify=False, json_response_expected=True)
+            getMetadatablocksApiStatus = check_api_endpoint(metadatablocksApiEndpointUrl, headers, verify=False, jsonResponseExpected=True)
 
             if getMetadatablocksApiStatus != 'OK':        
                 metadatablockNames = 'Metadata block API endpoint failed'
@@ -2943,7 +2944,7 @@ def get_dataverse_installations_metadata(
             if testDatasetPid != 'NA':
                 getJsonApiUrl = f'{installationUrl}/api/v1/datasets/:persistentId/?persistentId={testDatasetPid}'
                 getJsonApiUrl = getJsonApiUrl.replace('//api', '/api')
-                getDataverseJsonApiStatus = check_api_endpoint(getJsonApiUrl, headers, verify=False, json_response_expected=True)
+                getDataverseJsonApiStatus = check_api_endpoint(getJsonApiUrl, headers, verify=False, jsonResponseExpected=True)
 
             else:
                 getDataverseJsonApiStatus = 'NA'
@@ -3051,7 +3052,6 @@ def get_dataverse_installations_metadata(
                     installationUrl=installationUrl, 
                     datasetPidList=datasetPids, 
                     exportFormat='dataverse_json',
-                    n_jobs=nJobsForApiCalls,
                     timeout=60,
                     verify=False,
                     excludeFiles=False, 
@@ -3095,7 +3095,6 @@ def get_dataverse_installations_metadata(
                         installationUrl=installationUrl, 
                         datasetPidList=pidsOfDatasetMetadataNotRetrieved, 
                         exportFormat='dataverse_json',
-                        n_jobs=nJobsForApiCalls,
                         timeout=60,
                         verify=False,
                         excludeFiles=False, 
@@ -3216,8 +3215,9 @@ def full_replace_metadata_field_value(installationUrl, apiKey, datasetPid, metad
 
     respData = get_dataset_metadata_export(
         installationUrl, datasetPid, exportFormat='dataverse_json', 
-        timeout=120, verify=False,
-        allVersions=False, headers={}, apiKey=apiKey)
+        timeout=120, verify=False, excludeFiles=True,
+        returnOwners=False, version=':latest',
+        headers={}, apiKey=apiKey)
 
     mdbFields = respData['data']['latestVersion']['metadataBlocks'][metadataBlockName]['fields']
 
