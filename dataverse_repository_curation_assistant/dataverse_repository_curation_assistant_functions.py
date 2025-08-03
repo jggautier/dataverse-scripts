@@ -2519,6 +2519,8 @@ def get_all_guestbooks(installationUrl, collectionAlias, apiKey):
         elif len(guestbookDF) == 0:
             print(f'\tGuestbook for {dataverseAlias} empty and not saved')
 
+        sleep(1)
+
     # Combine all guestbooks into one dataframe
     allGuestbooksDF = pd.concat(guestbookDFsList, ignore_index=True)
 
