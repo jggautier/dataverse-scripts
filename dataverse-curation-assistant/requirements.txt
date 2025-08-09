@@ -1,4 +1,3 @@
-certifi==2021.10.8
 charset-normalizer==2.0.12
 colour==0.1.5
 fuzzywuzzy==0.18.0
