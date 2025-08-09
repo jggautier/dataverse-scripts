@@ -46,14 +46,3 @@ pip install -r requirements.txt
  * Run dataverse_repository_curation_assistant_main.py to run the application
 
 Note: The tkinter library comes with most installations of Python 3, so pip doesn't include it in the requirements.txt it produces. But if after installing libraries in a pipenv shell, you get error messages about tkinter not being defined, you may have to install tkinter "manually". For example, if you use homebrew's version of Python 3, you might have to `brew install python-tk`
-
-## Upcoming changes
-
-More functionality can be added to the application, depending on how useful it would be for its maintainers or others, including:
-- Merging user accounts in a Dataverse repository
-- Getting the guestbooks of all Dataverse collections within a Dataverse collection
-- Deleting Dataverse collections (and optionally all collections and datasets within it)
-- Changing the year used in a datasets' suggested citation
-- Moving datasets to different Dataverse collections
-- Publishing datasets
-- Removing dataset links in Dataverse collections
