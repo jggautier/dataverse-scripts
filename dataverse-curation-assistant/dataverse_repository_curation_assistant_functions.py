@@ -1712,16 +1712,16 @@ def get_metadata_values_lists(
     installationUrl, datasetMetadata, metadatablockName,
     chosenTitleDBName, chosenFields=None, versions='latestVersion'):
 
-    # Get dictionary containing metadata block data
-    if versions == 'allVersions':
-        # versions = 'datasetVersion'
-        metadatablockDict = datasetMetadata['data']['datasetVersion']['metadataBlocks']
-    elif versions == 'latestVersion':
-        metadatablockDict = datasetMetadata['data']['metadataBlocks']
-
-    rowVariablesList = []
-
     if datasetMetadata['status'] == 'OK':
+
+        # # Get dictionary containing metadata block data
+        # if versions == 'allVersions':
+        #     metadatablockDict = datasetMetadata['data']['datasetVersion']['metadataBlocks']
+        # elif versions == 'latestVersion':
+        #     metadatablockDict = datasetMetadata['data']['datasetVersion']['metadataBlocks']
+
+        metadatablockDict = datasetMetadata['data']['datasetVersion']['metadataBlocks']
+        rowVariablesList = []
         
         # Get names of metadata blocks and name of first metadata block whose name matches the give metadatablockName
         matchingMetadataBlockName = None
@@ -1741,24 +1741,46 @@ def get_metadata_values_lists(
 
         if matchingMetadataBlockName is not None:
 
-            # datasetPersistentUrl = datasetMetadata['data']['persistentUrl']
-            datasetPid = datasetMetadata['data']['datasetPersistentId']
-            datasetPersistentUrl = get_url_form_of_pid(datasetPid, installationUrl)
-            datasetUrl = installationUrl + '/dataset.xhtml?persistentId=' + datasetPid
+            if versions == 'allVersions':
 
-            versionCreateTime = datasetMetadata['data']['createTime']
+                # datasetPersistentUrl = datasetMetadata['data']['persistentUrl']
+                datasetPid = datasetMetadata['data']['datasetPersistentId']
+                datasetPersistentUrl = get_url_form_of_pid(datasetPid, installationUrl)
+                datasetUrl = installationUrl + '/dataset.xhtml?persistentId=' + datasetPid
 
-            if 'publicationDate' not in datasetMetadata['data']:
-                publicationDate = ''
-            elif 'publicationDate' in datasetMetadata['data']:
-                publicationDate = datasetMetadata['data']['publicationDate']
+                versionCreateTime = datasetMetadata['data']['createTime']
 
-            if 'versionNumber' in datasetMetadata['data']:
-                majorVersionNumber = datasetMetadata['data']['versionNumber']
-                minorVersionNumber = datasetMetadata['data']['versionMinorNumber']
-                datasetVersionNumber = f'{majorVersionNumber}.{minorVersionNumber}'
-            else:
-                datasetVersionNumber = 'DRAFT'
+                if 'publicationDate' not in datasetMetadata['data']:
+                    publicationDate = ''
+                elif 'publicationDate' in datasetMetadata['data']:
+                    publicationDate = datasetMetadata['data']['publicationDate']
+
+                if 'versionNumber' in datasetMetadata['data']:
+                    majorVersionNumber = datasetMetadata['data']['versionNumber']
+                    minorVersionNumber = datasetMetadata['data']['versionMinorNumber']
+                    datasetVersionNumber = f'{majorVersionNumber}.{minorVersionNumber}'
+                else:
+                    datasetVersionNumber = 'DRAFT'
+
+            elif versions == 'latestVersion':
+                # datasetPersistentUrl = datasetMetadata['data']['persistentUrl']
+                datasetPid = datasetMetadata['data']['datasetVersion']['datasetPersistentId']
+                datasetPersistentUrl = get_url_form_of_pid(datasetPid, installationUrl)
+                datasetUrl = installationUrl + '/dataset.xhtml?persistentId=' + datasetPid
+
+                versionCreateTime = datasetMetadata['data']['datasetVersion']['createTime']
+
+                if 'publicationDate' not in datasetMetadata['data']:
+                    publicationDate = ''
+                elif 'publicationDate' in datasetMetadata['data']:
+                    publicationDate = datasetMetadata['data']['publicationDate']
+
+                if 'versionNumber' in datasetMetadata['data']['datasetVersion']:
+                    majorVersionNumber = datasetMetadata['data']['datasetVersion']['versionNumber']
+                    minorVersionNumber = datasetMetadata['data']['datasetVersion']['versionMinorNumber']
+                    datasetVersionNumber = f'{majorVersionNumber}.{minorVersionNumber}'
+                else:
+                    datasetVersionNumber = 'DRAFT'
 
             for fields in metadatablockDict[matchingMetadataBlockName]['fields']:
                 if fields['typeName'] == chosenTitleDBName:
