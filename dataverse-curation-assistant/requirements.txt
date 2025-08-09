@@ -11,4 +11,3 @@ requests==2.27.1
 six==1.16.0
 tkmacosx==1.0.4
 ttkthemes==3.2.2
-urllib3==1.26.9
